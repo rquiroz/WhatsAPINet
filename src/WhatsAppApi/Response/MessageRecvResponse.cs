@@ -247,7 +247,12 @@ namespace WhatsAppApi.Response
                 {
                     var tmpAttrName = itemNode.GetAttribute("name");
                     if (tmpAttrName != null)
+                    {
+                        builder.from_me = false;
+                        builder.id = tmpAttrbId;
+                        builder.remote_jid = tmpAttrFromJid;
                         builder.Key().serverNickname = tmpAttrName;
+                    }
                 }
             }
             if (!builder.Timestamp().HasValue)

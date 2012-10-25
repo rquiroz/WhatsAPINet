@@ -296,7 +296,7 @@ namespace WhatsAppApi.Parser
 
             public FMessage.Key Key()
             {
-                return new FMessage.Key(this.remote_jid, this.from_me.Value, this.id);
+                return new FMessage.Key(this.remote_jid, (!this.from_me.HasValue && this.from_me.Value), this.id);
             }
 
             public FMessage.Builder Key(FMessage.Key key)
