@@ -110,7 +110,17 @@ namespace WhatsAppApi.Register
 
         private static string ToPassword(this string bs)
         {
-            return (new string(bs.Reverse().ToArray())).MD5String();
+            //OK LET'S CHECK IF IT'S IOS OR OTHER PALFROM ! ?
+            if (bs.Contains(":"))
+            {
+                string ps = bs.ToUpper();
+                string ls = ps + ps;
+                return ls.MD5String();
+            }
+            else
+            {
+                return (new string(bs.Reverse().ToArray())).MD5String();
+            }
         }
 
         private static void GetLangAndLocale(CultureInfo that, out string lang, out string locale)
