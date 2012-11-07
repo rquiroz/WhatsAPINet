@@ -26,7 +26,11 @@ namespace WhatsAppApi.Account
             if (this.userList.ContainsKey(jid))
                 return this.userList[jid];
 
-            var tmpUser = new WhatsUser(jid, WhatsConstants.WhatsAppServer, nickname);
+            string server = WhatsConstants.WhatsAppServer;
+            if (jid.Contains("-"))
+                server = WhatsConstants.WhatsGroupChat;
+
+            var tmpUser = new WhatsUser(jid, server, nickname);
             this.userList.Add(jid, tmpUser);
             return tmpUser;
         }

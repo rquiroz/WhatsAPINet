@@ -92,6 +92,7 @@ namespace WhatsAppApi.Helper
             }
             else
             {
+                this.DebugPrint(node.NodeString("SENT: "));
                 this.writeInternal(node);
             }
             return this.flushBuffer(encrypt);
@@ -110,16 +111,15 @@ namespace WhatsAppApi.Helper
         protected byte[] flushBuffer(bool encrypt = true)
         {
             byte[] data = this.buffer.ToArray();
-            byte[] ret = new byte[data.Length + 3];
-            //byte[] ret = new byte[256];
             byte[] size = this.GetInt24(data.Length);
-            Buffer.BlockCopy(size, 0, ret, 0, 3);
 
             if (encrypt && this.Encryptionkey != null)
             {
                 data = Encryption.WhatsappEncrypt(Encryptionkey, data, true);
                 size[0] |= 0x8;
             }
+            byte[] ret = new byte[data.Length + 3];
+            Buffer.BlockCopy(size, 0, ret, 0, 3);
             Buffer.BlockCopy(data, 0, ret,3, data.Length);
             this.buffer = new List<byte>();
             return ret;
@@ -363,15 +363,12 @@ namespace WhatsAppApi.Helper
             }
         }
 
-        /// <summary>
-        /// Check if chr ist correct
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        private string chr(int value)
+        protected void DebugPrint(string debugMsg)
         {
-            char tmpRealValue = (char)(value);
-            return Convert.ToString(tmpRealValue);
+            if (WhatsApp.DEBUG && debugMsg.Length > 0)
+            {
+                Console.WriteLine(debugMsg);
+            }
         }
     }
 }

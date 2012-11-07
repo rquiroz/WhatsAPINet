@@ -91,24 +91,47 @@ namespace WhatsAppApi.Helper
             //if (stanzaSize > 0)
             if (size > 0)
             {
+                byte[] dataReal = null;
+                byte[] data = new byte[size];
+                Buffer.BlockCopy(this.buffer.ToArray(), 0, data, 0, data.Length);
+
+                byte[] data2 = new byte[data.Length];
+                Buffer.BlockCopy(data, 0, data2, 0, data.Length);
+
                 if (isEncrypted && Encryptionkey != null)
                 {
-                    byte[] data = this.buffer.ToArray();
                     byte[] hashServerByte = new byte[4];
-                    byte[] packet = new byte[data.Length - 4];
+                    byte[] packet = new byte[size - 4];
                     Buffer.BlockCopy(data, 0, hashServerByte, 0, 4);
-                    Buffer.BlockCopy(data, 4, packet, 0, data.Length - 4);
+                    Buffer.BlockCopy(data, 4, packet, 0, size - 4);
 
                     System.Security.Cryptography.HMACSHA1 h = new System.Security.Cryptography.HMACSHA1(this.Encryptionkey);
                     byte[] hashByte = new byte[4];
                     Buffer.BlockCopy(h.ComputeHash(packet, 0, packet.Length), 0, hashByte, 0, 4);
 
-                    byte[] dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
+                    // 20121107 not sure why the packet is indicated an ecrypted but the hmcash1 is incorrect
+                    if (hashServerByte.SequenceEqual(hashByte))
+                    {
+                        this.buffer.RemoveRange(0, 4);
+                        dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
 
-                    this.buffer.Clear();
-                    this.buffer.AddRange(dataReal);
+                        for (int i = 0; i < size - 4; i++)
+                        {
+                            this.buffer[i] = dataReal[i];
+                        }
+                    }
+                    else
+                    {
+                        //dataReal = data;
+                    }
+
+                    //this.buffer.Clear();
+                    //this.buffer.AddRange(dataReal);
                 }
-                return this.nextTreeInternal();
+                ProtocolTreeNode node = this.nextTreeInternal();
+                if (node != null)
+                    this.DebugPrint(node.NodeString("RECVD: "));
+                return node;
             }
             return null;
         }
@@ -122,7 +145,7 @@ namespace WhatsAppApi.Helper
             }
             else
             {
-                throw new Exception("BinTreeNodeReader->getToken: Invalid token $token");
+                //throw new Exception("BinTreeNodeReader->getToken: Invalid token $token");
             }
             return ret;
         }
@@ -297,7 +320,8 @@ namespace WhatsAppApi.Helper
             }
             else
             {
-                throw new Exception("BinTreeNodeReader->readListSize: Invalid token $token");
+                //throw new Exception("BinTreeNodeReader->readListSize: Invalid token $token");
+                size = 0;
             }
             return size;
         }
@@ -426,6 +450,12 @@ namespace WhatsAppApi.Helper
             }
             return ret;
         }
+        protected void DebugPrint(string debugMsg)
+        {
+            if (WhatsApp.DEBUG && debugMsg.Length > 0)
+            {
+                Console.WriteLine(debugMsg);
+            }
+        }
     }
-
 }

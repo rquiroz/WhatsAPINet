@@ -8,15 +8,27 @@ namespace WhatsAppApi.Helper
 {
     class TicketManager
     {
-        public static string IdBase { get; private set; }
+        private static TicketManager _instance;
+        private string idBase;
+        public static string IdBase
+        {
+            get {
+                if (_instance == null)
+                    _instance = new TicketManager();
+                return _instance.idBase;
+            }
+        }
 
         public TicketManager()
         {
-            IdBase = DateTime.Now.Ticks.ToString();
+            idBase = DateTime.Now.Ticks.ToString();
         }
 
         public static string GenerateId()
         {
+            if (_instance == null)
+                _instance = new TicketManager();
+
             return (IdBase + "-" + TicketCounter.NextTicket());
         }
     }

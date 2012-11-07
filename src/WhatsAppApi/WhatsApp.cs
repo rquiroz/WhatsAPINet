@@ -14,14 +14,21 @@ namespace WhatsAppApi
 {
     public class WhatsApp
     {
+        public enum CONNECTION_STATUS
+        {
+            DISCONNECTED,
+            CONNECTED
+        }
+    
         //private readonly Encoding sysEncoding;
         private AccountInfo accountinfo;
         //private Dictionary<string, string> challengeArray;
-        private string connectedStatus = "connected";
-        private bool debug;
-        private string disconnectedStatus = "disconnected";
+        //private string connectedStatus = "connected";
+        public static bool DEBUG;
+        //private string disconnectedStatus = "disconnected";
         private string imei;
-        private string loginStatus;
+        //private string loginStatus;
+        private CONNECTION_STATUS loginStatus;
         private object messageLock = new object();
         private List<ProtocolTreeNode> messageQueue;
         private string name;
@@ -29,14 +36,15 @@ namespace WhatsAppApi
         private BinTreeNodeReader reader;
         private BinTreeNodeWriter writer;
         //private int timeout = 2000;
-        private int timeout = 100000;
+        private int timeout = 5000;
 
         private WhatsNetwork whatsNetwork;
         public WhatsSendHandler WhatsSendHandler { get; private set; }
         public WhatsParser WhatsParser { get; private set; }
 
         //protocol 1.2
-        public static readonly Encoding SYSEncoding = Encoding.GetEncoding("ISO-8859-1");
+        //public static readonly Encoding SYSEncoding = Encoding.GetEncoding("ISO-8859-1");
+        public static readonly Encoding SYSEncoding = Encoding.UTF8;
         private byte[] _encryptionKey;
         private byte[] _challengeBytes;
 
@@ -50,12 +58,13 @@ namespace WhatsAppApi
             this.phoneNumber = phoneNum;
             this.imei = imei;
             this.name = nick;
-            this.debug = debug;
+            WhatsApp.DEBUG = debug;
             string[] dict = DecodeHelper.getDictionary();
             this.writer = new BinTreeNodeWriter(dict);
             this.reader = new BinTreeNodeReader(dict);
 
-            this.loginStatus = disconnectedStatus;
+            //this.loginStatus = disconnectedStatus;
+            this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
 
             //this.whatsNetwork = new WhatsNetwork(WhatsConstants.WhatsAppHost, WhatsConstants.WhatsPort, this.sysEncoding, this.timeout);
             //this.WhatsParser = new WhatsParser(this.whatsNetwork);
@@ -127,28 +136,32 @@ namespace WhatsAppApi
             //this.whatsNetwork.SendData(data);
             //this.whatsNetwork.SendNode(feat);
             //this.whatsNetwork.SendNode(auth);
-            processOutboundData(data);
-            processOutboundData(feat, false);
-            processOutboundData(auth, false);
+            this.whatsNetwork.SendData(data);
+            this.whatsNetwork.SendData(this.writer.Write(feat, false));
+            this.whatsNetwork.SendData(this.writer.Write(auth, false));
 
             this.PollMessages();
             //ProtocolTreeNode authResp = this.addAuthResponse();
             //this.whatsNetwork.SendNode(authResp);
             ProtocolTreeNode authResp = this.addAuthResponse_v1_2();
-            processOutboundData(authResp, false);
+            this.whatsNetwork.SendData(this.writer.Write(authResp, false));
             int cnt = 0;
             do
             {
                 this.PollMessages();
                 System.Threading.Thread.Sleep(500);
+            //} while ((cnt++ < 100) &&
+            //         (this.loginStatus.Equals(this.disconnectedStatus, StringComparison.OrdinalIgnoreCase)));
             } while ((cnt++ < 100) &&
-                     (this.loginStatus.Equals(this.disconnectedStatus, StringComparison.OrdinalIgnoreCase)));
+                     (this.loginStatus == CONNECTION_STATUS.DISCONNECTED));
         }
 
         public void Message(string to, string txt)
         {
             //var bodyNode = new ProtocolTreeNode("body", null, txt);
-            var tmpMessage = new FMessage(to, true) { key = { id = TicketCounter.MakeId("mSend_") }, data = txt };
+
+            //var tmpMessage = new FMessage(to, true) { key = { id = TicketCounter.MakeId("mSend_") }, data = txt };
+            var tmpMessage = new FMessage(to, true) { key = { id = TicketManager.GenerateId() }, data = txt };
             this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage);
         }
 
@@ -169,7 +182,25 @@ namespace WhatsAppApi
 
         public void PollMessages()
         {
-            this.processInboundData(this.whatsNetwork.ReadData());
+            ////somehow disconnected
+            //if (this.loginStatus == CONNECTION_STATUS.CONNECTED && !this.whatsNetwork.SocketStatus)
+            //{
+            //    this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
+            //    this.Connect();
+            //    this.Login();
+            //    return;
+            //}
+            //try
+            //{
+                this.processInboundData(this.whatsNetwork.ReadData());
+            //}
+            //catch (ConnectionException cex)
+            //{
+            //    this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
+            //    this.Connect();
+            //    this.Login();
+            //    return;
+            //}
         }
 
         public void Pong(string msgid)
@@ -342,7 +373,7 @@ namespace WhatsAppApi
 
         protected void DebugPrint(string debugMsg)
         {
-            if (this.debug && debugMsg.Length > 0)
+            if (WhatsApp.DEBUG && debugMsg.Length > 0)
             {
                 Console.WriteLine(debugMsg);
             }
@@ -365,24 +396,7 @@ namespace WhatsAppApi
             //change to protocol 1.2
             _challengeBytes = node.data;
         }
-
-        protected void processOutboundData(ProtocolTreeNode node, bool encrypt = true)
-        {
-            this.DebugPrint(node.NodeString("SENT: "));
-            //this.whatsNetwork.SendNode(node);
-            this.whatsNetwork.SendData(this.writer.Write(node, encrypt));
-        }
-        protected void processOutboundData(string data)
-        {
-            this.DebugPrint("SENT: " + data);
-            this.whatsNetwork.SendData(data);
-        }
-        protected void processOutboundData(byte[] data)
-        {
-            this.DebugPrint("SENT: " + WhatsApp.SYSEncoding.GetString(data));
-            this.whatsNetwork.SendData(data);
-        }
-
+        
         //protected void processInboundData(string data)
         protected void processInboundData(byte[] data)
         {
@@ -392,31 +406,34 @@ namespace WhatsAppApi
                 while (node != null)
                 {
                     this.WhatsParser.ParseProtocolNode(node);
-                    this.DebugPrint(node.NodeString("RECVD: "));
-                    if (node.tag.Equals("challenge", StringComparison.OrdinalIgnoreCase))
+                    if (ProtocolTreeNode.TagEquals(node, "challenge"))
                     {
                         this.processChallenge(node);
                     }
-                    else if (node.tag.Equals("success", StringComparison.OrdinalIgnoreCase))
+                    else if (ProtocolTreeNode.TagEquals(node,"success"))
                     {
-                        this.loginStatus = this.connectedStatus;
+                        this.loginStatus = CONNECTION_STATUS.CONNECTED;
                         this.accountinfo = new AccountInfo(node.GetAttribute("status"),
                                                            node.GetAttribute("kind"),
                                                            node.GetAttribute("creation"),
                                                            node.GetAttribute("expiration"));
                     }
-                    else if (node.tag.Equals("failure", StringComparison.OrdinalIgnoreCase))
+                    else if (ProtocolTreeNode.TagEquals(node,"failure"))
                     {
-                        this.loginStatus = this.disconnectedStatus;
+                        this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
                     }
-                    if (node.tag.Equals("message", StringComparison.OrdinalIgnoreCase))
+                    if (ProtocolTreeNode.TagEquals(node,"message"))
                     {
                         this.AddMessage(node);
                         this.sendMessageReceived(node);
                     }
-                    if (node.tag.Equals("iq", StringComparison.OrdinalIgnoreCase)
+                    if (ProtocolTreeNode.TagEquals(node,"stream:error"))
+                    {
+                        Console.Write(node.NodeString());
+                    }
+                    if (ProtocolTreeNode.TagEquals(node,"iq")
                         && node.GetAttribute("type").Equals("get", StringComparison.OrdinalIgnoreCase)
-                        && node.children.First().tag.Equals("ping", StringComparison.OrdinalIgnoreCase))
+                        && ProtocolTreeNode.TagEquals(node.children.First(), "ping"))
                     {
                         this.Pong(node.GetAttribute("id"));
                     }

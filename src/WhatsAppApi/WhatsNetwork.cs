@@ -33,12 +33,13 @@ namespace WhatsAppApi
             this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket.Connect(this.whatsHost, this.whatsPort);
             this.socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, this.recvTimeout);
+            
             //var tmpNetStream = new NetworkStream(this.socket);
             //this.streamReader = new StreamReader(tmpNetStream);
             //this.streamWriter = new StreamWriter(tmpNetStream);
 
             if (!this.socket.Connected)
-                throw new System.IO.IOException("Cannot connect");
+                throw new ConnectionException("Cannot connect");
         }
 
         //public string ReadData()
@@ -114,7 +115,7 @@ namespace WhatsAppApi
         {
             if (!socket.Connected)
             {
-                throw new System.IO.IOException("Disconnected");
+                throw new ConnectionException();
             }
 
             var buff = new byte[length];
@@ -128,12 +129,13 @@ namespace WhatsAppApi
                 if (excpt.SocketErrorCode == SocketError.TimedOut)
                 {
                     Console.WriteLine("Socket-Timout");
+                    //throw new ConnectionException("Timeout", excpt);
                     return null;
                 }
                 else
                 {
                     Console.WriteLine("Unbehandelter Fehler bei Sockerread: {0}", excpt);
-                    throw excpt;
+                    throw new ConnectionException("error",excpt);
                 }
             }
 
@@ -151,6 +153,11 @@ namespace WhatsAppApi
         private void Socket_send(byte[] data)
         {
             this.socket.Send(data);
+        }
+
+        public bool SocketStatus
+        {
+            get { return socket.Connected; }
         }
     }
 }

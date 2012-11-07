@@ -899,11 +899,13 @@ namespace WhatsAppApi
         internal static ProtocolTreeNode GetMessageNode(FMessage message, ProtocolTreeNode pNode)
         {
             //ProtocolTreeNode node = null;
-            var serverNode = new ProtocolTreeNode("server", null);
-            var xNode = new ProtocolTreeNode("x", new[] { new KeyValue("xmlns", "jabber:x:event") }, serverNode);
-            IEnumerable<ProtocolTreeNode> node = (from n in new ProtocolTreeNode[] { xNode, pNode }
-                                                    where n != null
-                                                    select n).ToArray<ProtocolTreeNode>();
+            //var serverNode = new ProtocolTreeNode("server", null);
+            //var xNode = new ProtocolTreeNode("x", new[] { new KeyValue("xmlns", "jabber:x:event") }, serverNode);
+
+            //IEnumerable<ProtocolTreeNode> node = (from n in new ProtocolTreeNode[] { xNode, pNode }
+            //                                      where n != null
+            //                                      select n).ToArray<ProtocolTreeNode>();
+            ProtocolTreeNode[] node = new ProtocolTreeNode[] { pNode };
             return new ProtocolTreeNode("message", new[] { new KeyValue("to", message.key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.key.id) }, node);
         }
 
