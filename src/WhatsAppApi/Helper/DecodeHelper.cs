@@ -26,9 +26,9 @@ namespace WhatsAppApi.Helper
             {
                 returnList.Add(value.Substring(i, count));
             }
-            if (value.Length%count != 0)
+            if (value.Length % count != 0)
             {
-                int tmpRest = value.Length%count;
+                int tmpRest = value.Length % count;
                 returnList.Add(value.Substring(value.Length - 1 - tmpRest, tmpRest));
             }
             return returnList.ToArray();
@@ -291,7 +291,7 @@ namespace WhatsAppApi.Helper
             //dictList[248] = "XXX";
 
             // change to protocol 1.2
-            dictList = new string[237];
+            dictList = new string[249];
             dictList[0] = null;
             dictList[1] = null;
             dictList[2] = null;
@@ -529,6 +529,18 @@ namespace WhatsAppApi.Helper
             dictList[234] = "Xylophone.caf";
             dictList[235] = "1";
             dictList[236] = "WAUTH-1";
+            dictList[237] = null;
+            dictList[238] = null;
+            dictList[239] = null;
+            dictList[240] = null;
+            dictList[241] = null;
+            dictList[242] = null;
+            dictList[243] = null;
+            dictList[244] = null;
+            dictList[245] = null;
+            dictList[246] = null;
+            dictList[247] = null;
+            dictList[248] = "XXX";
 
             return dictList;
         }

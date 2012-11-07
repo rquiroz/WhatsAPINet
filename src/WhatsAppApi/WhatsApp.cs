@@ -47,6 +47,7 @@ namespace WhatsAppApi
         public static readonly Encoding SYSEncoding = Encoding.UTF8;
         private byte[] _encryptionKey;
         private byte[] _challengeBytes;
+        private List<IncompleteMessageException> _incompleteBytes;
 
         //array("sec" => 2, "usec" => 0);
         public WhatsApp(string phoneNum, string imei, string nick, bool debug = false)
@@ -71,6 +72,8 @@ namespace WhatsAppApi
             this.whatsNetwork = new WhatsNetwork(WhatsConstants.WhatsAppHost, WhatsConstants.WhatsPort, this.timeout);
             this.WhatsParser = new WhatsParser(this.whatsNetwork, this.writer);
             this.WhatsSendHandler = this.WhatsParser.WhatsSendHandler;
+
+            _incompleteBytes = new List<IncompleteMessageException>();
         }
 
         public void AddMessage(ProtocolTreeNode node)
@@ -85,6 +88,11 @@ namespace WhatsAppApi
         public void Connect()
         {
             this.whatsNetwork.Connect();
+        }
+        public void Disconnect()
+        {
+            this.whatsNetwork.Connect();
+            this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
         }
 
         public string encryptPassword()
@@ -149,7 +157,7 @@ namespace WhatsAppApi
             do
             {
                 this.PollMessages();
-                System.Threading.Thread.Sleep(500);
+                System.Threading.Thread.Sleep(50);
             //} while ((cnt++ < 100) &&
             //         (this.loginStatus.Equals(this.disconnectedStatus, StringComparison.OrdinalIgnoreCase)));
             } while ((cnt++ < 100) &&
@@ -354,6 +362,15 @@ namespace WhatsAppApi
         {
             try
             {
+                //List<byte> combined = new List<byte>();
+                //foreach (IncompleteMessageException e in _incompleteBytes)
+                //{
+                //    combined.AddRange(e.getInput());
+                //}
+                //_incompleteBytes.Clear();
+                //if (data !=null)
+                //combined.AddRange(data);
+                //var node = this.reader.nextTree(combined.ToArray());
                 var node = this.reader.nextTree(data);
                 while (node != null)
                 {
@@ -389,11 +406,18 @@ namespace WhatsAppApi
                     {
                         this.Pong(node.GetAttribute("id"));
                     }
+                    if (ProtocolTreeNode.TagEquals(node, "Replaced by new connection"))
+                    {
+                        this.Connect();
+                        this.Login();
+                    }
                     node = this.reader.nextTree();
                 }
             }
             catch (IncompleteMessageException e)
             {
+                //_incompleteBytes.Add(e);
+                //this.PollMessages();
             }
         }
 
