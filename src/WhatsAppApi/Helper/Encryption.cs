@@ -32,22 +32,6 @@ namespace WhatsAppApi.Helper
             return response;
         }
 
-        public static void DecodeMessage(byte[] key,byte[] buffer, int macOffset, int offset, int length)
-        {
-            RC4 rc4 = new RC4(key, 256);
-            HMACSHA1 h = new HMACSHA1(key);
-            byte[] buffer2 = h.ComputeHash(buffer, offset, length);
-            for (int i = 0; i < 4; i++)
-            {
-                if (buffer2[i] != buffer[macOffset + i])
-                {
-                    return;
-                }
-            }
-            rc4.Cipher(buffer, offset, length);
-            Array.Copy(buffer, offset, buffer, macOffset, length);
-        }
-
         public static byte[] WhatsappDecrypt(byte[] key, byte[] data)
         {
             RC4 encryption = new RC4(key, 256);
