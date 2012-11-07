@@ -125,17 +125,6 @@ namespace WhatsAppApi.Helper
             return ret;
         }
 
-        //protected void writeAttributes(IEnumerable<KeyValue> attributes)
-        //{
-        //    if (attributes != null)
-        //    {
-        //        foreach (var item in attributes)
-        //        {
-        //            this.writeString(item.Key);
-        //            this.writeString(item.Value);
-        //        }
-        //    }
-        //}
         protected void writeAttributes(IEnumerable<KeyValue> attributes)
         {
             if (attributes != null)

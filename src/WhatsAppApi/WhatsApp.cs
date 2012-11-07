@@ -182,25 +182,7 @@ namespace WhatsAppApi
 
         public void PollMessages()
         {
-            ////somehow disconnected
-            //if (this.loginStatus == CONNECTION_STATUS.CONNECTED && !this.whatsNetwork.SocketStatus)
-            //{
-            //    this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
-            //    this.Connect();
-            //    this.Login();
-            //    return;
-            //}
-            //try
-            //{
-                this.processInboundData(this.whatsNetwork.ReadData());
-            //}
-            //catch (ConnectionException cex)
-            //{
-            //    this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
-            //    this.Connect();
-            //    this.Login();
-            //    return;
-            //}
+            this.processInboundData(this.whatsNetwork.ReadData());
         }
 
         public void Pong(string msgid)
@@ -258,13 +240,11 @@ namespace WhatsAppApi
         //change to protocol 1.2
         protected ProtocolTreeNode addAuthResponse_v1_2()
         {
-            //while (this._encryptionKey == null)
             while (this._challengeBytes == null)
             {
                 this.PollMessages();
                 System.Threading.Thread.Sleep(500);
             }
-            long totalSeconds = Func.GetNowUnixTimestamp();
 
             Rfc2898DeriveBytes r = new Rfc2898DeriveBytes(this.encryptPassword(), _challengeBytes, 16);
             this._encryptionKey = r.GetBytes(20);
@@ -274,8 +254,7 @@ namespace WhatsAppApi
             List<byte> b = new List<byte>();
             b.AddRange(WhatsApp.SYSEncoding.GetBytes(this.phoneNumber));
             b.AddRange(this._challengeBytes);
-            //b.AddRange(WhatsApp.SYSEncoding.GetBytes(Func.GetNowUnixTimestamp().ToString()));
-            b.AddRange(WhatsApp.SYSEncoding.GetBytes(totalSeconds.ToString()));
+            b.AddRange(WhatsApp.SYSEncoding.GetBytes(Func.GetNowUnixTimestamp().ToString()));
 
             byte[] data = b.ToArray();
 
@@ -285,33 +264,6 @@ namespace WhatsAppApi
                 response);
 
             return node;
-            /*
-
-            //TimeSpan span = (TimeSpan)(DateTime.UtcNow - UnixEpoch);
-            //long totalSeconds = (long)span.TotalSeconds;
-            byte[] bytes = new Rfc2898DeriveBytes(this.encryptPassword(), this._challengeBytes, 0x10).GetBytes(20);
-
-            System.Diagnostics.Debug.Assert(this._encryptionKey.SequenceEqual(bytes));
-            
-            this._encryptionKey = bytes;
-            this.reader.Encryptionkey = bytes;
-            KeyStream  OutputKey = new KeyStream(bytes);
-            List<byte> list = new List<byte>(0x400);
-            list.AddRange(Enumerable.Range(0, 4).Select(i => (byte)0));
-            list.AddRange(WhatsApp.SYSEncoding.GetBytes(this.phoneNumber));
-            list.AddRange(this._challengeBytes);
-            list.AddRange(WhatsApp.SYSEncoding.GetBytes(totalSeconds.ToString()));
-            byte[] buffer = list.ToArray();
-            OutputKey.EncodeMessage(buffer, 0, 4, buffer.Length - 4);
-
-
-            System.Diagnostics.Debug.Assert(response.SequenceEqual(buffer));
-
-            KeyValue[] attributes = new KeyValue[1];
-            attributes[0] = new KeyValue("xmlns", "urn:ietf:params:xml:ns:xmpp-sasl");
-            //this.writer.Write(new ProtocolTreeNode("response", attributes, null, buffer));
-           return new ProtocolTreeNode("response", attributes, null, buffer);
-             * */
         }
 
         protected ProtocolTreeNode addFeatures()

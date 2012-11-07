@@ -14,7 +14,8 @@ namespace WhatsAppApi.Settings
         public const string WhatsAppRealm = "s.whatsapp.net";
         public const string WhatsAppServer = "s.whatsapp.net";
         public const string WhatsGroupChat = "g.us";
-        public const string WhatsAppVer = "2.8.2";
+        //public const string WhatsAppVer = "2.8.2";
+        public const string WhatsAppVer = "2.8.4";
         public const int WhatsPort = 5222;
 
         public const string IphoneDevice = "iPhone";

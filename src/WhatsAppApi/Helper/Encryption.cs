@@ -14,8 +14,6 @@ namespace WhatsAppApi.Helper
             HMACSHA1 h = new HMACSHA1(key);
             byte[] buff = new byte[data.Length];
             Buffer.BlockCopy(data, 0, buff, 0, data.Length);
-            byte[] buff2 = new byte[data.Length + 4];
-            Buffer.BlockCopy(data, 0, buff2, 4, data.Length);
 
             encryption.Cipher(buff);
             byte[] hashByte = h.ComputeHash(buff);
