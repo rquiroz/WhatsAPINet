@@ -31,7 +31,6 @@ namespace WhatsAppApi.Helper
 
             return response;
         }
-
         public static byte[] WhatsappDecrypt(byte[] key, byte[] data)
         {
             RC4 encryption = new RC4(key, 256);

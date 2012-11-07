@@ -111,16 +111,21 @@ namespace WhatsAppApi.Helper
         protected byte[] flushBuffer(bool encrypt = true)
         {
             byte[] data = this.buffer.ToArray();
-            byte[] size = this.GetInt24(data.Length);
+            byte[] data2 = new byte[data.Length + 4];
+            Buffer.BlockCopy(data, 0, data2, 0, data.Length);
+            int len = data.Length;
 
+            byte[] size = this.GetInt24(len);
             if (encrypt && this.Encryptionkey != null)
             {
                 data = Encryption.WhatsappEncrypt(Encryptionkey, data, true);
-                size[0] |= 0x8;
+                len += 4;
+                size = this.GetInt24(len);
+                size[0] |= (1 << 4);
             }
             byte[] ret = new byte[data.Length + 3];
             Buffer.BlockCopy(size, 0, ret, 0, 3);
-            Buffer.BlockCopy(data, 0, ret,3, data.Length);
+            Buffer.BlockCopy(data, 0, ret, 3, len);
             this.buffer = new List<byte>();
             return ret;
         }

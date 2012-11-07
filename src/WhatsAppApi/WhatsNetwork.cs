@@ -42,6 +42,12 @@ namespace WhatsAppApi
                 throw new ConnectionException("Cannot connect");
         }
 
+        public void Disconenct()
+        {
+            if (this.socket.Connected)
+                this.socket.Disconnect(true);
+        }
+
         //public string ReadData()
         //{
         //    string buff = "";
@@ -57,13 +63,14 @@ namespace WhatsAppApi
         {
             List<byte> buff = new List<byte>();
             byte[] ret = Socket_read(1024);
-            if (ret != null)
-            {
-                buff.AddRange(this.incomplete_message);
-                buff.AddRange(ret);
-                this.incomplete_message = new List<byte>();
-            }
-            return buff.ToArray();
+            //if (ret != null)
+            //{
+            //    buff.AddRange(this.incomplete_message);
+            //    buff.AddRange(ret);
+            //    this.incomplete_message = new List<byte>();
+            //}
+            //return buff.ToArray();
+            return ret;
         }
 
         public void SendData(string data)
@@ -120,24 +127,27 @@ namespace WhatsAppApi
 
             var buff = new byte[length];
             int receiveLength = 0;
-            try
+            do
             {
-                receiveLength = socket.Receive(buff, 0, length, 0);
-            }
-            catch (SocketException excpt)
-            {
-                if (excpt.SocketErrorCode == SocketError.TimedOut)
+                try
                 {
-                    Console.WriteLine("Socket-Timout");
-                    //throw new ConnectionException("Timeout", excpt);
-                    return null;
+                    receiveLength = socket.Receive(buff, 0, length, 0);
                 }
-                else
+                catch (SocketException excpt)
                 {
-                    Console.WriteLine("Unbehandelter Fehler bei Sockerread: {0}", excpt);
-                    throw new ConnectionException("error",excpt);
+                    if (excpt.SocketErrorCode == SocketError.TimedOut)
+                    {
+                        Console.WriteLine("Socket-Timout");
+                        //throw new ConnectionException("Timeout", excpt);
+                        return null;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unbehandelter Fehler bei Sockerread: {0}", excpt);
+                        throw new ConnectionException("error", excpt);
+                    }
                 }
-            }
+            } while (receiveLength <= 0);
 
             byte[] tmpRet = new byte[receiveLength];
             if (receiveLength > 0)

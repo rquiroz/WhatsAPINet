@@ -59,7 +59,6 @@ namespace WhatsAppApi
         public void SendAvailableForChat(string nickName)
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", nickName) });
-            //this.whatsNetwork.SendNode(node);
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
@@ -799,7 +798,7 @@ namespace WhatsAppApi
         internal void SendMessageWithBody(FMessage message)
         {
             //var child = new ProtocolTreeNode("body", null, message.data);
-            var child = new ProtocolTreeNode("body", null, WhatsApp.SYSEncoding.GetBytes(message.data));
+            var child = new ProtocolTreeNode("body", null, null, WhatsApp.SYSEncoding.GetBytes(message.data));
             //this.whatsNetwork.SendNode(GetMessageNode(message, child));
             this.whatsNetwork.SendData(this._binWriter.Write(GetMessageNode(message, child)));
         }
@@ -900,13 +899,16 @@ namespace WhatsAppApi
         {
             //ProtocolTreeNode node = null;
             //var serverNode = new ProtocolTreeNode("server", null);
+            ////if (message.key.remote_jid.Contains('@'))
+            ////    serverNode.data = WhatsApp.SYSEncoding.GetBytes(message.key.remote_jid.Split('@')[1]);
             //var xNode = new ProtocolTreeNode("x", new[] { new KeyValue("xmlns", "jabber:x:event") }, serverNode);
-
             //IEnumerable<ProtocolTreeNode> node = (from n in new ProtocolTreeNode[] { xNode, pNode }
             //                                      where n != null
             //                                      select n).ToArray<ProtocolTreeNode>();
-            ProtocolTreeNode[] node = new ProtocolTreeNode[] { pNode };
-            return new ProtocolTreeNode("message", new[] { new KeyValue("to", message.key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.key.id) }, node);
+
+            //ProtocolTreeNode[] node = new ProtocolTreeNode[] { pNode };
+            //return new ProtocolTreeNode("message", new[] { new KeyValue("to", message.key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.key.id) }, node);
+            return new ProtocolTreeNode("message", new[] { new KeyValue("to", message.key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.key.id) }, pNode);
         }
 
         public static ProtocolTreeNode GetSubjectMessage(string to, string id, ProtocolTreeNode child)

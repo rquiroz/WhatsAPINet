@@ -21,7 +21,8 @@ namespace WhatsAppApi.Helper
 
         public TicketManager()
         {
-            idBase = DateTime.Now.Ticks.ToString();
+            //idBase = DateTime.Now.Ticks.ToString();
+            idBase = Func.GetNowUnixTimestamp().ToString();
         }
 
         public static string GenerateId()
