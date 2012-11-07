@@ -10,37 +10,57 @@ namespace WhatsAppApi.Helper
         public string tag;
         public IEnumerable<KeyValue> attributeHash;
         public IEnumerable<ProtocolTreeNode> children;
-        public string data;
+        public byte[] data;
 
+        //public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, IEnumerable<ProtocolTreeNode> children = null,
+        //                    string data = "")
         public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, IEnumerable<ProtocolTreeNode> children = null,
-                            string data = "")
+                            byte[] data = null)
         {
             this.tag = tag ?? "";
             this.attributeHash = attributeHash ?? new KeyValue[0];
             this.children = children ?? new ProtocolTreeNode[0];
-            this.data = data ?? "";
+            //this.data = data ?? "";
+            this.data = new byte[0];
+            if (data != null)
+                this.data = data;
         }
 
-        public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, ProtocolTreeNode children = null,
-                    string data = "")
+        //public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, ProtocolTreeNode children = null,
+        //            string data = "")
+        //{
+        //    this.tag = tag ?? "";
+        //    this.attributeHash = attributeHash ?? new KeyValue[0];
+        //    this.children = children != null ? new ProtocolTreeNode[] { children } : new ProtocolTreeNode[0];
+        //    this.data = data ?? "";
+        //}
+        public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, ProtocolTreeNode children = null)
         {
             this.tag = tag ?? "";
             this.attributeHash = attributeHash ?? new KeyValue[0];
             this.children = children != null ? new ProtocolTreeNode[] { children } : new ProtocolTreeNode[0];
-            this.data = data ?? "";
+            //this.data = data ?? "";
+            this.data = new byte[0];
         }
 
-        public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, IEnumerable<ProtocolTreeNode> children,
-                            byte[] data) : this(tag, attributeHash, children, Encoding.Default.GetString(data))
-        {}
+        //public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, IEnumerable<ProtocolTreeNode> children,
+        //                    byte[] data)
+        //    : this(tag, attributeHash, children, Encoding.Default.GetString(data))
+        //{ }
 
-        public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, string data = "")
+        //public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, string data = "")
+        //    : this(tag, attributeHash, new ProtocolTreeNode[0], data)
+        //{ }
+        public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash, byte[] data = null)
             : this(tag, attributeHash, new ProtocolTreeNode[0], data)
         { }
 
-
-
-        public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash) : this(tag, attributeHash, new ProtocolTreeNode[0], "")
+        //public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash)
+        //    : this(tag, attributeHash, new ProtocolTreeNode[0], "")
+        //{
+        //}
+        public ProtocolTreeNode(string tag, IEnumerable<KeyValue> attributeHash)
+            : this(tag, attributeHash, new ProtocolTreeNode[0], null)
         {
         }
 
@@ -51,13 +71,14 @@ namespace WhatsAppApi.Helper
             {
                 foreach (var item in this.attributeHash)
                 {
-                    ret += string.Format(" {0}=\"{1}\"" ,item.Key, item.Value);
+                    ret += string.Format(" {0}=\"{1}\"", item.Key, item.Value);
                 }
             }
             ret += ">";
             if (this.data.Length > 0)
             {
-                ret += this.data;
+                //ret += this.data;
+                ret += WhatsApp.SYSEncoding.GetString(this.data);
             }
             if (this.children != null && this.children.Count() > 0)
             {
@@ -111,7 +132,7 @@ namespace WhatsAppApi.Helper
                 {
                     if (tag.Equals(item.tag, StringComparison.InvariantCultureIgnoreCase))
                     {
-                       tmpReturn.Add(item);
+                        tmpReturn.Add(item);
                     }
                     tmpReturn.AddRange(item.GetAllChildren(tag));
                 }
@@ -124,7 +145,11 @@ namespace WhatsAppApi.Helper
             return this.children.ToArray();
         }
 
-        public string GetDataString()
+        //public string GetDataString()
+        //{
+        //    return this.data;
+        //}
+        public byte[] GetData()
         {
             return this.data;
         }

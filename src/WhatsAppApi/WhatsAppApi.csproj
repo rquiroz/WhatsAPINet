@@ -46,10 +46,14 @@
     <Compile Include="Helper\BinTreeNodeReader.cs" />
     <Compile Include="Helper\BinTreeNodeWriter.cs" />
     <Compile Include="Helper\DecodeHelper.cs" />
+    <Compile Include="Helper\Encryption.cs" />
     <Compile Include="Helper\Func.cs" />
     <Compile Include="Helper\IncompleteMessageException.cs" />
     <Compile Include="Helper\KeyValue.cs" />
     <Compile Include="Helper\ProtocolTreeNode.cs" />
+    <Compile Include="Helper\RC4.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Helper\TicketManager.cs" />
     <Compile Include="Parser\FMessage.cs" />
     <Compile Include="Parser\FMessageVisitor.cs" />

@@ -8,33 +8,106 @@ namespace WhatsAppApi.Helper
     internal class BinTreeNodeReader
     {
         private string[] dictionary;
-        private string input;
+        //private string input;
+
+        //change to protocol 1.2
+        public byte[] Encryptionkey { get; set; }
+        private List<byte> buffer;
 
         public BinTreeNodeReader(string[] dict)
         {
             this.dictionary = dict;
+            this.Encryptionkey = null;
         }
 
-        public ProtocolTreeNode nextTree(string pInput = null)
+        //public ProtocolTreeNode nextTree(string pInput = null)
+        //{
+        //    if (pInput != null)
+        //    {
+        //        this.input = pInput;
+        //    }
+
+        //    //int stanzaSize = this.peekInt16();
+        //    //Change to protocol 1.2
+        //    int stanzaSize = this.peekInt24();
+        //    int flags = (stanzaSize >> 20);
+        //    int size = ((stanzaSize & 0xF0000) >> 16) | ((stanzaSize & 0xFF00) >> 8) | (stanzaSize & 0xFF);
+
+        //    bool isEncrypted = ((flags & 8) != 0); // 8 = (1 << 4) // Read node and decrypt
+
+        //    if (stanzaSize > this.input.Length)
+        //    {
+        //        //Es sind noch nicht alle Daten eingelesen, daher abbrechen und warten bis alles da ist
+        //        var exception = new IncompleteMessageException("Incomplete message");
+        //        exception.setInput(this.input);
+        //        throw exception;
+        //    }
+
+        //    this.readInt24();
+        //    if (stanzaSize > 0)
+        //    {
+        //        if (isEncrypted && Encryptionkey != null)
+        //        {
+        //            RC4 encryption = new RC4(this.Encryptionkey, 256);
+        //            byte[] dataB = this.sysEncoding.GetBytes(this.input);
+        //            byte[] enData = new byte[dataB.Length - 3];
+        //            Buffer.BlockCopy(dataB, 3, enData, 0, dataB.Length - 3);
+        //            //encryption.Cipher(enData, 0, dataB.Length - 3);
+        //            enData = encryption.Encrypt(enData);
+        //            Buffer.BlockCopy(enData, 0, dataB, 3, enData.Length);
+        //        }
+        //        return this.nextTreeInternal();
+        //    }
+        //    return null;
+        //}
+        public ProtocolTreeNode nextTree(byte[] pInput = null)
         {
             if (pInput != null)
             {
-                this.input = pInput;
+                if (pInput.Length == 0)
+                    return null;
+                this.buffer = new List<byte>();
+                this.buffer.AddRange(pInput);
             }
 
-            int stanzaSize = this.peekInt16();
+            //int stanzaSize = this.peekInt16();
+            //Change to protocol 1.2
+            int stanzaSize = this.peekInt24();
+            int flags = (stanzaSize >> 20);
+            int size = ((stanzaSize & 0xF0000) >> 16) | ((stanzaSize & 0xFF00) >> 8) | (stanzaSize & 0xFF);
 
-            if (stanzaSize > this.input.Length)
+            bool isEncrypted = ((flags & 8) != 0); // 8 = (1 << 4) // Read node and decrypt
+
+            //if (stanzaSize > this.buffer.Count)
+            if (size > this.buffer.Count)
             {
                 //Es sind noch nicht alle Daten eingelesen, daher abbrechen und warten bis alles da ist
                 var exception = new IncompleteMessageException("Incomplete message");
-                exception.setInput(this.input);
+                exception.setInput(this.buffer.ToArray());
                 throw exception;
             }
 
-            this.readInt16();
-            if (stanzaSize > 0)
+            this.readInt24();
+            //if (stanzaSize > 0)
+            if (size > 0)
             {
+                if (isEncrypted && Encryptionkey != null)
+                {
+                    byte[] data = this.buffer.ToArray();
+                    byte[] hashServerByte = new byte[4];
+                    byte[] packet = new byte[data.Length - 4];
+                    Buffer.BlockCopy(data, 0, hashServerByte, 0, 4);
+                    Buffer.BlockCopy(data, 4, packet, 0, data.Length - 4);
+
+                    System.Security.Cryptography.HMACSHA1 h = new System.Security.Cryptography.HMACSHA1(this.Encryptionkey);
+                    byte[] hashByte = new byte[4];
+                    Buffer.BlockCopy(h.ComputeHash(packet, 0, packet.Length), 0, hashByte, 0, 4);
+
+                    byte[] dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
+
+                    this.buffer.Clear();
+                    this.buffer.AddRange(dataReal);
+                }
                 return this.nextTreeInternal();
             }
             return null;
@@ -54,20 +127,66 @@ namespace WhatsAppApi.Helper
             return ret;
         }
 
-        protected string readString(int token)
+        //protected string readString(int token)
+        //{
+        //    string ret = "";
+        //    if (token == -1)
+        //    {
+        //        throw new Exception("BinTreeNodeReader->readString: Invalid token $token");
+        //    }
+        //    if ((token > 4) && (token < 0xf5))
+        //    {
+        //        ret = this.getToken(token);
+        //    }
+        //    else if (token == 0)
+        //    {
+        //        ret = "";
+        //    }
+        //    else if (token == 0xfc)
+        //    {
+        //        int size = this.readInt8();
+        //        ret = WhatsApp.SYSEncoding.GetString(this.fillArray(size));
+        //    }
+        //    else if (token == 0xfd)
+        //    {
+        //        int size = this.readInt24();
+        //        ret = WhatsApp.SYSEncoding.GetString(this.fillArray(size));
+        //    }
+        //    else if (token == 0xfe)
+        //    {
+        //        int tmpToken = this.readInt8();
+        //        ret = this.getToken(tmpToken + 0xf5);
+        //    }
+        //    else if (token == 0xfa)
+        //    {
+        //        string user = this.readString(this.readInt8());
+        //        string server = this.readString(this.readInt8());
+        //        if ((user.Length > 0) && (server.Length > 0))
+        //        {
+        //            ret = user + "@" + server;
+        //        }
+        //        else if (server.Length > 0)
+        //        {
+        //            ret = server;
+        //        }
+        //    }
+        //    return ret;
+        //}
+
+        protected byte[] readBytes(int token)
         {
-            string ret = "";
+            byte[] ret = new byte[0];
             if (token == -1)
             {
                 throw new Exception("BinTreeNodeReader->readString: Invalid token $token");
             }
             if ((token > 4) && (token < 0xf5))
             {
-                ret = this.getToken(token);
+                ret = WhatsApp.SYSEncoding.GetBytes(this.getToken(token));
             }
             else if (token == 0)
             {
-                ret = "";
+                //ret = "";
             }
             else if (token == 0xfc)
             {
@@ -82,19 +201,19 @@ namespace WhatsAppApi.Helper
             else if (token == 0xfe)
             {
                 int tmpToken = this.readInt8();
-                ret = this.getToken(tmpToken + 0xf5);
+                ret = WhatsApp.SYSEncoding.GetBytes(this.getToken(tmpToken + 0xf5));
             }
             else if (token == 0xfa)
             {
-                string user = this.readString(this.readInt8());
-                string server = this.readString(this.readInt8());
+                string user = WhatsApp.SYSEncoding.GetString(this.readBytes(this.readInt8()));
+                string server = WhatsApp.SYSEncoding.GetString(this.readBytes(this.readInt8()));
                 if ((user.Length > 0) && (server.Length > 0))
                 {
-                    ret = user + "@" + server;
+                    ret = WhatsApp.SYSEncoding.GetBytes(user + "@" + server);
                 }
                 else if (server.Length > 0)
                 {
-                    ret = server;
+                    ret = WhatsApp.SYSEncoding.GetBytes(server);
                 }
             }
             return ret;
@@ -103,11 +222,13 @@ namespace WhatsAppApi.Helper
         protected IEnumerable<KeyValue> readAttributes(int size)
         {
             var attributes = new List<KeyValue>();
-            int attribCount = (size - 2 + size%2)/2;
+            int attribCount = (size - 2 + size % 2) / 2;
             for (int i = 0; i < attribCount; i++)
             {
-                string key = this.readString(this.readInt8());
-                string value = this.readString(this.readInt8());
+                byte[] keyB = this.readBytes(this.readInt8());
+                byte[] valueB = this.readBytes(this.readInt8());
+                string key = WhatsApp.SYSEncoding.GetString(keyB);
+                string value = WhatsApp.SYSEncoding.GetString(valueB);
                 attributes.Add(new KeyValue(key, value));
             }
             return attributes;
@@ -128,19 +249,23 @@ namespace WhatsAppApi.Helper
             {
                 return null;
             }
-            string tag = this.readString(token);
+            //string tag = this.readString(token);
+            byte[] tagB = this.readBytes(token);
+            string tag = WhatsApp.SYSEncoding.GetString(tagB);
             var tmpAttributes = this.readAttributes(size);
 
-            if ((size%2) == 1)
+            if ((size % 2) == 1)
             {
                 return new ProtocolTreeNode(tag, tmpAttributes);
             }
             token = this.readInt8();
             if (this.isListTag(token))
             {
-                return new ProtocolTreeNode(tag, tmpAttributes, this.readList(token), "");
+                //return new ProtocolTreeNode(tag, tmpAttributes, this.readList(token), "");
+                return new ProtocolTreeNode(tag, tmpAttributes, this.readList(token), null);
             }
-            return new ProtocolTreeNode(tag, tmpAttributes, this.readString(token));
+            //return new ProtocolTreeNode(tag, tmpAttributes, WhatsApp.SYSEncoding.GetBytes(this.readString(token)));
+            return new ProtocolTreeNode(tag, tmpAttributes, this.readBytes(token));
         }
 
         protected bool isListTag(int token)
@@ -177,60 +302,127 @@ namespace WhatsAppApi.Helper
             return size;
         }
 
+        protected int peekInt24()
+        {
+            int ret = 0;
+            //if (this.input.Length >= 3)
+            //{
+            //    ret = (int)this.input[0] << 16;
+            //    ret |= (int)this.input[1] << 8;
+            //    ret |= (int)this.input[2] << 0;
+            //}
+            if (this.buffer.Count >= 3)
+            {
+                ret = this.buffer[0] << 16;
+                ret |= this.buffer[1] << 8;
+                ret |= this.buffer[2] << 0;
+            }
+            return ret;
+        }
+        
         protected int readInt24()
         {
             int ret = 0;
-            if (this.input.Length >= 3)
+            //if (this.input.Length >= 3)
+            //{
+            //    ret = (int)this.input[0] << 16;
+            //    ret |= (int)this.input[1] << 8;
+            //    ret |= (int)this.input[2] << 0;
+            //    this.input = this.input.Remove(0, 3);
+            //}
+            if (this.buffer.Count >= 3)
             {
-                ret = (int) this.input[0] << 16;
-                ret |= (int) this.input[1] << 8;
-                ret |= (int) this.input[2] << 0;
-                this.input = this.input.Remove(0, 3);
+                ret = this.buffer[0] << 16;
+                ret |=this.buffer[1] << 8;
+                ret |=this.buffer[2] << 0;
+                this.buffer.RemoveRange(0, 3);
             }
             return ret;
         }
 
+        //protected int peekInt16()
+        //{
+        //    int ret = 0;
+        //    if (this.input.Length >= 2)
+        //    {
+        //        ret = (int)this.input[0] << 8;
+        //        ret |= (int)this.input[1] << 0;
+        //    }
+        //    return ret;
+        //}
         protected int peekInt16()
         {
             int ret = 0;
-            if (this.input.Length >= 2)
+            if (this.buffer.Count >= 2)
             {
-                ret = (int) this.input[0] << 8;
-                ret |= (int) this.input[1] << 0;
+                ret = (int)this.buffer[0] << 8;
+                ret |= (int)this.buffer[1] << 0;
             }
             return ret;
         }
 
+        //protected int readInt16()
+        //{
+        //    int ret = 0;
+        //    if (this.input.Length >= 2)
+        //    {
+        //        ret = (int)this.input[0] << 8;
+        //        ret |= (int)this.input[1] << 0;
+        //        this.input = this.input.Remove(0, 2);
+        //    }
+        //    return ret;
+        //}
         protected int readInt16()
         {
             int ret = 0;
-            if (this.input.Length >= 2)
+            if (this.buffer.Count >= 2)
             {
-                ret = (int)this.input[0] << 8;
-                ret |= (int)this.input[1] << 0;
-                this.input = this.input.Remove(0, 2);
+                ret = (int)this.buffer[0] << 8;
+                ret |= (int)this.buffer[1] << 0;
+                this.buffer.RemoveRange(0, 2);
             }
             return ret;
         }
 
+        //protected int readInt8()
+        //{
+        //    int ret = 0;
+        //    if (this.input.Length >= 1)
+        //    {
+        //        ret = (int)this.input[0];
+        //        this.input = this.input.Remove(0, 1);
+        //    }
+        //    return ret;
+        //}
         protected int readInt8()
         {
             int ret = 0;
-            if (this.input.Length >= 1)
+            if (this.buffer.Count >= 1)
             {
-                ret = (int) this.input[0];
-                this.input = this.input.Remove(0, 1);
+                ret = (int)this.buffer[0];
+                this.buffer.RemoveAt(0);
             }
             return ret;
         }
 
-        protected string fillArray(int len)
+        //protected string fillArray(int len)
+        //{
+        //    string ret = "";
+        //    if (this.input.Length >= len)
+        //    {
+        //        ret = this.input.Substring(0, len);
+        //        this.input = this.input.Remove(0, len);
+        //    }
+        //    return ret;
+        //}
+        protected byte[] fillArray(int len)
         {
-            string ret = "";
-            if (this.input.Length >= len)
+            byte[] ret = new byte[len];
+            if (this.buffer.Count >= len)
             {
-                ret = this.input.Substring(0, len);
-                this.input = this.input.Remove(0, len);
+                //this.buffer.CopyTo(0, ret, 0, len);
+                Buffer.BlockCopy(this.buffer.ToArray(), 0, ret, 0, len);
+                this.buffer.RemoveRange(0, len);
             }
             return ret;
         }

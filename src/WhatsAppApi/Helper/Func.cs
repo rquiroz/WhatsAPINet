@@ -70,19 +70,18 @@ namespace WhatsAppApi.Helper
         //    fclose($fp);
         //}
 
-        public static string EncodeTo64(string toEncode, Encoding enc)
-        {
-            byte[] toEncodeAsBytes = enc.GetBytes(toEncode);
-            string returnValue = System.Convert.ToBase64String(toEncodeAsBytes);
-            return returnValue;
-        }
-
-        public static string DecodeTo64(string toDecode, Encoding enc)
-        {
-            byte[] toDecodeAsBytes = System.Convert.FromBase64String(toDecode);
-            string returnValue = enc.GetString(toDecodeAsBytes);
-            return returnValue;
-        }
+        //public static string EncodeTo64(string toEncode, Encoding enc)
+        //{
+        //    byte[] toEncodeAsBytes = enc.GetBytes(toEncode);
+        //    string returnValue = System.Convert.ToBase64String(toEncodeAsBytes);
+        //    return returnValue;
+        //}
+        //public static string DecodeTo64(string toDecode, Encoding enc)
+        //{
+        //    byte[] toDecodeAsBytes = System.Convert.FromBase64String(toDecode);
+        //    string returnValue = enc.GetString(toDecodeAsBytes);
+        //    return returnValue;
+        //}
 
 //        function startsWith($haystack, $needle , $pos=0){
 //    $length = strlen($needle);
@@ -94,5 +93,30 @@ namespace WhatsAppApi.Helper
 //    $start  = $length * -1; 
 //    return (substr($haystack, $start) === $needle);
 //}
+
+        public static long GetUnixTimestamp(DateTime value)
+        {
+            //create Timespan by subtracting the value provided from
+            //the Unix Epoch
+            TimeSpan span = (value - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc));
+            return (long)span.TotalSeconds;
+        }
+        public static long GetNowUnixTimestamp()
+        {
+            return GetUnixTimestamp(DateTime.UtcNow);
+        }
+
+        public static bool ArrayEqual(byte[] b1, byte[] b2)
+        {
+            int len = b1.Length;
+            if (b1.Length != b2.Length)
+                return false;
+            for (int i = 0; i < len; i++)
+            {
+                if (b1[i] != b2[i])
+                    return false;
+            }
+            return true;
+        }
     }
 }

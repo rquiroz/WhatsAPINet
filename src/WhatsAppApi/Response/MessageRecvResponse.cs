@@ -110,7 +110,8 @@ namespace WhatsAppApi.Response
                 }
                 else if (ProtocolTreeNode.TagEquals(itemNode, "body") && (tmpAttrbId != null))
                 {
-                    string dataString = itemNode.GetDataString();
+                    //string dataString = itemNode.GetDataString();
+                    string dataString = WhatsApp.SYSEncoding.GetString(itemNode.GetData());
                     var tmpMessKey = new FMessage.Key(tmpAttrFrom, false, tmpAttrbId);
                     builder.Key(tmpMessKey).Remote_resource(tmpAttrFromJid).NewIncomingInstance().Data(dataString);
                 }
@@ -170,7 +171,7 @@ namespace WhatsAppApi.Response
                         ProtocolTreeNode tmpChildMedia = itemNode.GetChild("media");
                         if (tmpChildMedia != null)
                         {
-                            builder.Media_name(tmpChildMedia.GetAttribute("name")).Data(tmpChildMedia.GetDataString());
+                            builder.Media_name(tmpChildMedia.GetAttribute("name")).Data(WhatsApp.SYSEncoding.GetString(tmpChildMedia.GetData()));
                         }
                     }
                     else
@@ -178,7 +179,8 @@ namespace WhatsAppApi.Response
                         string tmpAttrEncoding = itemNode.GetAttribute("encoding") ?? "text";
                         if (tmpAttrEncoding == "text")
                         {
-                            builder.Data(itemNode.GetDataString());
+                            //builder.Data(itemNode.GetDataString());
+                            builder.Data(WhatsApp.SYSEncoding.GetString(itemNode.GetData()));
                         }
                         //else
                         //{
@@ -277,7 +279,8 @@ namespace WhatsAppApi.Response
                 }
             }
             ProtocolTreeNode child = messageNode.GetChild("body");
-            string subject = (child == null) ? null : child.GetDataString();
+            //string subject = (child == null) ? null : child.GetDataString();
+            string subject = (child == null) ? null : WhatsApp.SYSEncoding.GetString(child.GetData());
             if (subject != null)
             {
                 WhatsEventHandler.OnGroupNewSubjectEventHandler(tmpFrom, uJid, subject, int.Parse(tmpT, CultureInfo.InvariantCulture));

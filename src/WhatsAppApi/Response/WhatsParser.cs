@@ -12,12 +12,14 @@ namespace WhatsAppApi.Response
         public WhatsSendHandler WhatsSendHandler { get; private set; }
         private WhatsNetwork whatsNetwork;
         private MessageRecvResponse messResponseHandler;
+        private BinTreeNodeWriter _binWriter;
 
-        public WhatsParser(WhatsNetwork whatsNet)
+        internal WhatsParser(WhatsNetwork whatsNet, BinTreeNodeWriter writer)
         {
-            this.WhatsSendHandler = new WhatsSendHandler(whatsNet);
+            this.WhatsSendHandler = new WhatsSendHandler(whatsNet, writer);
             this.whatsNetwork = whatsNet;
             this.messResponseHandler = new MessageRecvResponse(this.WhatsSendHandler);
+            this._binWriter = writer;
         }
 
         public void ParseProtocolNode(ProtocolTreeNode protNode)

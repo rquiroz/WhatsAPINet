@@ -10,7 +10,7 @@ namespace WhatsAppApi.Helper
         private int code;
         private string message;
         private string input;
-
+        private byte[] buffer;
 
         public IncompleteMessageException(string message, int code = 0)
         {
@@ -22,11 +22,13 @@ namespace WhatsAppApi.Helper
         {
             this.input = input;
         }
-
+        public void setInput(byte[] input)
+        {
+            this.buffer = input;
+        }
         public string getInput()
         {
             return this.input;
         }
-
     }
 }
