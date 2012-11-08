@@ -70,69 +70,71 @@ namespace WhatsAppApi.Helper
                 this.buffer.AddRange(pInput);
             }
 
-            //int stanzaSize = this.peekInt16();
-            //Change to protocol 1.2
-            int stanzaSize = this.peekInt24();
-            int flags = (stanzaSize >> 20);
-            //int size = ((stanzaSize & 0xF0000) >> 16) | ((stanzaSize & 0xFF00) >> 8) | (stanzaSize & 0xFF);
-            int size = (stanzaSize & 0xFFFFF);
+            // Ported from the allegedly working PHP version ~lrg
+            int stanzaFlag = (this.peekInt8() & 0xF0) >> 4;
+            int stanzaSize = this.peekInt16(1);
 
-            if (this.buffer.Count >= 3)
+            int flags = stanzaFlag;
+            int size = stanzaSize;
+
+            if (stanzaSize > this.buffer.Count)
             {
-               int stanzaSize2 = (this.buffer[0] << 0x10) + (this.buffer[1] << 8) + this.buffer[2];
-               int flags2 = (stanzaSize2 & 0xf00000) >> 20;
-                int size2 = (stanzaSize2 & 0xfffff);
-                System.Diagnostics.Debug.Assert(size == size2);
-            }
-
-            bool isEncrypted = ((flags & 8) != 0); // 8 = (1 << 4) // Read node and decrypt
-
-            //if (stanzaSize > this.buffer.Count)
-            if (size > this.buffer.Count)
-            {
-                //Es sind noch nicht alle Daten eingelesen, daher abbrechen und warten bis alles da ist
                 var exception = new IncompleteMessageException("Incomplete message");
                 exception.setInput(this.buffer.ToArray());
                 throw exception;
             }
+
             this.readInt24();
-            //if (stanzaSize > 0)
-            if (size > 0)
+
+            bool isEncrypted = (stanzaFlag & 8) != 0;
+
+            if (isEncrypted && Encryptionkey != null)
             {
-                byte[] dataReal = null;
-                byte[] data = new byte[size];
-                Buffer.BlockCopy(this.buffer.ToArray(), 0, data, 0, data.Length);
+                decode(ref this.buffer, size);
+            }
 
-                byte[] packet = new byte[size - 4];
-
-                if (isEncrypted && Encryptionkey != null)
-                {
-                    byte[] hashServerByte = new byte[4];
-                    Buffer.BlockCopy(data, 0, hashServerByte, 0, 4);
-                    Buffer.BlockCopy(data, 4, packet, 0, size - 4);
-
-                    System.Security.Cryptography.HMACSHA1 h = new System.Security.Cryptography.HMACSHA1(this.Encryptionkey);
-                    byte[] hashByte = new byte[4];
-                    Buffer.BlockCopy(h.ComputeHash(packet, 0, packet.Length), 0, hashByte, 0, 4);
-
-                    // 20121107 not sure why the packet is indicated an ecrypted but the hmcash1 is incorrect
-                    if (hashServerByte.SequenceEqual(hashByte))
-                    {
-                        this.buffer.RemoveRange(0, 4);
-                        dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
-
-                        for (int i = 0; i < size - 4; i++)
-                        {
-                            this.buffer[i] = dataReal[i];
-                        }
-                    }
-                }
+            if(stanzaSize > 0)
+            {
                 ProtocolTreeNode node = this.nextTreeInternal();
                 if (node != null)
                     this.DebugPrint(node.NodeString("RECVD: "));
                 return node;
             }
             return null;
+        }
+
+        protected void decode(ref List<byte> buffer, int stanzaSize)
+        {
+            int size = stanzaSize;
+            byte[] data = new byte[size];
+            byte[] dataReal = null;
+            Buffer.BlockCopy(buffer.ToArray(), 0, data, 0, size);
+
+            byte[] packet = new byte[size - 4];
+
+            byte[] hashServerByte = new byte[4];
+            Buffer.BlockCopy(data, 0, hashServerByte, 0, 4);
+            Buffer.BlockCopy(data, 4, packet, 0, size - 4);
+
+            System.Security.Cryptography.HMACSHA1 h = new System.Security.Cryptography.HMACSHA1(this.Encryptionkey);
+            byte[] hashByte = new byte[4];
+            Buffer.BlockCopy(h.ComputeHash(packet, 0, packet.Length), 0, hashByte, 0, 4);
+
+            // 20121107 not sure why the packet is indicated an ecrypted but the hmcash1 is incorrect
+            if (hashServerByte.SequenceEqual(hashByte))
+            {
+                this.buffer.RemoveRange(0, 4);
+                dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
+
+                for (int i = 0; i < size - 4; i++)
+                {
+                    this.buffer[i] = dataReal[i];
+                }
+            }
+            else
+            {
+                throw new Exception("Hash doesnt match");
+            }
         }
 
         protected string getToken(int token)
@@ -144,7 +146,7 @@ namespace WhatsAppApi.Helper
             }
             else
             {
-                //throw new Exception("BinTreeNodeReader->getToken: Invalid token $token");
+                throw new Exception("BinTreeNodeReader->getToken: Invalid token $token");
             }
             return ret;
         }
@@ -269,13 +271,11 @@ namespace WhatsAppApi.Helper
             {
                 return null;
             }
+
             //string tag = this.readString(token);
             string tag = WhatsApp.SYSEncoding.GetString(this.readBytes(token2));
             var tmpAttributes = this.readAttributes(size);
-            //if (size == 0 || string.IsNullOrWhiteSpace(tag))
-            //{
-            //    return null;
-            //}
+
             if ((size % 2) == 1)
             {
                 return new ProtocolTreeNode(tag, tmpAttributes);
@@ -283,10 +283,9 @@ namespace WhatsAppApi.Helper
             int token3 = this.readInt8();
             if (this.isListTag(token3))
             {
-                //return new ProtocolTreeNode(tag, tmpAttributes, this.readList(token), "");
                 return new ProtocolTreeNode(tag, tmpAttributes, this.readList(token3));
             }
-            //return new ProtocolTreeNode(tag, tmpAttributes, WhatsApp.SYSEncoding.GetBytes(this.readString(token)));
+
             return new ProtocolTreeNode(tag, tmpAttributes, null, this.readBytes(token3));
         }
 
@@ -328,7 +327,17 @@ namespace WhatsAppApi.Helper
             return size;
         }
 
-        protected int peekInt24()
+        protected int peekInt8(int offset = 0)
+        {
+            int ret = 0;
+
+            if (this.buffer.Count >= offset + 1)
+                ret = this.buffer[offset];
+
+            return ret;
+        }
+
+        protected int peekInt24(int offset = 0)
         {
             int ret = 0;
             //if (this.input.Length >= 3)
@@ -337,12 +346,12 @@ namespace WhatsAppApi.Helper
             //    ret |= (int)this.input[1] << 8;
             //    ret |= (int)this.input[2] << 0;
             //}
-            if (this.buffer.Count >= 3)
+            if (this.buffer.Count >= 3 + offset)
             {
                 //    ret = this.buffer[0] << 16;
                 //    ret |= this.buffer[1] << 8;
                 //    ret |= this.buffer[2] << 0;
-                ret = (this.buffer[0] << 16) + (this.buffer[1] << 8) + this.buffer[2];
+                ret = (this.buffer[0 + offset] << 16) + (this.buffer[1 + offset] << 8) + this.buffer[2 + offset];
             }
             return ret;
         }
@@ -377,13 +386,13 @@ namespace WhatsAppApi.Helper
         //    }
         //    return ret;
         //}
-        protected int peekInt16()
+        protected int peekInt16(int offset = 0)
         {
             int ret = 0;
-            if (this.buffer.Count >= 2)
+            if (this.buffer.Count >= offset + 2)
             {
-                ret = (int)this.buffer[0] << 8;
-                ret |= (int)this.buffer[1] << 0;
+                ret = (int)this.buffer[0+offset] << 8;
+                ret |= (int)this.buffer[1+offset] << 0;
             }
             return ret;
         }
