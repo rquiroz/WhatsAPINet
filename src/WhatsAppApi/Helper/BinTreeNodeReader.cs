@@ -131,6 +131,10 @@ namespace WhatsAppApi.Helper
                     this.buffer[i] = dataReal[i];
                 }
             }
+            else
+            {
+                throw new Exception("Hash doesnt match");
+            }
         }
 
         protected string getToken(int token)
@@ -142,7 +146,7 @@ namespace WhatsAppApi.Helper
             }
             else
             {
-                //throw new Exception("BinTreeNodeReader->getToken: Invalid token $token");
+                throw new Exception("BinTreeNodeReader->getToken: Invalid token $token");
             }
             return ret;
         }
@@ -267,13 +271,11 @@ namespace WhatsAppApi.Helper
             {
                 return null;
             }
+
             //string tag = this.readString(token);
             string tag = WhatsApp.SYSEncoding.GetString(this.readBytes(token2));
             var tmpAttributes = this.readAttributes(size);
-            //if (size == 0 || string.IsNullOrWhiteSpace(tag))
-            //{
-            //    return null;
-            //}
+
             if ((size % 2) == 1)
             {
                 return new ProtocolTreeNode(tag, tmpAttributes);
@@ -281,10 +283,9 @@ namespace WhatsAppApi.Helper
             int token3 = this.readInt8();
             if (this.isListTag(token3))
             {
-                //return new ProtocolTreeNode(tag, tmpAttributes, this.readList(token), "");
                 return new ProtocolTreeNode(tag, tmpAttributes, this.readList(token3));
             }
-            //return new ProtocolTreeNode(tag, tmpAttributes, WhatsApp.SYSEncoding.GetBytes(this.readString(token)));
+
             return new ProtocolTreeNode(tag, tmpAttributes, null, this.readBytes(token3));
         }
 

@@ -8,14 +8,18 @@ namespace WhatsAppApi.Helper
 {
     static class Encryption
     {
+        public static RC4 encryptionOutgoing = null;
+        public static RC4 encryptionIncoming = null;
+
         public static byte[] WhatsappEncrypt(byte[] key, byte[] data, bool appendHash)
         {
-            RC4 encryption = new RC4(key, 256);
+            if(encryptionOutgoing == null)
+                encryptionOutgoing = new RC4(key, 256);
             HMACSHA1 h = new HMACSHA1(key);
             byte[] buff = new byte[data.Length];
             Buffer.BlockCopy(data, 0, buff, 0, data.Length);
 
-            encryption.Cipher(buff);
+            encryptionOutgoing.Cipher(buff);
             byte[] hashByte = h.ComputeHash(buff);
             byte[] response = new byte[4 + buff.Length];
             if (appendHash)
@@ -33,10 +37,11 @@ namespace WhatsAppApi.Helper
         }
         public static byte[] WhatsappDecrypt(byte[] key, byte[] data)
         {
-            RC4 encryption = new RC4(key, 256);
+            if (encryptionIncoming == null)
+                encryptionIncoming = new RC4(key, 256);
             byte[] buff = new byte[data.Length];
             Buffer.BlockCopy(data, 0, buff, 0, data.Length);
-            encryption.Cipher(buff);
+            encryptionIncoming.Cipher(buff);
             return buff;
         }
     }
