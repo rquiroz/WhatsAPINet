@@ -70,13 +70,6 @@ namespace WhatsAppApi.Helper
                 this.buffer.AddRange(pInput);
             }
 
-            ////int stanzaSize = this.peekInt16();
-            ////Change to protocol 1.2
-            //int stanzaSize = this.peekInt24();
-            //int flags = (stanzaSize >> 20);
-            ////int size = ((stanzaSize & 0xF0000) >> 16) | ((stanzaSize & 0xFF00) >> 8) | (stanzaSize & 0xFF);
-            //int size = (stanzaSize & 0xFFFFF);
-
             // Ported from the allegedly working PHP version ~lrg
             int stanzaFlag = (this.peekInt8() & 0xF0) >> 4;
             int stanzaSize = this.peekInt16(1);
@@ -84,62 +77,60 @@ namespace WhatsAppApi.Helper
             int flags = stanzaFlag;
             int size = stanzaSize;
 
-            if (this.buffer.Count >= 3)
+            if (stanzaSize > this.buffer.Count)
             {
-               int stanzaSize2 = (this.buffer[0] << 0x10) + (this.buffer[1] << 8) + this.buffer[2];
-               int flags2 = (stanzaSize2 & 0xf00000) >> 20;
-                int size2 = (stanzaSize2 & 0xfffff);
-                System.Diagnostics.Debug.Assert(size == size2);
-            }
-
-            bool isEncrypted = ((flags & 8) != 0); // 8 = (1 << 4) // Read node and decrypt
-
-            //if (stanzaSize > this.buffer.Count)
-            if (size > this.buffer.Count)
-            {
-                //Es sind noch nicht alle Daten eingelesen, daher abbrechen und warten bis alles da ist
                 var exception = new IncompleteMessageException("Incomplete message");
                 exception.setInput(this.buffer.ToArray());
                 throw exception;
             }
+
             this.readInt24();
-            //if (stanzaSize > 0)
-            if (size > 0)
+
+            bool isEncrypted = (stanzaFlag & 8) != 0;
+
+            if (isEncrypted && Encryptionkey != null)
             {
-                byte[] dataReal = null;
-                byte[] data = new byte[size];
-                Buffer.BlockCopy(this.buffer.ToArray(), 0, data, 0, data.Length);
+                decode(ref this.buffer, size);
+            }
 
-                byte[] packet = new byte[size - 4];
-
-                if (isEncrypted && Encryptionkey != null)
-                {
-                    byte[] hashServerByte = new byte[4];
-                    Buffer.BlockCopy(data, 0, hashServerByte, 0, 4);
-                    Buffer.BlockCopy(data, 4, packet, 0, size - 4);
-
-                    System.Security.Cryptography.HMACSHA1 h = new System.Security.Cryptography.HMACSHA1(this.Encryptionkey);
-                    byte[] hashByte = new byte[4];
-                    Buffer.BlockCopy(h.ComputeHash(packet, 0, packet.Length), 0, hashByte, 0, 4);
-
-                    // 20121107 not sure why the packet is indicated an ecrypted but the hmcash1 is incorrect
-                    if (hashServerByte.SequenceEqual(hashByte))
-                    {
-                        this.buffer.RemoveRange(0, 4);
-                        dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
-
-                        for (int i = 0; i < size - 4; i++)
-                        {
-                            this.buffer[i] = dataReal[i];
-                        }
-                    }
-                }
+            if(stanzaSize > 0)
+            {
                 ProtocolTreeNode node = this.nextTreeInternal();
                 if (node != null)
                     this.DebugPrint(node.NodeString("RECVD: "));
                 return node;
             }
             return null;
+        }
+
+        protected void decode(ref List<byte> buffer, int stanzaSize)
+        {
+            int size = stanzaSize;
+            byte[] data = new byte[size];
+            byte[] dataReal = null;
+            Buffer.BlockCopy(buffer.ToArray(), 0, data, 0, size);
+
+            byte[] packet = new byte[size - 4];
+
+            byte[] hashServerByte = new byte[4];
+            Buffer.BlockCopy(data, 0, hashServerByte, 0, 4);
+            Buffer.BlockCopy(data, 4, packet, 0, size - 4);
+
+            System.Security.Cryptography.HMACSHA1 h = new System.Security.Cryptography.HMACSHA1(this.Encryptionkey);
+            byte[] hashByte = new byte[4];
+            Buffer.BlockCopy(h.ComputeHash(packet, 0, packet.Length), 0, hashByte, 0, 4);
+
+            // 20121107 not sure why the packet is indicated an ecrypted but the hmcash1 is incorrect
+            if (hashServerByte.SequenceEqual(hashByte))
+            {
+                this.buffer.RemoveRange(0, 4);
+                dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
+
+                for (int i = 0; i < size - 4; i++)
+                {
+                    this.buffer[i] = dataReal[i];
+                }
+            }
         }
 
         protected string getToken(int token)
