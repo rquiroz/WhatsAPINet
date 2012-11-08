@@ -24,6 +24,8 @@ namespace WhatsAppApi.Parser
         public DateTime? timestamp;
         public bool wants_receipt;
 
+        public WhatsAppApi.Account.WhatsUser User { get; private set; }
+
         public FMessage(Key key)
         {
             this.status = Status.Undefined;
@@ -31,6 +33,13 @@ namespace WhatsAppApi.Parser
             this.key = key;
         }
 
+        internal FMessage(WhatsAppApi.Account.WhatsUser remote_user, bool from_me)
+        {
+            this.status = Status.Undefined;
+            this.gap_behind = true;
+            this.User = remote_user;
+            this.key = new Key(remote_user.GetFullJid(), from_me, TicketManager.GenerateId());
+        }
         internal FMessage(string remote_jid, bool from_me)
         {
             this.status = Status.Undefined;
@@ -40,6 +49,13 @@ namespace WhatsAppApi.Parser
 
         public FMessage(string remote_jid, string data, object image)
             : this(remote_jid, true)
+        {
+            this.data = data;
+            this.thumb_image = image;
+            this.timestamp = new DateTime?(DateTime.Now);
+        }
+        public FMessage(WhatsAppApi.Account.WhatsUser remote_user, string data, object image)
+            : this(remote_user, true)
         {
             this.data = data;
             this.thumb_image = image;
