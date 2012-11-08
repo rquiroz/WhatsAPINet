@@ -70,12 +70,19 @@ namespace WhatsAppApi.Helper
                 this.buffer.AddRange(pInput);
             }
 
-            //int stanzaSize = this.peekInt16();
-            //Change to protocol 1.2
-            int stanzaSize = this.peekInt24();
-            int flags = (stanzaSize >> 20);
-            //int size = ((stanzaSize & 0xF0000) >> 16) | ((stanzaSize & 0xFF00) >> 8) | (stanzaSize & 0xFF);
-            int size = (stanzaSize & 0xFFFFF);
+            ////int stanzaSize = this.peekInt16();
+            ////Change to protocol 1.2
+            //int stanzaSize = this.peekInt24();
+            //int flags = (stanzaSize >> 20);
+            ////int size = ((stanzaSize & 0xF0000) >> 16) | ((stanzaSize & 0xFF00) >> 8) | (stanzaSize & 0xFF);
+            //int size = (stanzaSize & 0xFFFFF);
+
+            // Ported from the allegedly working PHP version ~lrg
+            int stanzaFlag = (this.peekInt8() & 0xF0) >> 4;
+            int stanzaSize = this.peekInt16(1);
+
+            int flags = stanzaFlag;
+            int size = stanzaSize;
 
             if (this.buffer.Count >= 3)
             {
@@ -328,7 +335,17 @@ namespace WhatsAppApi.Helper
             return size;
         }
 
-        protected int peekInt24()
+        protected int peekInt8(int offset = 0)
+        {
+            int ret = 0;
+
+            if (this.buffer.Count >= offset + 1)
+                ret = this.buffer[offset];
+
+            return ret;
+        }
+
+        protected int peekInt24(int offset = 0)
         {
             int ret = 0;
             //if (this.input.Length >= 3)
@@ -337,12 +354,12 @@ namespace WhatsAppApi.Helper
             //    ret |= (int)this.input[1] << 8;
             //    ret |= (int)this.input[2] << 0;
             //}
-            if (this.buffer.Count >= 3)
+            if (this.buffer.Count >= 3 + offset)
             {
                 //    ret = this.buffer[0] << 16;
                 //    ret |= this.buffer[1] << 8;
                 //    ret |= this.buffer[2] << 0;
-                ret = (this.buffer[0] << 16) + (this.buffer[1] << 8) + this.buffer[2];
+                ret = (this.buffer[0 + offset] << 16) + (this.buffer[1 + offset] << 8) + this.buffer[2 + offset];
             }
             return ret;
         }
@@ -377,13 +394,13 @@ namespace WhatsAppApi.Helper
         //    }
         //    return ret;
         //}
-        protected int peekInt16()
+        protected int peekInt16(int offset = 0)
         {
             int ret = 0;
-            if (this.buffer.Count >= 2)
+            if (this.buffer.Count >= offset + 2)
             {
-                ret = (int)this.buffer[0] << 8;
-                ret |= (int)this.buffer[1] << 0;
+                ret = (int)this.buffer[0+offset] << 8;
+                ret |= (int)this.buffer[1+offset] << 0;
             }
             return ret;
         }
