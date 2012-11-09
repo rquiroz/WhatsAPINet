@@ -90,7 +90,7 @@ namespace WhatsAppApi.Helper
 
             if (isEncrypted && Encryptionkey != null)
             {
-                decode(ref this.buffer, size);
+                decode(size);
             }
 
             if(stanzaSize > 0)
@@ -103,12 +103,12 @@ namespace WhatsAppApi.Helper
             return null;
         }
 
-        protected void decode(ref List<byte> buffer, int stanzaSize)
+        protected void decode(int stanzaSize)
         {
             int size = stanzaSize;
             byte[] data = new byte[size];
             byte[] dataReal = null;
-            Buffer.BlockCopy(buffer.ToArray(), 0, data, 0, size);
+            Buffer.BlockCopy(this.buffer.ToArray(), 0, data, 0, size);
 
             byte[] packet = new byte[size - 4];
 
@@ -220,8 +220,9 @@ namespace WhatsAppApi.Helper
             else if (token == 0xfd)
             {
                 int size = this.readInt24();
+                ret = this.fillArray(size);
             }
-           else if (token == 0xfe)
+            else if (token == 0xfe)
             {
                 int tmpToken = this.readInt8();
                 ret = WhatsApp.SYSEncoding.GetBytes(this.getToken(tmpToken + 0xf5));
@@ -259,8 +260,8 @@ namespace WhatsAppApi.Helper
 
         protected ProtocolTreeNode nextTreeInternal()
         {
-            int token = this.readInt8();
-            int size = this.readListSize(token);
+            int token1 = this.readInt8();
+            int size = this.readListSize(token1);
             int token2 = this.readInt8();
             if (token2 == 1)
             {

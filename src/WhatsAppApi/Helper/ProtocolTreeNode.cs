@@ -109,7 +109,7 @@ namespace WhatsAppApi.Helper
             {
                 foreach (var item in this.children)
                 {
-                    if (tag.Equals(item.tag, StringComparison.InvariantCultureIgnoreCase))
+                    if (ProtocolTreeNode.TagEquals(item, tag))
                     {
                         return item;
                     }

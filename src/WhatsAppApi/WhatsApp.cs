@@ -406,10 +406,20 @@ namespace WhatsAppApi
                     {
                         this.Pong(node.GetAttribute("id"));
                     }
-                    if (ProtocolTreeNode.TagEquals(node, "Replaced by new connection"))
+                    if (ProtocolTreeNode.TagEquals(node ,"stream:error"))
                     {
-                        this.Connect();
-                        this.Login();
+                        var textNode = node.GetChild("text");
+                        if (textNode != null)
+                        {
+                            string content = WhatsApp.SYSEncoding.GetString(textNode.GetData());
+                            Console.WriteLine("Error : " + content);
+                            if (content.Equals("Replaced by new connection", StringComparison.OrdinalIgnoreCase))
+                            {
+                                this.Disconnect();
+                                this.Connect();
+                                this.Login();
+                            }
+                        }
                     }
                     node = this.reader.nextTree();
                 }
