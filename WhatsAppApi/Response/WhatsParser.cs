@@ -7,13 +7,37 @@ using WhatsAppApi.Settings;
 
 namespace WhatsAppApi.Response
 {
+    /// <summary>
+    /// Parses whatsapp messages
+    /// </summary>
     public class WhatsParser
     {
+        /// <summary>
+        /// An instance of the WhatsSendHandler class
+        /// </summary>
         public WhatsSendHandler WhatsSendHandler { get; private set; }
+
+        /// <summary>
+        /// An instnce of the WhatsNetwork class
+        /// </summary>
         private WhatsNetwork whatsNetwork;
+
+        /// <summary>
+        /// An instance of the MessageRecvResponse class
+        /// </summary>
         private MessageRecvResponse messResponseHandler;
+
+
+        /// <summary>
+        /// An instance of the Binary Tree node writer class
+        /// </summary>
         private BinTreeNodeWriter _binWriter;
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="whatsNet">An instance of the WhatsNetwork class</param>
+        /// <param name="writer">An instance of the BinTreeNodeWriter class</param>
         internal WhatsParser(WhatsNetwork whatsNet, BinTreeNodeWriter writer)
         {
             this.WhatsSendHandler = new WhatsSendHandler(whatsNet, writer);
@@ -22,6 +46,10 @@ namespace WhatsAppApi.Response
             this._binWriter = writer;
         }
 
+        /// <summary>
+        /// Parse a tree node
+        /// </summary>
+        /// <param name="protNode">An instance of the ProtocolTreeNode class that needs to be parsed.</param>
         public void ParseProtocolNode(ProtocolTreeNode protNode)
         {
             if (ProtocolTreeNode.TagEquals(protNode, "iq"))
@@ -103,6 +131,11 @@ namespace WhatsAppApi.Response
             }
         }
 
+        /// <summary>
+        /// Parse categories
+        /// </summary>
+        /// <param name="dirtyNode">An instance of the ProtocolTreeNode class</param>
+        /// <returns>A dictionary with the categories used</returns>
         internal static Dictionary<string, long> ParseCategories(ProtocolTreeNode dirtyNode)
         {
             var dictionary = new Dictionary<string, long>();
