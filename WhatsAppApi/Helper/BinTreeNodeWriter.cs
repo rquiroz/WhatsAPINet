@@ -7,11 +7,8 @@ namespace WhatsAppApi.Helper
 {
     internal class BinTreeNodeWriter
     {
-        //private string output;
         private List<byte> buffer;
         private Dictionary<string, int> tokenMap;
-
-        //change to protocol 1.2
         public byte[] Encryptionkey { get; set; }
 
         public BinTreeNodeWriter(string[] dict)
@@ -31,27 +28,9 @@ namespace WhatsAppApi.Helper
             buffer = new List<byte>();
         }
 
-        //public string StartStream(string domain, string resource)
-        //{
-        //    var attributes = new List<KeyValue>();
-        //    this.output = "WA";
-        //    //this.output += "\x01" + "\x01" + "\x00" + "\x19";
-
-        //    attributes.Add(new KeyValue("to", domain));
-        //    attributes.Add(new KeyValue("resource", resource));
-        //    this.writeListStart(attributes.Count*2 + 1);
-
-        //    this.output += "\x01";
-        //    this.writeAttributes(attributes.ToArray());
-        //    string ret = this.output;
-        //    this.output = "";
-        //    return ret;
-        //}
-
         public byte[] StartStream(string domain, string resource)
         {
             var attributes = new List<KeyValue>();
-            // protocol 1.2
             this.buffer = new List<byte>();
             
             attributes.Add(new KeyValue("to", domain));
@@ -72,18 +51,6 @@ namespace WhatsAppApi.Helper
             return ret;
         }
 
-        //public string Write(ProtocolTreeNode node)
-        //{
-        //    if (node == null)
-        //    {
-        //        this.output += "\x00";
-        //    }
-        //    else
-        //    {
-        //        this.writeInternal(node);
-        //    }
-        //    return this.flushBuffer();
-        //}
         public byte[] Write(ProtocolTreeNode node, bool encrypt = true)
         {
             if (node == null)
@@ -98,16 +65,6 @@ namespace WhatsAppApi.Helper
             return this.flushBuffer(encrypt);
         }
 
-        //protected string flushBuffer()
-        //{
-        //    int size = this.output.Length;
-        //     this.output = this.GetInt16(size) + this.output;
-        //    string ret = this.output;
-        //    this.output = "";
-        //    return ret;
-        //}
-
-        //change to protocol 1.2
         protected byte[] flushBuffer(bool encrypt = true)
         {
             byte[] data = this.buffer.ToArray();
@@ -142,12 +99,6 @@ namespace WhatsAppApi.Helper
             }
         }
 
-        //private string GetInt16(int len)
-        //{
-        //    string ret = chr((len & 0xff00) >> 8);
-        //    ret += chr(len & 0x00ff);
-        //    return ret;
-        //}
         private byte[] GetInt16(int len)
         {
             byte[] ret = new byte[2];
@@ -156,13 +107,6 @@ namespace WhatsAppApi.Helper
             return ret;
         }
 
-        //private string GetInt24(int len)
-        //{
-        //    string ret = chr((len & 0xf0000) >> 16);
-        //    ret += chr((len & 0xff00) >> 8);
-        //    ret += chr(len & 0x00ff);
-        //    return ret;
-        //}
         private byte[] GetInt24(int len)
         {
             byte[] ret = new byte[3];
@@ -172,21 +116,6 @@ namespace WhatsAppApi.Helper
             return ret;
         }
 
-        //protected void writeBytes(string bytes)
-        //{
-        //    int len = bytes.Length;
-        //    if (len >= 0x100)
-        //    {
-        //        this.output += "\xfd";
-        //        this.writeInt24(len);
-        //    }
-        //    else
-        //    {
-        //        this.output += "\xfc";
-        //        this.writeInt8(len);
-        //    }
-        //    this.output += bytes;
-        //}
         protected void writeBytes(string bytes)
         {
             writeBytes(WhatsApp.SYSEncoding.GetBytes(bytes));
@@ -207,25 +136,12 @@ namespace WhatsAppApi.Helper
             this.buffer.AddRange(bytes);
         }
 
-        //protected void writeInt16(int v)
-        //{
-        //    //string ret = "";
-        //    this.output += chr((v & 0xff00) >> 8);
-        //    this.output += chr((v & 0x00ff) >> 0);
-        //    //this.output = ret + this.output;
-        //}
         protected void writeInt16(int v)
         {
             this.buffer.Add((byte)((v & 0xff00) >> 8));
             this.buffer.Add((byte)(v & 0x00ff));
         }
 
-        //protected void writeInt24(int v)
-        //{
-        //    this.output += chr((v & 0xff0000) >> 16);
-        //    this.output += chr((v & 0x00ff00) >> 8);
-        //    this.output += chr((v & 0x0000ff) >> 0);
-        //}
         protected void writeInt24(int v)
         {
             this.buffer.Add((byte)((v & 0xff0000) >> 16));
@@ -233,10 +149,6 @@ namespace WhatsAppApi.Helper
             this.buffer.Add((byte)(v & 0x0000ff));
         }
 
-        //protected void writeInt8(int v)
-        //{
-        //    this.output += chr(v & 0xff);
-        //}
         protected void writeInt8(int v)
         {
             this.buffer.Add((byte)(v & 0xff));
@@ -275,7 +187,6 @@ namespace WhatsAppApi.Helper
         }
         protected void writeJid(string user, string server)
         {
-            //this.output += "\xfa";
             this.buffer.Add(0xfa);
             if (user.Length > 0)
             {
@@ -292,18 +203,15 @@ namespace WhatsAppApi.Helper
         {
             if (len == 0)
             {
-                //this.output += "\x00";
                 this.buffer.Add(0x00);
             }
             else if (len < 256)
             {
-                //this.output += "\xf8";
                 this.buffer.Add(0xf8);
                 this.writeInt8(len);
             }
             else
             {
-                //this.output += "\xf9";
                 this.buffer.Add(0xf9);
                 this.writeInt16(len);
             }
@@ -327,23 +235,11 @@ namespace WhatsAppApi.Helper
                 }
                 else
                 {
-                    //this.writeBytes(tag);
                     this.writeBytes(tag);
                 }
             }
         }
 
-        //protected void writeToken(int token)
-        //{
-        //    if (token < 0xf5)
-        //    {
-        //        this.output += chr(token);
-        //    }
-        //    else if (token <= 0x1f4)
-        //    {
-        //        this.output += "\xfe" + chr(token - 0xf5);
-        //    }
-        //}
         protected void writeToken(int token)
         {
             if (token < 0xf5)

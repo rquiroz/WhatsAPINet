@@ -114,19 +114,5 @@ namespace WhatsAppApi.Response
 
 
         #endregion
-
-        //#region Unregister Events
-        //internal void UnregisterStringArrayHandler(StringArrayHandler _event)
-        //{
-        //    if (_event != null)
-        //    {
-        //        Delegate[] tmpDelegates = _event.GetInvocationList();
-        //        for (int i = 0; i < tmpDelegates.Length; i++)
-        //        {
-        //            _event -= (StringArrayHandler)tmpDelegates[i];
-        //        }
-        //    }
-        //}
-        //#endregion
     }
 }

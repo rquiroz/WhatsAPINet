@@ -21,11 +21,6 @@ namespace WhatsAppApi.Register
             var result = StartWebRequest("", "", WhatsConstants.UserAgend, both);
             Console.WriteLine(result);
             return result.Contains("status=\"success-sent\"");
-            /*
-             * <code>
-             * <response status="success-sent" result="60"/>
-             * </code>
-             */
         }
 
         public static bool VerifyRegistration(string countryCode, string phoneNumber, string password, string code)
@@ -36,13 +31,6 @@ namespace WhatsAppApi.Register
             var result = StartWebRequest("", "", WhatsConstants.UserAgend, verifyString);
             Console.WriteLine(result);
             return true;
-
-            /*
-             * <register>
-             * <response status="ok" login="phoneNumber" result="new"/>
-             * </register>
-             * 
-             */
         }
 
         public static bool ExistsAndDelete(string countrycode, string phone, string pass)
@@ -70,7 +58,7 @@ namespace WhatsAppApi.Register
                     return html;
                 }
             }
-            catch (WebException ex)
+            catch (WebException)
             {
                 return "error";
             }
@@ -100,7 +88,6 @@ namespace WhatsAppApi.Register
             {
                 tmpLocalCode = "US";
             }
-            //string countryCode = "49";
             string phoneNumber = phonenum;
             const string buildHash = WhatsConstants.WhatsBuildHash;
             string tmpToken = ("k7Iy3bWARdNeSL8gYgY6WveX12A1g4uTNXrRzt1H" + buildHash + phoneNumber).MD5String().ToLower();
@@ -110,7 +97,6 @@ namespace WhatsAppApi.Register
 
         private static string ToPassword(this string bs)
         {
-            //OK LET'S CHECK IF IT'S IOS OR OTHER PALFROM ! ?
             if (bs.Contains(":"))
             {
                 string ps = bs.ToUpper();

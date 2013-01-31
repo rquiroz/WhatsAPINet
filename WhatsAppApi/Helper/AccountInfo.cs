@@ -7,7 +7,6 @@ namespace WhatsAppApi.Helper
 {
     public class AccountInfo
     {
-        //status'=>$node->getAttribute('status'),'kind'=>$node->getAttribute('kind'),'creation'=>$node->getAttribute('creation'),'expiration'=>$node->getAttribute('expiration')
         public string Status { get; private set; }
         public string Kind { get; private set; }
         public string Creation { get; private set; }

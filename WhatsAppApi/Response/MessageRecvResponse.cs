@@ -55,7 +55,6 @@ namespace WhatsAppApi.Response
 
         private void TypeNotification(ProtocolTreeNode messageNode, string tmpAttrFrom, string tmpAttrbId)
         {
-            //bool tmpIsRequest = false;
             foreach (ProtocolTreeNode tmpChild in (messageNode.GetAllChildren() ?? new ProtocolTreeNode[0]))
             {
                 if (ProtocolTreeNode.TagEquals(tmpChild, "notification"))
@@ -82,22 +81,18 @@ namespace WhatsAppApi.Response
                     string photoId = item.GetAttribute("id");
                     if (photoId != null)
                     {
-                        //this.EventHandler.OnPhotoChanged(tmpFrom, item.GetAttribute("author"), photoId);
                         WhatsEventHandler.OnPhotoChangedEventHandler(tmpFrom, item.GetAttribute("author"), photoId);
                     }
                 }
                 else if (ProtocolTreeNode.TagEquals(item, "delete"))
                 {
-                    //this.EventHandler.OnPhotoChanged(tmpFrom, item.GetAttribute("author"), null);
                     WhatsEventHandler.OnPhotoChangedEventHandler(tmpFrom, item.GetAttribute("author"), null);
                 }
             }
         }
 
-        private void TypeChat(ProtocolTreeNode messageNode, string tmpAttrFrom, string tmpAttrbId, FMessage.Builder builder,
-                                        string tmpAttrFromJid)
+        private void TypeChat(ProtocolTreeNode messageNode, string tmpAttrFrom, string tmpAttrbId, FMessage.Builder builder, string tmpAttrFromJid)
         {
-            //bool duplicate = false;
             foreach (ProtocolTreeNode itemNode in (messageNode.GetAllChildren() ?? new ProtocolTreeNode[0]))
             {
                 if (ProtocolTreeNode.TagEquals(itemNode, "composing"))
@@ -110,7 +105,6 @@ namespace WhatsAppApi.Response
                 }
                 else if (ProtocolTreeNode.TagEquals(itemNode, "body") && (tmpAttrbId != null))
                 {
-                    //string dataString = itemNode.GetDataString();
                     string dataString = WhatsApp.SYSEncoding.GetString(itemNode.GetData());
                     var tmpMessKey = new FMessage.Key(tmpAttrFrom, false, tmpAttrbId);
                     builder.Key(tmpMessKey).Remote_resource(tmpAttrFromJid).NewIncomingInstance().Data(dataString);
@@ -179,13 +173,8 @@ namespace WhatsAppApi.Response
                         string tmpAttrEncoding = itemNode.GetAttribute("encoding") ?? "text";
                         if (tmpAttrEncoding == "text")
                         {
-                            //builder.Data(itemNode.GetDataString());
                             builder.Data(WhatsApp.SYSEncoding.GetString(itemNode.GetData()));
                         }
-                        //else
-                        //{
-                        //    builder.BinaryData(messageNode.data);
-                        //}
                     }
                     var tmpMessageKey = new FMessage.Key(tmpAttrFrom, false, tmpAttrbId);
                     builder.Key(tmpMessageKey).Remote_resource(tmpAttrFromJid).NewIncomingInstance();
@@ -200,19 +189,6 @@ namespace WhatsAppApi.Response
                     if ("jabber:x:event".Equals(str16) && (tmpAttrbId != null))
                     {
                         var tmpMessageKey = new FMessage.Key(tmpAttrFrom, true, tmpAttrbId);
-                        //if (this.EventHandler != null)
-                        //{
-                        //    ErrorHandler handler2 = null;
-                        //    if (trackedMessages.TryGetValue(key4, out handler2))
-                        //    {
-                        //        trackedMessages.Remove(key4);
-                        //        handler2.OnCompleted();
-                        //    }
-                        //    else
-                        //    {
-                        //        this.EventHandler.OnMessageStatusUpdate(key4, FMessage.Status.ReceivedByServer);
-                        //    }
-                        //}
                     }
                 }
                 else if (ProtocolTreeNode.TagEquals(itemNode, "received"))
@@ -220,11 +196,7 @@ namespace WhatsAppApi.Response
                     if (tmpAttrbId != null)
                     {
                         var tmpMessageKey = new FMessage.Key(tmpAttrFrom, true, tmpAttrbId);
-                        //if (this.EventHandler != null)
-                        //{
-                        //    this.EventHandler.OnMessageStatusUpdate(key5, FMessage.Status.ReceivedByTarget);
-                        //}
-                        if (true) //this.SupportsReceiptAcks)
+                        if (true) 
                         {
                             string tmpAttrType = itemNode.GetAttribute("type");
                             if ((tmpAttrType != null) && !tmpAttrType.Equals("delivered"))
@@ -279,7 +251,6 @@ namespace WhatsAppApi.Response
                 }
             }
             ProtocolTreeNode child = messageNode.GetChild("body");
-            //string subject = (child == null) ? null : child.GetDataString();
             string subject = (child == null) ? null : WhatsApp.SYSEncoding.GetString(child.GetData());
             if (subject != null)
             {
@@ -308,16 +279,6 @@ namespace WhatsAppApi.Response
             if ((tmpAttrFrom != null) && (tmpAttrbId != null))
             {
                 FMessage.Key key = new FMessage.Key(tmpAttrFrom, true, tmpAttrbId);
-                //ErrorHandler handler = null;
-                //if (trackedMessages.TryGetValue(key, out handler))
-                //{
-                //    trackedMessages.Remove(key);
-                //    handler.OnError(num2);
-                //}
-                //else
-                //{
-                //    this.EventHandler.OnMessageError(key, num2);
-                //}
             }
         }
     }

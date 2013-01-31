@@ -55,52 +55,12 @@ namespace WhatsAppApi.Helper
             return sb.ToString();
         }
 
-        //function createIcon($file)
-        //{
-        //    $outfile = "thumb.jpg";
-        //    $cmd = "convert $file -resize 100x100 $outfile";
-        //    system($cmd);
-        //    $fp = fopen($outfile, "r");
-        //    $contents = fread($fp, filesize($outfile));
-        //    fclose($fp);
-        //    $b64 = base64_encode($contents);
-        //    $outfile .= "b64";
-        //    $fp = fopen($outfile, "w");
-        //    fwrite($fp, $b64);
-        //    fclose($fp);
-        //}
-
-        //public static string EncodeTo64(string toEncode, Encoding enc)
-        //{
-        //    byte[] toEncodeAsBytes = enc.GetBytes(toEncode);
-        //    string returnValue = System.Convert.ToBase64String(toEncodeAsBytes);
-        //    return returnValue;
-        //}
-        //public static string DecodeTo64(string toDecode, Encoding enc)
-        //{
-        //    byte[] toDecodeAsBytes = System.Convert.FromBase64String(toDecode);
-        //    string returnValue = enc.GetString(toDecodeAsBytes);
-        //    return returnValue;
-        //}
-
-//        function startsWith($haystack, $needle , $pos=0){
-//    $length = strlen($needle);
-//    return (substr($haystack, $pos, $length) === $needle);
-//}
-
-//function endsWith($haystack, $needle){
-//    $length = strlen($needle);
-//    $start  = $length * -1; 
-//    return (substr($haystack, $start) === $needle);
-//}
-
         public static long GetUnixTimestamp(DateTime value)
         {
-            //create Timespan by subtracting the value provided from
-            //the Unix Epoch
             TimeSpan span = (value - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc));
             return (long)span.TotalSeconds;
         }
+
         public static long GetNowUnixTimestamp()
         {
             return GetUnixTimestamp(DateTime.UtcNow);

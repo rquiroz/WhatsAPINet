@@ -21,7 +21,6 @@ namespace WhatsAppApi.Helper
 
         public TicketManager()
         {
-            //idBase = DateTime.Now.Ticks.ToString();
             idBase = Func.GetNowUnixTimestamp().ToString();
         }
 
@@ -46,11 +45,7 @@ namespace WhatsAppApi.Helper
         public static string MakeId(string prefix)
         {
             int num = NextTicket();
-            if (true)//this.IsVerboseId)
-            {
-                return (prefix + num);
-            }
-            //return num.ToString("X");
+            return (prefix + num);
         }
     }
 }

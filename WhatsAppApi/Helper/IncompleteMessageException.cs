@@ -16,10 +16,12 @@ namespace WhatsAppApi.Helper
             this.message = message;
             this.code = code;
         }
+
         public void setInput(byte[] input)
         {
             this.buffer = input;
         }
+
         public byte[] getInput()
         {
             return this.buffer;
