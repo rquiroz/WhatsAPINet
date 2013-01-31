@@ -5,6 +5,9 @@ This is a API written in C# but it can be used in any .NET language. It's a fork
 The goal of this fork is to make it all work again and refacter the code, add documentation and write documentation
 on how Whatsapp works.
 
+## Documentation
+* FunXMPP Protocol - https://github.com/TheKirk/WhatsAPINet/wiki/FunXMPP
+
 ## Protocol
 The WhatsApp protocol is sadly not officially documented. While working on this
 project, I will try to document most of my progress in the docs folder.
