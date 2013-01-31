@@ -15,7 +15,7 @@ lot of common keywords are converted into bytes. See docs/funxmpp.txt for a
 more detailed explanation. Sadly, the XMPP standard is not followed exactly
 everywhere.
 
-* Protocol wrapper: FunXMPP (see doc/funxmpp.txt)
+* Protocol wrapper: FunXMPP (see Wiki)
 * Main protocol: XMPP (http://xmpp.org/rfcs/rfc6120.html)
 * Authentification: SASL, digest auth (http://tools.ietf.org/html/rfc2831)
 * Blocking: XMPP privacy lists? (http://xmpp.org/extensions/xep-0016.html)
