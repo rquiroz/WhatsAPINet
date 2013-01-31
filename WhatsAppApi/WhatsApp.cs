@@ -12,35 +12,118 @@ using WhatsAppApi.Settings;
 
 namespace WhatsAppApi
 {
+    /// <summary>
+    /// Main api interface
+    /// </summary>
     public class WhatsApp
     {
+
+        /// <summary>
+        /// Describes the connection status with the whatsapp server
+        /// </summary>
         public enum CONNECTION_STATUS
         {
             DISCONNECTED,
             CONNECTED
         }
     
+        /// <summary>
+        /// An instance of the AccountInfo class
+        /// </summary>
         private AccountInfo accountinfo;
+
+        /// <summary>
+        /// Determines wether debug mode is on or offf
+        /// </summary>
         public static bool DEBUG;
+
+        /// <summary>
+        /// The imei/mac adress
+        /// </summary>
         private string imei;
+
+        /// <summary>
+        /// Holds the login status
+        /// </summary>
         private CONNECTION_STATUS loginStatus;
+
+        /// <summary>
+        /// A lock for a message
+        /// </summary>
         private object messageLock = new object();
+
+        /// <summary>
+        /// Que for recieved messages
+        /// </summary>
         private List<ProtocolTreeNode> messageQueue;
+
+        /// <summary>
+        /// The name of the user
+        /// </summary>
         private string name;
+
+        /// <summary>
+        /// The phonenumber
+        /// </summary>
         private string phoneNumber;
+
+        /// <summary>
+        /// An instance of the BinaryTreeNodeReader class
+        /// </summary>
         private BinTreeNodeReader reader;
+
+        /// <summary>
+        /// An instance of the BinaryTreeNodeWriter class
+        /// </summary>
         private BinTreeNodeWriter writer;
+
+        /// <summary>
+        /// The timeout for the connection with the Whatsapp servers
+        /// </summary>
         private int timeout = 5000;
 
+        /// <summary>
+        /// An instance of the WhatsNetwork class
+        /// </summary>
         private WhatsNetwork whatsNetwork;
+
+        /// <summary>
+        /// An instance of the WhatsSendHandler class
+        /// </summary>
         public WhatsSendHandler WhatsSendHandler { get; private set; }
+
+        /// <summary>
+        /// An instance of the WhatsParser class
+        /// </summary>
         public WhatsParser WhatsParser { get; private set; }
 
+        /// <summary>
+        /// Holds the encoding we use, default is UTF8
+        /// </summary>
         public static readonly Encoding SYSEncoding = Encoding.UTF8;
+
+        /// <summary>
+        /// Empty bytes to hold the encryption key
+        /// </summary>
         private byte[] _encryptionKey;
+
+        /// <summary>
+        /// Empty bytes to hold the challenge
+        /// </summary>
         private byte[] _challengeBytes;
+
+        /// <summary>
+        /// A list of exceptions for incomplete bytes
+        /// </summary>
         private List<IncompleteMessageException> _incompleteBytes;
 
+        /// <summary>
+        /// Default class constructor
+        /// </summary>
+        /// <param name="phoneNum">The phone number</param>
+        /// <param name="imei">The imei / mac</param>
+        /// <param name="nick">User nickname</param>
+        /// <param name="debug">Debug on or off, false by default</param>
         public WhatsApp(string phoneNum, string imei, string nick, bool debug = false)
         {
             this.messageQueue = new List<ProtocolTreeNode>();
@@ -60,6 +143,10 @@ namespace WhatsAppApi
             _incompleteBytes = new List<IncompleteMessageException>();
         }
 
+        /// <summary>
+        /// Add a message to the message que
+        /// </summary>
+        /// <param name="node">An instance of the ProtocolTreeNode class</param>
         public void AddMessage(ProtocolTreeNode node)
         {
             lock (messageLock)
@@ -69,34 +156,56 @@ namespace WhatsAppApi
 
         }
 
+        /// <summary>
+        /// Connect to the whatsapp network
+        /// </summary>
         public void Connect()
         {
             this.whatsNetwork.Connect();
         }
+
+        /// <summary>
+        /// Disconnect from the whatsapp network
+        /// </summary>
         public void Disconnect()
         {
             this.whatsNetwork.Connect();
             this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
         }
 
+        /// <summary>
+        /// Encrypt the password (hash)
+        /// </summary>
+        /// <returns></returns>
         public string encryptPassword()
         {
+            // iPhone
             if (this.imei.Contains(":"))
             {
                 this.imei = this.imei.ToUpper();
                 return md5(this.imei + this.imei);
             }
+
+            // Other
             else
             {
                 return md5(new string(this.imei.Reverse().ToArray()));
             }
         }
 
+        /// <summary>
+        /// Get the account information
+        /// </summary>
+        /// <returns>An instance of the AccountInfo class</returns>
         public AccountInfo GetAccountInfo()
         {
             return this.accountinfo;
         }
 
+        /// <summary>
+        /// Retrieve all messages
+        /// </summary>
+        /// <returns>An array of instances of the ProtocolTreeNode class.</returns>
         public ProtocolTreeNode[] GetAllMessages()
         {
             ProtocolTreeNode[] tmpReturn = null;
@@ -108,6 +217,10 @@ namespace WhatsAppApi
             return tmpReturn;
         }
 
+        /// <summary>
+        /// Checks wether we have messages to retrieve
+        /// </summary>
+        /// <returns>true or false</returns>
         public bool HasMessages()
         {
             if (this.messageQueue == null)
@@ -115,6 +228,9 @@ namespace WhatsAppApi
             return this.messageQueue.Count > 0;
         }
 
+        /// <summary>
+        /// Logs us in to the server
+        /// </summary>
         public void Login()
         {
             string resource = string.Format(@"{0}-{1}-{2}",
@@ -139,12 +255,26 @@ namespace WhatsAppApi
             while ((cnt++ < 100) && (this.loginStatus == CONNECTION_STATUS.DISCONNECTED));
         }
 
+        /// <summary>
+        /// Send a message to a person
+        /// </summary>
+        /// <param name="to">The phone number to send</param>
+        /// <param name="txt">The text that needs to be send</param>
         public void Message(string to, string txt)
         {
             var tmpMessage = new FMessage(to, true) { key = { id = TicketManager.GenerateId() }, data = txt };
             this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage);
         }
 
+        /// <summary>
+        /// Send an image to a person
+        /// </summary>
+        /// <param name="msgid">The id of the message</param>
+        /// <param name="to">the reciepient</param>
+        /// <param name="url">The url to the image</param>
+        /// <param name="file">Filename</param>
+        /// <param name="size">The size of the image in string format</param>
+        /// <param name="icon">Icon</param>
         public void MessageImage(string msgid, string to, string url, string file, string size, string icon)
         {
             //var mediaAttribs = new KeyValue[]
@@ -160,26 +290,45 @@ namespace WhatsAppApi
             //this.SendMessageNode(msgid, to, mediaNode);
         }
 
+        /// <summary>
+        /// Retrieve messages from the server
+        /// </summary>
         public void PollMessages()
         {
             this.processInboundData(this.whatsNetwork.ReadData());
         }
 
+        /// <summary>
+        /// Send a pong to the whatsapp server
+        /// </summary>
+        /// <param name="msgid">Message id</param>
         public void Pong(string msgid)
         {
             this.WhatsParser.WhatsSendHandler.SendPong(msgid);
         }
 
+        /// <summary>
+        /// Request last seen
+        /// </summary>
+        /// <param name="jid">Jabber id</param>
         public void RequestLastSeen(string jid)
         {
             this.WhatsParser.WhatsSendHandler.SendQueryLastOnline(jid);
         }
 
+        /// <summary>
+        /// Send nickname
+        /// </summary>
+        /// <param name="nickname">The nickname</param>
         public void sendNickname(string nickname)
         {
             this.WhatsParser.WhatsSendHandler.SendAvailableForChat(nickname);
         }
 
+        /// <summary>
+        /// Add the authenication nodes
+        /// </summary>
+        /// <returns>An instance of the ProtocolTreeNode class</returns>
         protected ProtocolTreeNode addAuth()
         {
             var node = new ProtocolTreeNode("auth",
@@ -189,6 +338,10 @@ namespace WhatsAppApi
             return node;
         }
 
+        /// <summary>
+        /// Add the auth response to protocoltreenode
+        /// </summary>
+        /// <returns>An instance of the ProtocolTreeNode</returns>
         protected ProtocolTreeNode addAuthResponse()
         {
             while (this._challengeBytes == null)
@@ -217,6 +370,10 @@ namespace WhatsAppApi
             return node;
         }
 
+        /// <summary>
+        /// Add stream features
+        /// </summary>
+        /// <returns></returns>
         protected ProtocolTreeNode addFeatures()
         {
             var child = new ProtocolTreeNode("receipt_acks", null);
@@ -226,6 +383,10 @@ namespace WhatsAppApi
             return parent;
         }
 
+        /// <summary>
+        /// Print a message to the debug console
+        /// </summary>
+        /// <param name="debugMsg">The message</param>
         protected void DebugPrint(string debugMsg)
         {
             if (WhatsApp.DEBUG && debugMsg.Length > 0)
@@ -234,11 +395,19 @@ namespace WhatsAppApi
             }
         }
 
+        /// <summary>
+        /// Process the challenge
+        /// </summary>
+        /// <param name="node">The node that contains the challenge</param>
         protected void processChallenge(ProtocolTreeNode node)
         {
             _challengeBytes = node.data;
         }
         
+        /// <summary>
+        /// Process inbound data
+        /// </summary>
+        /// <param name="data">Data to process</param>
         protected void processInboundData(byte[] data)
         {
             try
@@ -302,6 +471,10 @@ namespace WhatsAppApi
             }
         }
 
+        /// <summary>
+        /// Tell the server we recieved the message
+        /// </summary>
+        /// <param name="msg">The ProtocolTreeNode that contains the message</param>
         protected void sendMessageReceived(ProtocolTreeNode msg)
         {
             ProtocolTreeNode requestNode = msg.GetChild("request");
@@ -313,6 +486,11 @@ namespace WhatsAppApi
             this.WhatsParser.WhatsSendHandler.SendMessageReceived(tmpMessage);
         }
 
+        /// <summary>
+        /// MD5 hashes the password
+        /// </summary>
+        /// <param name="pass">String the needs to be hashed</param>
+        /// <returns>A md5 hash</returns>
         private string md5(string pass)
         {
             MD5 md5 = MD5.Create();
@@ -323,6 +501,10 @@ namespace WhatsAppApi
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Prints debug
+        /// </summary>
+        /// <param name="p">message</param>
         private void PrintInfo(string p)
         {
             this.DebugPrint(p);

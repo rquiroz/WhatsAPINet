@@ -9,15 +9,29 @@ using WhatsAppApi.Settings;
 
 namespace WhatsAppApi.Response
 {
+    /// <summary>
+    /// Respond to a recieved message
+    /// </summary>
     class MessageRecvResponse
     {
+        /// <summary>
+        /// An instance of the WhatsSendHandler class
+        /// </summary>
         private WhatsSendHandler sendHandler;
 
+        /// <summary>
+        /// Default class constructor
+        /// </summary>
+        /// <param name="sendHandler">An instance of the WhatsSendHandler class</param>
         public MessageRecvResponse(WhatsSendHandler sendHandler)
         {
             this.sendHandler = sendHandler;
         }
 
+        /// <summary>
+        /// Parse recieved message
+        /// </summary>
+        /// <param name="messageNode">TreeNode that contains the recieved message</param>
         public void ParseMessageRecv(ProtocolTreeNode messageNode)
         {
             FMessage.Builder builder = new FMessage.Builder();
@@ -52,7 +66,12 @@ namespace WhatsAppApi.Response
             }
         }
 
-
+        /// <summary>
+        /// Notify typing
+        /// </summary>
+        /// <param name="messageNode">The protocoltreenode</param>
+        /// <param name="tmpAttrFrom">From?</param>
+        /// <param name="tmpAttrbId">Message id</param>
         private void TypeNotification(ProtocolTreeNode messageNode, string tmpAttrFrom, string tmpAttrbId)
         {
             foreach (ProtocolTreeNode tmpChild in (messageNode.GetAllChildren() ?? new ProtocolTreeNode[0]))
@@ -72,6 +91,11 @@ namespace WhatsAppApi.Response
             }
         }
 
+        /// <summary>
+        /// Notify typing picture
+        /// </summary>
+        /// <param name="tmpChild">Child</param>
+        /// <param name="tmpFrom">From?</param>
         private static void TypeNotificationPicture(ProtocolTreeNode tmpChild, string tmpFrom)
         {
             foreach (ProtocolTreeNode item in (tmpChild.GetAllChildren() ?? new ProtocolTreeNode[0]))
@@ -91,6 +115,14 @@ namespace WhatsAppApi.Response
             }
         }
 
+        /// <summary>
+        /// Notify typing chat
+        /// </summary>
+        /// <param name="messageNode"></param>
+        /// <param name="tmpAttrFrom"></param>
+        /// <param name="tmpAttrbId"></param>
+        /// <param name="builder"></param>
+        /// <param name="tmpAttrFromJid"></param>
         private void TypeChat(ProtocolTreeNode messageNode, string tmpAttrFrom, string tmpAttrbId, FMessage.Builder builder, string tmpAttrFromJid)
         {
             foreach (ProtocolTreeNode itemNode in (messageNode.GetAllChildren() ?? new ProtocolTreeNode[0]))
@@ -240,6 +272,14 @@ namespace WhatsAppApi.Response
             }
         }
 
+        /// <summary>
+        /// Type subject
+        /// </summary>
+        /// <param name="messageNode"></param>
+        /// <param name="tmpFrom"></param>
+        /// <param name="uJid"></param>
+        /// <param name="tmpId"></param>
+        /// <param name="tmpT"></param>
         private void TypeSubject(ProtocolTreeNode messageNode, string tmpFrom, string uJid, string tmpId, string tmpT)
         {
             bool flag = false;
@@ -262,6 +302,12 @@ namespace WhatsAppApi.Response
             }
         }
 
+        /// <summary>
+        /// Type error
+        /// </summary>
+        /// <param name="messageNode"></param>
+        /// <param name="tmpAttrbId"></param>
+        /// <param name="tmpAttrFrom"></param>
         private void TypeError(ProtocolTreeNode messageNode, string tmpAttrbId, string tmpAttrFrom)
         {
             int num2 = 0;

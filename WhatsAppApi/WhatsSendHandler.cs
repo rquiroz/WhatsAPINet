@@ -9,30 +9,68 @@ using WhatsAppApi.Parser;
 
 namespace WhatsAppApi
 {
+    /// <summary>
+    /// Handles sending messages to the Whatsapp servers
+    /// </summary>
     public class WhatsSendHandler
     {
+        /// <summary>
+        /// Holds the jabber id that is used to authenticate
+        /// </summary>
         private string MyJID = "";
-        private string whatsAppRealm = "s.whatsapp.net";
+
+        /// <summary>
+        /// The whatsapp realm, defined in WhatsConstants.
+        /// </summary>
+        private string whatsAppRealm = WhatsAppApi.Settings.WhatsConstants.WhatsAppRealm;
+
+        /// <summary>
+        /// Holds an instance of the BinTreeNodeWriter
+        /// </summary>
         private BinTreeNodeWriter _binWriter;
+
+        /// <summary>
+        /// Holds an instance of the WhatsNetwork class
+        /// </summary>
         private WhatsNetwork whatsNetwork; 
           
+        /// <summary>
+        /// Default class constructor
+        /// </summary>
+        /// <param name="net">An instance of the WhatsNetwork class</param>
+        /// <param name="writer">An instance of the BinTreeNodeWriter</param>
         internal WhatsSendHandler(WhatsNetwork net, BinTreeNodeWriter writer)
         {
             this.whatsNetwork = net;
             this._binWriter = writer;
         }
 
+        /// <summary>
+        /// Sends a message to the Whatsapp server to tell that the user is 'online' / 'active'
+        /// </summary>
         public void SendActive()
         {
             var node = new ProtocolTreeNode("presence", new[] {new KeyValue("type", "active")});
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Sends a request to the server to add participants to a group chat
+        /// </summary>
+        /// <param name="gjid">Group jabber id</param>
+        /// <param name="participants">A list of participants (List of jids)</param>
         public void SendAddParticipants(string gjid, IEnumerable<string> participants)
         {
             this.SendAddParticipants(gjid, participants, null, null);
         }
 
+        /// <summary>
+        /// Sends a request to the server to add participants to a group chat
+        /// </summary>
+        /// <param name="gjid">Group jabber id</param>
+        /// <param name="participants">A list of participants (List of jids)</param>
+        /// <param name="onSuccess">The action to be executed when the request is successfull.</param>
+        /// <param name="onError">The action to be executed when the request fails</param>
         public void SendAddParticipants(string gjid, IEnumerable<string> participants, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("add_group_participants_");
@@ -64,6 +102,12 @@ namespace WhatsAppApi
             this.SendClearDirty(new string[] { category });
         }
 
+        /// <summary>
+        /// Sends the client configuration to the Whatsapp server.
+        /// </summary>
+        /// <param name="platform">The string identifying the client.</param>
+        /// <param name="lg">?</param>
+        /// <param name="lc">?</param>
         public void SendClientConfig(string platform, string lg, string lc)
         {
             string v = TicketCounter.MakeId("config_");
@@ -72,6 +116,19 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Sends the client configuration to the Whatsapp server.
+        /// </summary>
+        /// <param name="platform">The string identifying the client.</param>
+        /// <param name="lg">?</param>
+        /// <param name="lc">?</param>
+        /// <param name="pushUri">?</param>
+        /// <param name="preview">?</param>
+        /// <param name="defaultSetting">Default settings.</param>
+        /// <param name="groupsSetting">Settings regarding groups.</param>
+        /// <param name="groups">A list of groups</param>
+        /// <param name="onCompleted">Action to be executed when the request was successfull.</param>
+        /// <param name="onError">Action to be executed when the request failed.</param>
         public void SendClientConfig(string platform, string lg, string lc, Uri pushUri, bool preview, bool defaultSetting, bool groupsSetting, IEnumerable<GroupSetting> groups, Action onCompleted, Action<int> onError)
         {
             string id = TicketCounter.MakeId("config_");
@@ -101,12 +158,19 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Change status to 'Offline'
+        /// </summary>
         public void SendClose()
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "unavailable") });
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send the status of 'writing'/'typing'/'composing' to the Whatsapp server
+        /// </summary>
+        /// <param name="to">The recipient, the one the client is talking to.</param>
         public void SendComposing(string to)
         {
             var child = new ProtocolTreeNode("composing", new[] { new KeyValue("xmlns", "http://jabber.org/protocol/chatstates") });
@@ -114,11 +178,21 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Requests to create a new and empty group chat.
+        /// </summary>
+        /// <param name="subject">The subject of the group chat.</param>
         public void SendCreateGroupChat(string subject)
         {
             this.SendCreateGroupChat(subject, null, null);
         }
 
+        /// <summary>
+        /// Requests to create a new and empty group chat.
+        /// </summary>
+        /// <param name="subject">The subjecct of the group chat.</param>
+        /// <param name="onSuccess">Acction to be executed when the request was successful.</param>
+        /// <param name="onError">Action to be executed when the request failed.</param>
         public void SendCreateGroupChat(string subject, Action<string> onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("create_group_");
@@ -127,6 +201,11 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Make a reques to the Whatsapp servers to delete a specific account.
+        /// </summary>
+        /// <param name="onSuccess">The action to be executed when the request was successful.</param>
+        /// <param name="onError">The action to be executed when the request failed.</param>
         public void SendDeleteAccount(Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("del_acct_");
@@ -147,6 +226,10 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Request to be delete from a group chat.
+        /// </summary>
+        /// <param name="jid"></param>
         public void SendDeleteFromRoster(string jid)
         {
             string v = TicketCounter.MakeId("roster_");
@@ -156,16 +239,31 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Sends the 'Delivered' status to a specific client
+        /// </summary>
+        /// <param name="to">The JID of the person the chat is with.</param>
+        /// <param name="id">The message id.</param>
         public void SendDeliveredReceiptAck(string to, string id)
         {
             this.SendReceiptAck(to, id, "delivered");
         }
 
+        /// <summary>
+        /// Sends a request to end and remove the group chat.
+        /// </summary>
+        /// <param name="gjid">The group jabber id.</param>
         public void SendEndGroupChat(string gjid)
         {
             this.SendEndGroupChat(gjid, null, null);
         }
 
+        /// <summary>
+        /// Sends a request to end and remove the group chat.
+        /// </summary>
+        /// <param name="gjid">The group jabber id.</param>
+        /// <param name="onSuccess">The action to be executed when the request was successful.</param>
+        /// <param name="onError">The action to be executed when the request failed.</param>
         public void SendEndGroupChat(string gjid, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("remove_group_");
@@ -174,6 +272,9 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Request the client confguration
+        /// </summary>
         public void SendGetClientConfig()
         {
             string id = TicketCounter.MakeId("get_config_");
@@ -182,6 +283,9 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Request dirty
+        /// </summary>
         public void SendGetDirty()
         {
             string id = TicketCounter.MakeId("get_dirty_");
@@ -190,6 +294,10 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send a request to retrieve group information
+        /// </summary>
+        /// <param name="gjid">The group jabber id</param>
         public void SendGetGroupInfo(string gjid)
         {
             string id = TicketCounter.MakeId("get_g_info_");
@@ -198,18 +306,30 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Make a request to retrieve all groups where the client is participating in
+        /// </summary>
+        /// <param name="onSuccess">The action to be executed when the request was successful.</param>
+        /// <param name="onError">The action to be executed when the request failed.</param>
         public void SendGetGroups(Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("get_groups_");
             this.SendGetGroups(id, "participating");
         }
 
+        /// <summary>
+        /// Make a request to retrieve all groups where the client is the owner of.
+        /// </summary>
         public void SendGetOwningGroups()
         {
             string id = TicketCounter.MakeId("get_owning_groups_");
             this.SendGetGroups(id, "owning");
         }
 
+        /// <summary>
+        /// Make a request to retrieve all group participents
+        /// </summary>
+        /// <param name="gjid">The group jabber id</param>
         public void SendGetParticipants(string gjid)
         {
             string id = TicketCounter.MakeId("get_participants_");
@@ -218,11 +338,23 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Make a request to retrieve a photo
+        /// </summary>
+        /// <param name="jid">The group jabber id.</param>
+        /// <param name="largeFormat">If set to true, the photo will be retrieved in the highest resolution.</param>
         public void SendGetPhoto(string jid, bool largeFormat)
         {
             this.SendGetPhoto(jid, null, largeFormat, delegate { });
         }
 
+        /// <summary>
+        /// Make a request to retrieve a photo for a specific photo id.
+        /// </summary>
+        /// <param name="jid">The group jabber id.</param>
+        /// <param name="expectedPhotoId">The specific photo that needs to be retrieved.</param>
+        /// <param name="largeFormat">If set to true, the photo will be retrieved in the highest resolution.</param>
+        /// <param name="onComplete">The action to be executed when the request was successful.</param>
         public void SendGetPhoto(string jid, string expectedPhotoId, bool largeFormat, Action onComplete)
         {
             string id = TicketCounter.MakeId("get_photo_");
@@ -240,6 +372,10 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Make a request to retrieve a list of photo id's
+        /// </summary>
+        /// <param name="jids">The list of jabber id's the photos need to be retrieved of.</param>
         public void SendGetPhotoIds(IEnumerable<string> jids)
         {
             string id = TicketCounter.MakeId("get_photo_id_");
@@ -249,6 +385,9 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Make a request to retrieve a list of privacy's
+        /// </summary>
         public void SendGetPrivacyList()
         {
             string id = TicketCounter.MakeId("privacylist_");
@@ -258,6 +397,9 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Make a request to retrieve information (properties) about the server.
+        /// </summary>
         public void SendGetServerProperties()
         {
             string id = TicketCounter.MakeId("get_server_properties_");
@@ -266,6 +408,10 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Make a request to retrieve the status for specific jabber id.
+        /// </summary>
+        /// <param name="jid">The jabber id the the status should be retrieved from.</param>
         public void SendGetStatus(string jid)
         {
             int index = jid.IndexOf('@');
@@ -279,22 +425,41 @@ namespace WhatsAppApi
             }
         }
 
+        /// <summary>
+        /// Make a request to change our status to inactive.
+        /// </summary>
         public void SendInactive()
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "inactive") });
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Make a request to leave a group chat
+        /// </summary>
+        /// <param name="gjid">The group jabber id</param>
         public void SendLeaveGroup(string gjid)
         {
             this.SendLeaveGroup(gjid, null, null);
         }
 
+        /// <summary>
+        /// Make a rquest to leave a group chat
+        /// </summary>
+        /// <param name="gjid">The group jabber id.</param>
+        /// <param name="onSuccess">The action to be executed when the request was successful.</param>
+        /// <param name="onError">The action to be executed when the request failed.</param>
         public void SendLeaveGroup(string gjid, Action onSuccess, Action<int> onError)
         {
             this.SendLeaveGroups(new string[] { gjid }, onSuccess, onError);
         }
 
+        /// <summary>
+        /// Make a request to leave multiple groups at the same time.
+        /// </summary>
+        /// <param name="gjids">The group jabber id.</param>
+        /// <param name="onSuccess">The action to be executed when the request was successful.</param>
+        /// <param name="onError">The action to be executed when the request failed.</param>
         public void SendLeaveGroups(IEnumerable<string> gjids, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("leave_group_");
@@ -304,8 +469,12 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Sends a message, message properties are defined in the instance of FMessage.
+        /// </summary>
+        /// <param name="message">An instance of the FMessage class.</param>
         public void SendMessage(FMessage message)
-        {
+        {   
             if (message.media_wa_type != FMessage.Type.Undefined)
             {
                 this.SendMessageWithMedia(message);
@@ -316,6 +485,10 @@ namespace WhatsAppApi
             }
         }
 
+        /// <summary>
+        /// Tell the server the message has been recieved.
+        /// </summary>
+        /// <param name="message">An instance of the FMessage class.</param>
         public void SendMessageReceived(FMessage message)
         {
             var child = new ProtocolTreeNode("received", new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
@@ -323,11 +496,19 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send a null byte to the server
+        /// </summary>
         public void SendNop()
         {
             this.whatsNetwork.SendData(this._binWriter.Write(null));
         }
 
+        /// <summary>
+        /// Send a notification to a specific user that the message has been recieved
+        /// </summary>
+        /// <param name="jid">The jabber id</param>
+        /// <param name="id">The id of the message</param>
         public void SendNotificationReceived(string jid, string id)
         {
             var child = new ProtocolTreeNode("received", new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
@@ -335,6 +516,10 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send pause
+        /// </summary>
+        /// <param name="to">The jabber id of the reciever</param>
         public void SendPaused(string to)
         {
             var child = new ProtocolTreeNode("paused", new[] { new KeyValue("xmlns", "http://jabber.org/protocol/chatstates") });
@@ -342,6 +527,9 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send a ping to the server
+        /// </summary>
         public void SendPing()
         {
             string id = TicketCounter.MakeId("ping_");
@@ -350,18 +538,30 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send a pong to a specific user
+        /// </summary>
+        /// <param name="id"></param>
         public void SendPong(string id)
         {
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("type", "result"), new KeyValue("to", this.whatsAppRealm), new KeyValue("id", id) });
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send a subscription request
+        /// </summary>
+        /// <param name="to"></param>
         public void SendPresenceSubscriptionRequest(string to)
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "subscribe"), new KeyValue("to", to) });
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Request to retrieve the LastOnline string
+        /// </summary>
+        /// <param name="jid">The jabber id</param>
         public void SendQueryLastOnline(string jid)
         {
             string id = TicketCounter.MakeId("last_");
@@ -370,6 +570,11 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Tell the server wether the platform is replay capable
+        /// </summary>
+        /// <param name="platform">The platform</param>
+        /// <param name="value">Capable or not</param>
         public void SendRelayCapable(string platform, bool value)
         {
             string v = TicketCounter.MakeId("relay_");
@@ -378,6 +583,11 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Tell the server the relay was complete
+        /// </summary>
+        /// <param name="id">The id</param>
+        /// <param name="millis">Miliseconds it took to relay the message</param>
         public void SendRelayComplete(string id, int millis)
         {
             var child = new ProtocolTreeNode("relay", new[] { new KeyValue("elapsed", millis.ToString(CultureInfo.InvariantCulture)) });
@@ -385,6 +595,10 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send a relay timeout
+        /// </summary>
+        /// <param name="id">The id</param>
         public void SendRelayTimeout(string id)
         {
             var innerChild = new ProtocolTreeNode("remote-server-timeout", new[] { new KeyValue("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas") });
@@ -393,22 +607,46 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Request to remove participants from a group
+        /// </summary>
+        /// <param name="gjid">The group jabber id</param>
+        /// <param name="participants">A list of participants</param>
         public void SendRemoveParticipants(string gjid, List<string> participants)
         {
             this.SendRemoveParticipants(gjid, participants, null, null);
         }
 
+        /// <summary>
+        /// Request to remove participants from a group
+        /// </summary>
+        /// <param name="gjid">The group jabber id</param>
+        /// <param name="participants">A list of participants</param>
+        /// <param name="onSuccess">Action to execute when the request was successful</param>
+        /// <param name="onError">Action to execute when the request failed</param>
         public void SendRemoveParticipants(string gjid, List<string> participants, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("remove_group_participants_");
             this.SendVerbParticipants(gjid, participants, id, "remove");
         }
 
+        /// <summary>
+        /// Request to set the group subject
+        /// </summary>
+        /// <param name="gjid">The group jabber id</param>
+        /// <param name="subject">The new group subject</param>
         public void SendSetGroupSubject(string gjid, string subject)
         {
             this.SendSetGroupSubject(gjid, subject, null, null);
         }
 
+        /// <summary>
+        /// Request to set the group subject
+        /// </summary>
+        /// <param name="gjid">The group jabber id</param>
+        /// <param name="subject">The new group subject</param>
+        /// <param name="onSuccess">Action to execute when the request was successful</param>
+        /// <param name="onError">Action to execute when the request failed</param>
         public void SendSetGroupSubject(string gjid, string subject, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("set_group_subject_");
@@ -417,6 +655,14 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Change the profile picture
+        /// </summary>
+        /// <param name="jid">The user jabber id</param>
+        /// <param name="bytes">The ammount of bytes needed for the photo</param>
+        /// <param name="thumbnailBytes">The amount of bytes needed for the thumbanil</param>
+        /// <param name="onSuccess">Action to execute when the request was successful</param>
+        /// <param name="onError">Action to execute when the request failed</param>
         public void SendSetPhoto(string jid, byte[] bytes, byte[] thumbnailBytes, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("set_photo_");
@@ -429,11 +675,21 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Set the list of people that have been blocked
+        /// </summary>
+        /// <param name="list">The list of people that have been blocked.</param>
         public void SendSetPrivacyBlockedList(IEnumerable<string> list)
         {
             this.SendSetPrivacyBlockedList(list, null, null);
         }
 
+        /// <summary>
+        /// Set the list of people that have been blocked
+        /// </summary>
+        /// <param name="jidSet">List of jabber id's</param>
+        /// <param name="onSuccess">Action to execute when the request was successful</param>
+        /// <param name="onError">Action to execute when the request failed</param>
         public void SendSetPrivacyBlockedList(IEnumerable<string> jidSet, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("privacy_");
@@ -444,6 +700,12 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node3));
         }
 
+        /// <summary>
+        /// Send a status update
+        /// </summary>
+        /// <param name="status">The status</param>
+        /// <param name="onSuccess">Action to execute when the request was successful</param>
+        /// <param name="onError">Action to execute when the request failed</param>
         public void SendStatusUpdate(string status, Action onComplete, Action<int> onError)
         {
             string id = TicketManager.GenerateId();
@@ -452,6 +714,11 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(messageNode));
         }
 
+        /// <summary>
+        /// Tell the server the new subject has been recieved
+        /// </summary>
+        /// <param name="to">The recipient</param>
+        /// <param name="id">The id</param>
         public void SendSubjectReceived(string to, string id)
         {
             var child = new ProtocolTreeNode("received", new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
@@ -459,23 +726,41 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Unsubscibe him
+        /// </summary>
+        /// <param name="jid">The jabber id</param>
         public void SendUnsubscribeHim(string jid)
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "unsubscribed"), new KeyValue("to", jid) });
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Unsubscribe me
+        /// </summary>
+        /// <param name="jid">The jabber id</param>
         public void SendUnsubscribeMe(string jid)
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "unsubscribe"), new KeyValue("to", jid) });
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Tell the server the 'visible' status has been acknowledged
+        /// </summary>
+        /// <param name="to">Recipient</param>
+        /// <param name="id">The id</param>
         public void SendVisibleReceiptAck(string to, string id)
         {
             this.SendReceiptAck(to, id, "visible");
         }
 
+        /// <summary>
+        ///  Request to retrieve all groups
+        /// </summary>
+        /// <param name="id">The id</param>
+        /// <param name="type">The type</param>
         internal void SendGetGroups(string id, string type)
         {
             var child = new ProtocolTreeNode("list", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("type", type) });
@@ -483,12 +768,20 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send a message with a body (Plain text);
+        /// </summary>
+        /// <param name="message">An instance of the FMessage class.</param>
         internal void SendMessageWithBody(FMessage message)
         {
             var child = new ProtocolTreeNode("body", null, null, WhatsApp.SYSEncoding.GetBytes(message.data));
             this.whatsNetwork.SendData(this._binWriter.Write(GetMessageNode(message, child)));
         }
 
+        /// <summary>
+        /// Send a message with media (photo/sound/movie)
+        /// </summary>
+        /// <param name="message">An instance of the FMessage class.</param>
         internal void SendMessageWithMedia(FMessage message)
         {
             ProtocolTreeNode node;
@@ -544,6 +837,13 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Send a verb of group participants
+        /// </summary>
+        /// <param name="gjid">The group jabber id</param>
+        /// <param name="participants">List of participants</param>
+        /// <param name="id">The id</param>
+        /// <param name="inner_tag">Inner tag</param>
         internal void SendVerbParticipants(string gjid, IEnumerable<string> participants, string id, string inner_tag)
         {
             IEnumerable<ProtocolTreeNode> source = from jid in participants select new ProtocolTreeNode("participant", new[] { new KeyValue("jid", jid) });
@@ -552,6 +852,11 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        /// <summary>
+        /// Processes group settings
+        /// </summary>
+        /// <param name="groups">A list of instances of the GroupSetting class.</param>
+        /// <returns>A list of ProtocolTreeNodes</returns>
         private IEnumerable<ProtocolTreeNode> ProcessGroupSettings(IEnumerable<GroupSetting> groups)
         {
             ProtocolTreeNode[] nodeArray = null;
@@ -567,6 +872,12 @@ namespace WhatsAppApi
             return nodeArray;
         }
 
+        /// <summary>
+        /// Tell the server the reciepient has been acknowledged
+        /// </summary>
+        /// <param name="to">The reciepient</param>
+        /// <param name="id">The id</param>
+        /// <param name="receiptType">The receipt type</param>
         private void SendReceiptAck(string to, string id, string receiptType)
         {
             var tmpChild = new ProtocolTreeNode("ack", new[] { new KeyValue("xmlns", "urn:xmpp:receipts"), new KeyValue("type", receiptType) });
@@ -579,11 +890,23 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(resultNode));
         }
 
+        /// <summary>
+        /// Get the message node
+        /// </summary>
+        /// <param name="message">the message</param>
+        /// <param name="pNode">The protocol tree node</param>
+        /// <returns>An instance of the ProtocolTreeNode class.</returns>
         internal static ProtocolTreeNode GetMessageNode(FMessage message, ProtocolTreeNode pNode)
         {
             return new ProtocolTreeNode("message", new[] { new KeyValue("to", message.key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.key.id) }, pNode);
         }
 
+        /// <summary>
+        /// Get the message node
+        /// </summary>
+        /// <param name="message">the message</param>
+        /// <param name="pNode">The protocol tree node</param>
+        /// <returns>An instance of the ProtocolTreeNode class.</returns>
         public static ProtocolTreeNode GetSubjectMessage(string to, string id, ProtocolTreeNode child)
         {
             return new ProtocolTreeNode("message", new[] { new KeyValue("to", to), new KeyValue("type", "subject"), new KeyValue("id", id) }, child);
