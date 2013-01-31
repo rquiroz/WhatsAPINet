@@ -20,3 +20,12 @@ everywhere.
 * Authentification: SASL, digest auth (http://tools.ietf.org/html/rfc2831)
 * Blocking: XMPP privacy lists? (http://xmpp.org/extensions/xep-0016.html)
 * Ping (http://xmpp.org/extensions/xep-0199.html)
+
+### Encryption
+
+Following the news that WhatsApp messages were sent in plaintext (and thus
+readable for everyone when on a WiFi hotspot), encryption was added. At least
+the Android client uses this encryption, which seems to be TLS as specified by
+the XMPP RFC. However, I did not really look into this. Also, the mapping of
+keywords to bytes seems to have also changed in the latest version of the
+Android app.
