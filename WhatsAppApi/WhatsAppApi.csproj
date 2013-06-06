@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -36,6 +37,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.RegularExpressions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -48,12 +50,14 @@
     <Compile Include="Helper\AccountInfo.cs" />
     <Compile Include="Helper\BinTreeNodeReader.cs" />
     <Compile Include="Helper\BinTreeNodeWriter.cs" />
+    <Compile Include="Helper\ContactSync.cs" />
     <Compile Include="Helper\DecodeHelper.cs" />
     <Compile Include="Helper\DisconnectedException.cs" />
     <Compile Include="Helper\Encryption.cs" />
     <Compile Include="Helper\Func.cs" />
     <Compile Include="Helper\IncompleteMessageException.cs" />
     <Compile Include="Helper\KeyValue.cs" />
+    <Compile Include="Helper\MediaUploader.cs" />
     <Compile Include="Helper\ProtocolTreeNode.cs" />
     <Compile Include="Helper\RC4.cs">
       <SubType>Code</SubType>

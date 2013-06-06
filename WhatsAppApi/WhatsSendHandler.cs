@@ -343,9 +343,9 @@ namespace WhatsAppApi
         /// </summary>
         /// <param name="jid">The group jabber id.</param>
         /// <param name="largeFormat">If set to true, the photo will be retrieved in the highest resolution.</param>
-        public void SendGetPhoto(string jid, bool largeFormat)
+        public string SendGetPhoto(string jid, bool largeFormat)
         {
-            this.SendGetPhoto(jid, null, largeFormat, delegate { });
+            return this.SendGetPhoto(jid, null, largeFormat, delegate { });
         }
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace WhatsAppApi
         /// <param name="expectedPhotoId">The specific photo that needs to be retrieved.</param>
         /// <param name="largeFormat">If set to true, the photo will be retrieved in the highest resolution.</param>
         /// <param name="onComplete">The action to be executed when the request was successful.</param>
-        public void SendGetPhoto(string jid, string expectedPhotoId, bool largeFormat, Action onComplete)
+        public string SendGetPhoto(string jid, string expectedPhotoId, bool largeFormat, Action onComplete)
         {
             string id = TicketCounter.MakeId("get_photo_");
             var attrList = new List<KeyValue> { new KeyValue("xmlns", "w:profile:picture") };
@@ -370,6 +370,7 @@ namespace WhatsAppApi
             var child = new ProtocolTreeNode("picture", attrList.ToArray());
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", jid) }, child);
             this.whatsNetwork.SendData(this._binWriter.Write(node));
+            return id;
         }
 
         /// <summary>

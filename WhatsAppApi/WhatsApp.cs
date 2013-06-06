@@ -23,8 +23,10 @@ namespace WhatsAppApi
         /// </summary>
         public enum CONNECTION_STATUS
         {
+            UNAUTHORIZED,
             DISCONNECTED,
-            CONNECTED
+            CONNECTED,
+            LOGGEDIN
         }
     
         /// <summary>
@@ -46,6 +48,14 @@ namespace WhatsAppApi
         /// Holds the login status
         /// </summary>
         private CONNECTION_STATUS loginStatus;
+
+        public CONNECTION_STATUS ConnectionStatus
+        {
+            get
+            {
+                return this.loginStatus;
+            }
+        }
 
         /// <summary>
         /// A lock for a message
@@ -80,7 +90,7 @@ namespace WhatsAppApi
         /// <summary>
         /// The timeout for the connection with the Whatsapp servers
         /// </summary>
-        private int timeout = 5000;
+        private int timeout = 300000;
 
         /// <summary>
         /// An instance of the WhatsNetwork class
@@ -169,7 +179,7 @@ namespace WhatsAppApi
         /// </summary>
         public void Disconnect()
         {
-            this.whatsNetwork.Connect();
+            this.whatsNetwork.Disconenct();
             this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
         }
 
@@ -177,20 +187,9 @@ namespace WhatsAppApi
         /// Encrypt the password (hash)
         /// </summary>
         /// <returns></returns>
-        public string encryptPassword()
+        public byte[] encryptPassword()
         {
-            // iPhone
-            if (this.imei.Contains(":"))
-            {
-                this.imei = this.imei.ToUpper();
-                return md5(this.imei + this.imei);
-            }
-
-            // Other
-            else
-            {
-                return md5(new string(this.imei.Reverse().ToArray()));
-            }
+            return Convert.FromBase64String(this.imei);
         }
 
         /// <summary>
@@ -200,6 +199,16 @@ namespace WhatsAppApi
         public AccountInfo GetAccountInfo()
         {
             return this.accountinfo;
+        }
+
+        public void GetStatus(string jid)
+        {
+            this.WhatsSendHandler.SendGetStatus(this.GetJID(jid));
+        }
+
+        public void PresenceSubscription(string target)
+        {
+            this.WhatsSendHandler.SendPresenceSubscriptionRequest(this.GetJID(target));
         }
 
         /// <summary>
@@ -233,6 +242,13 @@ namespace WhatsAppApi
         /// </summary>
         public void Login()
         {
+            //reset stuff
+            this.reader.Encryptionkey = null;
+            this.writer.Encryptionkey = null;
+            this._challengeBytes = null;
+            Encryption.encryptionIncoming = null;
+            Encryption.encryptionOutgoing = null;
+
             string resource = string.Format(@"{0}-{1}-{2}",
                 WhatsConstants.IphoneDevice,
                 WhatsConstants.WhatsAppVer,
@@ -262,8 +278,31 @@ namespace WhatsAppApi
         /// <param name="txt">The text that needs to be send</param>
         public void Message(string to, string txt)
         {
-            var tmpMessage = new FMessage(to, true) { key = { id = TicketManager.GenerateId() }, data = txt };
+            var tmpMessage = new FMessage(this.GetJID(to), true) { key = { id = TicketManager.GenerateId() }, data = txt };
             this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage);
+        }
+
+        /// <summary>
+        /// Convert the input string to a JID if necessary
+        /// </summary>
+        /// <param name="target">Phonenumber or JID</param>
+        public string GetJID(string target)
+        {
+            if (!target.Contains('@'))
+            {
+                //check if group message
+                if (target.Contains('-'))
+                {
+                    //to group
+                    target += "@g.us";
+                }
+                else
+                {
+                    //to normal user
+                    target += "@s.whatsapp.net";
+                }
+            }
+            return target;
         }
 
         /// <summary>
@@ -313,7 +352,7 @@ namespace WhatsAppApi
         /// <param name="jid">Jabber id</param>
         public void RequestLastSeen(string jid)
         {
-            this.WhatsParser.WhatsSendHandler.SendQueryLastOnline(jid);
+            this.WhatsParser.WhatsSendHandler.SendQueryLastOnline(this.GetJID(jid));
         }
 
         /// <summary>
@@ -412,17 +451,29 @@ namespace WhatsAppApi
         {
             try
             {
-                var node = this.reader.nextTree(data);
+                List<byte> foo = new List<byte>();
+                foreach (IncompleteMessageException e in this._incompleteBytes)
+                {
+                    foo.AddRange(e.getInput());
+                }
+                this._incompleteBytes = new List<IncompleteMessageException>();
+                foo.AddRange(data);
+                ProtocolTreeNode node = this.reader.nextTree(foo.ToArray());
                 while (node != null)
                 {
-                    this.WhatsParser.ParseProtocolNode(node);
+                    //this.WhatsParser.ParseProtocolNode(node);
+                    if (node.tag == "iq"
+                    && node.GetAttribute("type") == "error")
+                    {
+                        this.AddMessage(node);
+                    }
                     if (ProtocolTreeNode.TagEquals(node, "challenge"))
                     {
                         this.processChallenge(node);
-                    }
+                    } 
                     else if (ProtocolTreeNode.TagEquals(node,"success"))
                     {
-                        this.loginStatus = CONNECTION_STATUS.CONNECTED;
+                        this.loginStatus = CONNECTION_STATUS.LOGGEDIN;
                         this.accountinfo = new AccountInfo(node.GetAttribute("status"),
                                                            node.GetAttribute("kind"),
                                                            node.GetAttribute("creation"),
@@ -430,7 +481,7 @@ namespace WhatsAppApi
                     }
                     else if (ProtocolTreeNode.TagEquals(node,"failure"))
                     {
-                        this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
+                        this.loginStatus = CONNECTION_STATUS.UNAUTHORIZED;
                     }
                     if (ProtocolTreeNode.TagEquals(node,"message"))
                     {
@@ -440,6 +491,22 @@ namespace WhatsAppApi
                     if (ProtocolTreeNode.TagEquals(node,"stream:error"))
                     {
                         Console.Write(node.NodeString());
+                    }
+                    if (ProtocolTreeNode.TagEquals(node, "iq")
+                        && node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                        && ProtocolTreeNode.TagEquals(node.children.First(), "query")
+                        )
+                    {
+                        //last seen
+                        this.AddMessage(node);
+                    }
+                    if (ProtocolTreeNode.TagEquals(node, "iq")
+                        && node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                        && ProtocolTreeNode.TagEquals(node.children.First(), "picture")
+                        )
+                    {
+                        //profile picture
+                        this.AddMessage(node);
                     }
                     if (ProtocolTreeNode.TagEquals(node,"iq")
                         && node.GetAttribute("type").Equals("get", StringComparison.OrdinalIgnoreCase)
@@ -462,12 +529,17 @@ namespace WhatsAppApi
                             }
                         }
                     }
+                    if (ProtocolTreeNode.TagEquals(node, "presence"))
+                    {
+                        //presence node
+                        this.AddMessage(node);
+                    }
                     node = this.reader.nextTree();
                 }
             }
-            catch (IncompleteMessageException)
+            catch (IncompleteMessageException ex)
             {
-        
+                this._incompleteBytes.Add(ex);
             }
         }
 

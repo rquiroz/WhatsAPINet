@@ -81,8 +81,10 @@ namespace WhatsAppApi
         /// </summary>
         public void Disconenct()
         {
-            if (this.socket.Connected)
-                this.socket.Disconnect(true);
+            if (this.socket != null)
+            {
+                this.socket.Close();
+            }
         }
 
         /// <summary>
