@@ -6,7 +6,7 @@ using System.Text;
 
 namespace WhatsAppApi.Helper
 {
-    internal static class DecodeHelper
+    public static class DecodeHelper
     {
         private static string[] dictList = null;
         public static string decode(string hex)

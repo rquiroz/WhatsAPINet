@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WhatsAppApi.Helper
 {
-    internal class BinTreeNodeWriter
+    public class BinTreeNodeWriter
     {
         private List<byte> buffer;
         private Dictionary<string, int> tokenMap;

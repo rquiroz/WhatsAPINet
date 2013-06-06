@@ -6,7 +6,7 @@ using System.Text;
 
 namespace WhatsAppApi.Helper
 {
-    static class Encryption
+    public static class Encryption
     {
         public static RC4 encryptionOutgoing = null;
         public static RC4 encryptionIncoming = null;

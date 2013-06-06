@@ -2,7 +2,7 @@
 
 namespace WhatsAppApi.Helper
 {
-    internal class RC4
+    public class RC4
     {
         private int i = 0;
         private int j = 0;

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WhatsAppApi.Helper
 {
-    internal class BinTreeNodeReader
+    public class BinTreeNodeReader
     {
         private string[] dictionary;
         public byte[] Encryptionkey { get; set; }
@@ -17,7 +17,7 @@ namespace WhatsAppApi.Helper
             this.Encryptionkey = null;
         }
 
-        public ProtocolTreeNode nextTree(byte[] pInput = null)
+        public ProtocolTreeNode nextTree(byte[] pInput = null, bool useDecrypt = true)
         {
             if (pInput != null)
             {
@@ -44,9 +44,16 @@ namespace WhatsAppApi.Helper
 
             bool isEncrypted = (stanzaFlag & 8) != 0;
 
-            if (isEncrypted && Encryptionkey != null)
+            if (isEncrypted)
             {
-                decode(size);
+                if (Encryptionkey != null)
+                {
+                    decode(size, useDecrypt);
+                }
+                else
+                {
+                    throw new Exception("Received encrypted message, encryption key not set");
+                }
             }
 
             if(stanzaSize > 0)
@@ -59,7 +66,7 @@ namespace WhatsAppApi.Helper
             return null;
         }
 
-        protected void decode(int stanzaSize)
+        protected void decode(int stanzaSize, bool useDecrypt)
         {
             int size = stanzaSize;
             byte[] data = new byte[size];
@@ -79,7 +86,16 @@ namespace WhatsAppApi.Helper
             if (hashServerByte.SequenceEqual(hashByte))
             {
                 this.buffer.RemoveRange(0, 4);
-                dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
+                if (useDecrypt)
+                {
+                    dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
+                }
+                else
+                {
+                    dataReal = Encryption.WhatsappEncrypt(this.Encryptionkey, packet, true);
+                    //dataReal = new byte[foo.Length - 4];
+                    //Buffer.BlockCopy(foo, 0, dataReal, 0, dataReal.Length);
+                }
 
                 for (int i = 0; i < size - 4; i++)
                 {
@@ -101,7 +117,7 @@ namespace WhatsAppApi.Helper
             }
             else
             {
-                throw new Exception("BinTreeNodeReader->getToken: Invalid token $token");
+                throw new Exception("BinTreeNodeReader->getToken: Invalid token " + token);
             }
             return ret;
         }
@@ -111,7 +127,7 @@ namespace WhatsAppApi.Helper
             byte[] ret = new byte[0];
             if (token == -1)
             {
-                throw new Exception("BinTreeNodeReader->readString: Invalid token $token");
+                throw new Exception("BinTreeNodeReader->readString: Invalid token " + token);
             }
             if ((token > 4) && (token < 0xf5))
             {
@@ -230,7 +246,7 @@ namespace WhatsAppApi.Helper
             }
             else
             {
-                throw new Exception("BinTreeNodeReader->readListSize: Invalid token $token");
+                throw new Exception("BinTreeNodeReader->readListSize: Invalid token " + token);
             }
             return size;
         }

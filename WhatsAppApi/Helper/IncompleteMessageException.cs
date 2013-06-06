@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WhatsAppApi.Helper
 {
-    class IncompleteMessageException : Exception
+    public class IncompleteMessageException : Exception
     {
         private int code;
         private string message;
