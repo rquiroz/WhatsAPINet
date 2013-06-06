@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using WhatsAppApi;
 using WhatsAppApi.Account;
+using WhatsAppApi.Helper;
 using WhatsAppApi.Register;
 
 namespace WhatsTest
@@ -22,26 +23,21 @@ namespace WhatsTest
             System.Console.OutputEncoding = Encoding.Default;
             System.Console.InputEncoding = Encoding.Default;
             string nickname = "WhatsAPI Test";
-            //string sender = ""; // Mobile number with country code (but without + or 00)
-            //string imei = ""; // MAC Address for iOS IMEI for other platform (Android/etc) 
+            string sender = "3526********"; // Mobile number with country code (but without + or 00)
+            string password = "JJ9gQWk******************Y=";//v2 password
+            string target = "316********";// Mobile number to send the message to
 
-            //WhatsApp wa = new WhatsApp(sender, imei, nickname, true);
+            WhatsApp wa = new WhatsApp(sender, password, nickname, true);
+            
+            wa.Connect();
+            wa.Login();
+            wa.sendNickname(nickname);
+            wa.Disconnect();
 
-            //string countrycode = sender.Substring(0, 2);
-            //string phonenumber = sender.Remove(0, 2);
+            wa.PresenceSubscription(target);
+            wa.GetStatus(target);
 
-            //if (!WhatsRegister.ExistsAndDelete(countrycode, phonenumber, imei))
-            //{
-            //    PrintToConsole("Wrong Password");
-            //    return;
-            //}
-
-            //wa.Connect();
-            //wa.Login();
-            //wa.sendNickname("test");
-
-            //ProcessChat(wa, "");
-            RegisterAccount();
+            ProcessChat(wa, "");
 
             Console.ReadKey();
         }
