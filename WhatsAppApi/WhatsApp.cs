@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -28,6 +30,8 @@ namespace WhatsAppApi
             CONNECTED,
             LOGGEDIN
         }
+
+        private ProtocolTreeNode uploadResponse;
     
         /// <summary>
         /// An instance of the AccountInfo class
@@ -346,10 +350,10 @@ namespace WhatsAppApi
             }
 
             //request upload
-            this.requestFileUpload(filehash, "image", finfo.Length, filepath, to);
+            string url = this.UploadFile(filehash, "image", finfo.Length, filepath, to, type);
         }
 
-        private void requestFileUpload(string b64hash, string type, long size, string path, string to)
+        private string UploadFile(string b64hash, string type, long size, string path, string to, string contenttype)
         {
             ProtocolTreeNode media = new ProtocolTreeNode("media", new KeyValue[] {
                 new KeyValue("xmlns", "w:m"),
@@ -363,7 +367,86 @@ namespace WhatsAppApi
                 new KeyValue("to", WhatsConstants.WhatsAppServer),
                 new KeyValue("type", "set")
             }, media);
+            this.uploadResponse = null;
             this.WhatsSendHandler.SendNode(node);
+            int i = 0;
+            while (this.uploadResponse == null && i < 5)
+            {
+                i++;
+                this.PollMessages();
+            }
+            try
+            {
+                string uploadUrl = this.uploadResponse.GetChild("media").GetAttribute("url");
+                this.uploadResponse = null;
+
+                Uri uri = new Uri(uploadUrl);
+
+                string hashname = string.Empty;
+                byte[] buff = MD5.Create().ComputeHash(System.Text.Encoding.Default.GetBytes(path));
+                StringBuilder sb = new StringBuilder();
+                foreach (byte b in buff)
+                {
+                    sb.Append(b.ToString("X2"));
+                }
+                hashname = String.Format("{0}.{1}", sb.ToString(), path.Split('.').Last());
+
+                string boundary = "zzXXzzYYzzXXzzQQ";
+
+                sb = new StringBuilder();
+
+                sb.AppendFormat("--{0}\r\n", boundary);
+                sb.Append("Content-Disposition: form-data; name=\"to\"\r\n\r\n");
+                sb.AppendFormat("{0}\r\n", to);
+                sb.AppendFormat("--{0}\r\n", boundary);
+                sb.Append("Content-Disposition: form-data; name=\"from\"\r\n\r\n");
+                sb.AppendFormat("{0}\r\n", this.phoneNumber);
+                sb.AppendFormat("{0}\r\n", boundary);
+                sb.AppendFormat("Content-Disposition: form-data; name=\"file\"; filename=\"{0}\"\r\n", hashname);
+                sb.AppendFormat("Content-Type: {0}\r\n\r\n", contenttype);
+                string header = sb.ToString();
+
+                sb = new StringBuilder();
+                sb.AppendFormat("\r\n--{0}--\r\n", boundary);
+                string footer = sb.ToString();
+
+                long clength = size + header.Length + footer.Length;
+
+                sb = new StringBuilder();
+                sb.AppendFormat("POST {0}\r\n", uploadUrl);
+                sb.AppendFormat("Content-Type: multipart/form-data; boundary={0}\r\n", boundary);
+                sb.AppendFormat("Host: {0}\r\n", uri.Host);
+                sb.AppendFormat("User-Agent: {0}\r\n", WhatsConstants.UserAgent);
+                sb.AppendFormat("Content-Length: {0}\r\n\r\n", clength);
+                string post = sb.ToString();
+
+                TcpClient tc = new TcpClient(uri.Host, 443);
+                SslStream ssl = new SslStream(tc.GetStream());
+                try
+                {
+                    ssl.AuthenticateAsClient(uri.Host);
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+                byte[] msgdata = Encoding.ASCII.GetBytes(post);
+                ssl.Write(msgdata);
+                msgdata = Encoding.ASCII.GetBytes(header);
+                ssl.Write(msgdata);
+                buff = File.ReadAllBytes(path);
+                ssl.Write(buff);
+                msgdata = Encoding.ASCII.GetBytes(footer);
+                ssl.Write(msgdata);
+
+                //moment of truth...
+                ssl.Read(buff, 0, buff.Length);
+                string json = System.Text.Encoding.ASCII.GetString(buff);
+                return json;
+            }
+            catch (Exception e)
+            { }
+            return null;
         }
 
         /// <summary>
@@ -523,7 +606,10 @@ namespace WhatsAppApi
                     if (ProtocolTreeNode.TagEquals(node,"message"))
                     {
                         this.AddMessage(node);
-                        this.sendMessageReceived(node);
+                        if (node.GetChild("received") == null)
+                        {
+                            this.sendMessageReceived(node);
+                        }
                     }
                     if (ProtocolTreeNode.TagEquals(node,"stream:error"))
                     {
@@ -536,6 +622,14 @@ namespace WhatsAppApi
                     {
                         //last seen
                         this.AddMessage(node);
+                    }
+                    if (ProtocolTreeNode.TagEquals(node, "iq")
+                        && node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                        && ProtocolTreeNode.TagEquals(node.children.First(), "media")
+                        )
+                    {
+                        //media upload
+                        this.uploadResponse = node;
                     }
                     if (ProtocolTreeNode.TagEquals(node, "iq")
                         && node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
