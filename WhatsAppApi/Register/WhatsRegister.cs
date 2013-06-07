@@ -18,7 +18,7 @@ namespace WhatsAppApi.Register
             string postData = GetRegString(countryCode, phoneNumber);
             string both = website + "?" + postData;
 
-            var result = StartWebRequest("", "", WhatsConstants.UserAgend, both);
+            var result = StartWebRequest("", "", WhatsConstants.UserAgent, both);
             Console.WriteLine(result);
             return result.Contains("status=\"success-sent\"");
         }
@@ -28,7 +28,7 @@ namespace WhatsAppApi.Register
             string tmpPassword = password.ToPassword();
             string verifyString = string.Format("https://r.whatsapp.net/v1/register.php?cc={0}&in={1}&udid={2}&code={3}", new object[] { countryCode, phoneNumber, tmpPassword, code });
 
-            var result = StartWebRequest("", "", WhatsConstants.UserAgend, verifyString);
+            var result = StartWebRequest("", "", WhatsConstants.UserAgent, verifyString);
             Console.WriteLine(result);
             return true;
         }
@@ -41,7 +41,7 @@ namespace WhatsAppApi.Register
                 webString = webString + string.Format("&udid={0}", pass.ToPassword());
             }
 
-            var result = StartWebRequest("", "", WhatsConstants.UserAgend, webString);
+            var result = StartWebRequest("", "", WhatsConstants.UserAgent, webString);
             return result.Contains("status=\"ok\"");
         }
 
