@@ -314,19 +314,56 @@ namespace WhatsAppApi
         /// <param name="file">Filename</param>
         /// <param name="size">The size of the image in string format</param>
         /// <param name="icon">Icon</param>
-        public void MessageImage(string msgid, string to, string url, string file, string size, string icon)
+        public void MessageImage(string to, string filepath)
         {
-            //var mediaAttribs = new KeyValue[]
-            //                       {
-            //                           new KeyValue("xmlns", "urn:xmpp:whatsapp:mms"),
-            //                           new KeyValue("type", "image"),
-            //                           new KeyValue("url", url),
-            //                           new KeyValue("file", file),
-            //                           new KeyValue("size", size)
-            //                       };
+            FileInfo finfo = new FileInfo(filepath);
+            string type = string.Empty;
+            switch (finfo.Extension)
+            {
+                case ".png":
+                    type = "image/png";
+                    break;
+                case ".gif":
+                    type = "image/gif";
+                    break;
+                default:
+                    type = "image/jpeg";
+                    break;
+            }
+            
+            //create hash
+            string filehash = string.Empty;
+            using(FileStream fs = File.OpenRead(filepath))
+            {
+                using(BufferedStream bs = new BufferedStream(fs))
+                {
+                    using(HashAlgorithm sha = HashAlgorithm.Create("sha256"))
+                    {
+                        byte[] raw = sha.ComputeHash(bs);
+                        filehash = Convert.ToBase64String(raw);
+                    }
+                }
+            }
 
-            //var mediaNode = new ProtocolTreeNode("media", mediaAttribs, icon);
-            //this.SendMessageNode(msgid, to, mediaNode);
+            //request upload
+            this.requestFileUpload(filehash, "image", finfo.Length, filepath, to);
+        }
+
+        private void requestFileUpload(string b64hash, string type, long size, string path, string to)
+        {
+            ProtocolTreeNode media = new ProtocolTreeNode("media", new KeyValue[] {
+                new KeyValue("xmlns", "w:m"),
+                new KeyValue("hash", b64hash),
+                new KeyValue("type", type),
+                new KeyValue("size", size.ToString())
+            });
+            string id = TicketManager.GenerateId();
+            ProtocolTreeNode node = new ProtocolTreeNode("iq", new KeyValue[] {
+                new KeyValue("id", id),
+                new KeyValue("to", WhatsConstants.WhatsAppServer),
+                new KeyValue("type", "set")
+            }, media);
+            this.WhatsSendHandler.SendNode(node);
         }
 
         /// <summary>

@@ -838,6 +838,11 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        public void SendNode(ProtocolTreeNode node)
+        {
+            this.whatsNetwork.SendData(this._binWriter.Write(node));
+        }
+
         /// <summary>
         /// Send a verb of group participants
         /// </summary>
