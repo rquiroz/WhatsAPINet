@@ -57,12 +57,12 @@ namespace WhatsAppApi.Settings
         /// <summary>
         /// The useragent used for http requests
         /// </summary>
-        public const string UserAgend = "WhatsApp/2.8.7 iPhone_OS/6.1.0 Device/iPhone_4S";
+        public const string UserAgent = "WhatsApp/2.9.4 WP7/7.10.8858 Device/HTC-HTC-H0002";
 
         /// <summary>
         /// The whatsapp build hash
         /// </summary>
-        public const string WhatsBuildHash = "889d4f44e479e6c38b4a834c6d8417815f999abe";
+        public const string WhatsBuildHash = "Od52pFozHNWF9XbTN5lrqDtnsiZGL2G3l9yw1GiQ21a31a2d9dbdc9a8ce324ef2df918064fd26e30a";
         #endregion
 
         #region ParserConstants
