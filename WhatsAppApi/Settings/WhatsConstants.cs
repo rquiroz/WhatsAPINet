@@ -21,7 +21,7 @@ namespace WhatsAppApi.Settings
         /// <summary>
         /// The whatsapp host
         /// </summary>
-        public const string WhatsAppHost = "bin-short.whatsapp.net";
+        public const string WhatsAppHost = "c2.whatsapp.net";
 
         /// <summary>
         /// The whatsapp XMPP realm
