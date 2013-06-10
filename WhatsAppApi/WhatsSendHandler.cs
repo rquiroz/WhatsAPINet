@@ -835,7 +835,7 @@ namespace WhatsAppApi
                 }
                 node = new ProtocolTreeNode("media", list.ToArray(), null, data);
             }
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this._binWriter.Write(GetMessageNode(message, node)));
         }
 
         public void SendNode(ProtocolTreeNode node)
