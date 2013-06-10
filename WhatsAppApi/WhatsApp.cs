@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -357,10 +358,49 @@ namespace WhatsAppApi
             if (response != null && !String.IsNullOrEmpty(response.url))
             {
                 //send message
-                FMessage msg = new FMessage(to, true) { key = { id = TicketManager.GenerateId() }, media_wa_type = FMessage.Type.Image, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url };
+                FMessage msg = new FMessage(to, true) { key = { id = TicketManager.GenerateId() }, media_wa_type = FMessage.Type.Image, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url, binary_data = this.CreateThumbnail(filepath) };
                 this.WhatsSendHandler.SendMessage(msg);
             }
 
+        }
+
+        private byte[] CreateThumbnail(string path)
+        {
+            if (File.Exists(path))
+            {
+                Image orig = Image.FromFile(path);
+                if (orig != null)
+                {
+                    int newHeight = 0;
+                    int newWidth = 0;
+                    float imgWidth = float.Parse(orig.Width.ToString());
+                    float imgHeight = float.Parse(orig.Height.ToString());
+                    if (orig.Width > orig.Height)
+                    {
+                        newHeight = (int)((imgHeight / imgWidth) * 100);
+                        newWidth = 100;
+                    }
+                    else
+                    {
+                        newWidth = (int)((imgWidth / imgHeight) * 100);
+                        newHeight = 100;
+                    }
+
+                    Bitmap newImage = new Bitmap(newWidth, newHeight);
+                    using(Graphics gr = Graphics.FromImage(newImage))
+                    {
+                        gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                        gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        gr.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                        gr.DrawImage(orig, new Rectangle(0, 0, newWidth, newHeight));
+                    }
+                    MemoryStream ms = new MemoryStream();
+                    newImage.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    ms.Close();
+                    return ms.ToArray();
+                }
+            }
+            return null;
         }
 
         private UploadResponse UploadFile(string b64hash, string type, long size, string path, string to, string contenttype)
