@@ -1,5 +1,0 @@
-C:\Users\Swen\Documents\GitHub\WhatsAPINet\WhatsAppApi\bin\Debug\WhatsAppApi.dll
-C:\Users\Swen\Documents\GitHub\WhatsAPINet\WhatsAppApi\bin\Debug\WhatsAppApi.pdb
-C:\Users\Swen\Documents\GitHub\WhatsAPINet\WhatsAppApi\obj\Debug\ResolveAssemblyReference.cache
-C:\Users\Swen\Documents\GitHub\WhatsAPINet\WhatsAppApi\obj\Debug\WhatsAppApi.dll
-C:\Users\Swen\Documents\GitHub\WhatsAPINet\WhatsAppApi\obj\Debug\WhatsAppApi.pdb
