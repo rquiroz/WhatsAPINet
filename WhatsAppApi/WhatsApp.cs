@@ -489,12 +489,6 @@ namespace WhatsAppApi
                         throw e;
                     }
 
-                    //HttpWebRequest req = WebRequest.Create(uploadUrl) as HttpWebRequest;
-                    //set post headers
-                    //req.ContentType = String.Format("multipart/form-data; boundary={0}\r\n", boundary);
-                    //req.UserAgent = WhatsConstants.UserAgent;
-                    //Stream reqStream = req.GetRequestStream();
-
                     List<byte> buf = new List<byte>();
                     buf.AddRange(Encoding.UTF8.GetBytes(post));
                     buf.AddRange(Encoding.UTF8.GetBytes(header));
@@ -523,9 +517,7 @@ namespace WhatsAppApi
                     }
                 }
                 catch (Exception e)
-                {
-                    //Console.WriteLine(e.Message);
-                }
+                { }
             }
             return null;
         }
