@@ -19,7 +19,10 @@ namespace WhatsAppApi.Register
             string both = website + "?" + postData;
 
             var result = StartWebRequest("", "", WhatsConstants.UserAgent, both);
-            Console.WriteLine(result);
+            if (WhatsApp.DEBUG && result.Length > 0)
+            {
+                Console.WriteLine(result);
+            }
             return result.Contains("status=\"success-sent\"");
         }
 
