@@ -33,6 +33,11 @@ namespace WhatsAppApi
             LOGGEDIN
         }
 
+        public void ClearIncomplete()
+        {
+            this._incompleteBytes.Clear();
+        }
+
         private ProtocolTreeNode uploadResponse;
     
         /// <summary>
@@ -638,8 +643,10 @@ namespace WhatsAppApi
         protected ProtocolTreeNode addFeatures()
         {
             var child = new ProtocolTreeNode("receipt_acks", null);
+            var child2 = new ProtocolTreeNode("w:profile:picture", new KeyValue[] { new KeyValue("type", "all") });
             var childList = new List<ProtocolTreeNode>();
             childList.Add(child);
+            childList.Add(child2);
             var parent = new ProtocolTreeNode("stream:features", null, childList, null);
             return parent;
         }
@@ -674,12 +681,18 @@ namespace WhatsAppApi
             try
             {
                 List<byte> foo = new List<byte>();
-                foreach (IncompleteMessageException e in this._incompleteBytes)
+                if (this._incompleteBytes.Count > 0)
                 {
-                    foo.AddRange(e.getInput());
+                    foreach (IncompleteMessageException e in this._incompleteBytes)
+                    {
+                        foo.AddRange(e.getInput());
+                    }
+                    this._incompleteBytes.Clear();
                 }
-                this._incompleteBytes = new List<IncompleteMessageException>();
-                foo.AddRange(data);
+                if (data != null)
+                {
+                    foo.AddRange(data);
+                }
                 ProtocolTreeNode node = this.reader.nextTree(foo.ToArray());
                 while (node != null)
                 {
@@ -692,8 +705,8 @@ namespace WhatsAppApi
                     if (ProtocolTreeNode.TagEquals(node, "challenge"))
                     {
                         this.processChallenge(node);
-                    } 
-                    else if (ProtocolTreeNode.TagEquals(node,"success"))
+                    }
+                    else if (ProtocolTreeNode.TagEquals(node, "success"))
                     {
                         this.loginStatus = CONNECTION_STATUS.LOGGEDIN;
                         this.accountinfo = new AccountInfo(node.GetAttribute("status"),
@@ -701,11 +714,11 @@ namespace WhatsAppApi
                                                            node.GetAttribute("creation"),
                                                            node.GetAttribute("expiration"));
                     }
-                    else if (ProtocolTreeNode.TagEquals(node,"failure"))
+                    else if (ProtocolTreeNode.TagEquals(node, "failure"))
                     {
                         this.loginStatus = CONNECTION_STATUS.UNAUTHORIZED;
                     }
-                    if (ProtocolTreeNode.TagEquals(node,"message"))
+                    if (ProtocolTreeNode.TagEquals(node, "message"))
                     {
                         this.AddMessage(node);
                         if (node.GetChild("received") == null)
@@ -713,7 +726,7 @@ namespace WhatsAppApi
                             this.sendMessageReceived(node);
                         }
                     }
-                    if (ProtocolTreeNode.TagEquals(node,"stream:error"))
+                    if (ProtocolTreeNode.TagEquals(node, "stream:error"))
                     {
                         Console.Write(node.NodeString());
                     }
@@ -741,13 +754,13 @@ namespace WhatsAppApi
                         //profile picture
                         this.AddMessage(node);
                     }
-                    if (ProtocolTreeNode.TagEquals(node,"iq")
+                    if (ProtocolTreeNode.TagEquals(node, "iq")
                         && node.GetAttribute("type").Equals("get", StringComparison.OrdinalIgnoreCase)
                         && ProtocolTreeNode.TagEquals(node.children.First(), "ping"))
                     {
                         this.Pong(node.GetAttribute("id"));
                     }
-                    if (ProtocolTreeNode.TagEquals(node ,"stream:error"))
+                    if (ProtocolTreeNode.TagEquals(node, "stream:error"))
                     {
                         var textNode = node.GetChild("text");
                         if (textNode != null)
