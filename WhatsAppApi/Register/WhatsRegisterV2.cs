@@ -21,7 +21,7 @@ namespace WhatsAppApi.Register
                 CultureInfo.CurrentCulture.GetLanguageAndLocale(out language, out locale);
                 string id = phoneNumber.Reverse().ToMD5String();
                 string token = string.Concat(WhatsConstants.WhatsBuildHash, phoneNumber).ToMD5String();
-                string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc=000&mnc=000&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token);
+                string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc=204&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token);
                 return (GetResponse(uri).GetJsonValue("status") == "sent");
             }
             catch
