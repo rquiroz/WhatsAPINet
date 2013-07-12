@@ -31,11 +31,10 @@ namespace WhatsTest
             
             wa.Connect();
             wa.Login();
-            wa.sendNickname(nickname);
-            wa.Disconnect();
+            wa.PollMessages();
 
-            wa.PresenceSubscription(target);
-            wa.GetStatus(target);
+            wa.Message(target, "Hi this is sent using WhatsApiNet");
+            wa.PollMessages();
 
             ProcessChat(wa, "");
 
@@ -113,19 +112,26 @@ namespace WhatsTest
 
         private static void RegisterAccount()
         {
-            Console.Write("CountryCode (ex. 49): ");
+            Console.Write("CountryCode (ex. 31): ");
             string countryCode = Console.ReadLine();
-            Console.Write("Phonenumber: ");
+            Console.Write("Phonenumber (ex. 650568134): ");
             string phoneNumber = Console.ReadLine();
 
-            if (!WhatsRegister.RegisterUser(countryCode, phoneNumber))
+            if (!WhatsRegisterV2.RequestCode(countryCode, phoneNumber))
                 return;
-            Console.Write("Enter send Code: ");
+            Console.Write("Enter received code: ");
             string tmpCode = Console.ReadLine();
-            Console.Write("Enter your new Password: ");
-            string tmpPassword = Console.ReadLine();
 
-            WhatsRegister.VerifyRegistration(countryCode, phoneNumber, tmpPassword, tmpCode);
+            string password = WhatsRegisterV2.RegisterCode(countryCode, phoneNumber, tmpCode);
+            if (String.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("Error registering code");
+            }
+            else
+            {
+                Console.WriteLine(String.Format("Registration succesful. Password = {0}", password));
+            }
+            Console.ReadLine();
         }
 
 
