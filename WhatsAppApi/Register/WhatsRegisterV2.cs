@@ -48,6 +48,27 @@ namespace WhatsAppApi.Register
             }
         }
 
+        public static string RequestExist(string countryCode, string phoneNumber, string id = null)
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(id))
+                {
+                    id = phoneNumber.Reverse().ToSHAString();
+                }
+                string uri = string.Format("https://v.whatsapp.net/v2/exist?cc={0}&in={1}&id={2}", countryCode, phoneNumber, id);
+                if (GetResponse(uri).GetJsonValue("status") == "ok")
+                {
+                    return GetResponse(uri).GetJsonValue("pw");
+                }
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         private static string GetResponse(string uri)
         {
             HttpWebRequest request = HttpWebRequest.Create(new Uri(uri)) as HttpWebRequest;
@@ -69,7 +90,7 @@ namespace WhatsAppApi.Register
         {
             byte[] data = SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(s));
             string str = WhatsApp.SYSEncoding.GetString(data);
-            return System.Uri.EscapeDataString(str);
+            return System.Uri.EscapeDataString(str).ToLower();
         }
 
         private static string ToMD5String(this IEnumerable<char> s)
