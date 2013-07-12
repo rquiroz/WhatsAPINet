@@ -280,6 +280,7 @@ namespace WhatsAppApi
                 System.Threading.Thread.Sleep(50);
             } 
             while ((cnt++ < 100) && (this.loginStatus == CONNECTION_STATUS.DISCONNECTED));
+            this.sendNickname(this.name);
         }
 
         /// <summary>
