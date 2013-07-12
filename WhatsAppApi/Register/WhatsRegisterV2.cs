@@ -20,7 +20,7 @@ namespace WhatsAppApi.Register
                 string language, locale;
                 CultureInfo.CurrentCulture.GetLanguageAndLocale(out language, out locale);
                 string id = phoneNumber.Reverse().ToSHAString();
-                string token = string.Concat(WhatsConstants.WhatsBuildHash, phoneNumber).ToSHAString();
+                string token = string.Concat(WhatsConstants.WhatsBuildHash, phoneNumber).ToMD5String();
                 string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc=204&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token);
                 return (GetResponse(uri).GetJsonValue("status") == "sent");
             }
@@ -71,6 +71,17 @@ namespace WhatsAppApi.Register
             string str = WhatsApp.SYSEncoding.GetString(data);
             return System.Uri.EscapeDataString(str);
         }
+
+        private static string ToMD5String(this IEnumerable<char> s)
+        {
+            return new string(s.ToArray()).ToMD5String();
+        }
+ 
+        private static string ToMD5String(this string s)
+        {
+            return string.Join(string.Empty, MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(s)).Select(item => item.ToString("x2")).ToArray());
+        }
+
 
         private static void GetLanguageAndLocale(this CultureInfo self, out string language, out string locale)
         {
