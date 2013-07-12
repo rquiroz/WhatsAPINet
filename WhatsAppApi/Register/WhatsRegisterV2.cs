@@ -50,9 +50,8 @@ namespace WhatsAppApi.Register
 
         private static string GetResponse(string uri)
         {
-            var request = HttpWebRequest.CreateHttp(new Uri(uri));
+            HttpWebRequest request = HttpWebRequest.Create(new Uri(uri)) as HttpWebRequest;
             request.KeepAlive = false;
-            request.Date = DateTime.Now;
             request.UserAgent = WhatsConstants.UserAgent;
             request.Accept = "text/json";
             using (var reader = new StreamReader(request.GetResponse().GetResponseStream()))
