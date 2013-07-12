@@ -67,7 +67,6 @@
     <Compile Include="Parser\FMessage.cs" />
     <Compile Include="Parser\FMessageVisitor.cs" />
     <Compile Include="Parser\GroupSetting.cs" />
-    <Compile Include="Register\WhatsRegister.cs" />
     <Compile Include="Register\WhatsRegisterV2.cs" />
     <Compile Include="Response\CorruptStreamException.cs" />
     <Compile Include="Response\MessageRecvResponse.cs" />
