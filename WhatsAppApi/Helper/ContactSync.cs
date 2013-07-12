@@ -59,9 +59,16 @@ namespace WhatsAppApi.Helper
             {
                 writer.Write(postfields);
             }
-            HttpWebResponse response = this.request.GetResponse() as HttpWebResponse;
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-            return reader.ReadToEnd();
+            try
+            {
+                HttpWebResponse response = this.request.GetResponse() as HttpWebResponse;
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+                return reader.ReadToEnd();
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         protected string _getSyncNonce()
