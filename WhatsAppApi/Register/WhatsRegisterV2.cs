@@ -89,7 +89,7 @@ namespace WhatsAppApi.Register
         private static string ToSHAString(this string s)
         {
             byte[] data = SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(s));
-            string str = WhatsApp.SYSEncoding.GetString(data);
+            string str = Encoding.ASCII.GetString(data);
             return System.Uri.EscapeDataString(str).ToLower();
         }
 
