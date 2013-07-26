@@ -126,7 +126,7 @@ namespace WhatsAppApi.Helper
         protected void _setHeaders(string nonce, long contentlength)
         {
             this.request.Headers.Clear();
-            this.request.UserAgent = "WhatsApp/2.4.7 S40Version/14.26 Device/Nokia302";
+            this.request.UserAgent = WhatsAppApi.Settings.WhatsConstants.UserAgent;
             this.request.Accept = "text/json";
             this.request.ContentType = "application/x-www-form-urlencoded";
             string foo = this._generateAuth(nonce);
