@@ -75,6 +75,7 @@
       <DependentUpon>frmUserChat.cs</DependentUpon>
     </Compile>
     <Compile Include="WhatsMessageHandler.cs" />
+    <Compile Include="WhatSocket.cs" />
     <EmbeddedResource Include="frmForm.resx">
       <DependentUpon>frmForm.cs</DependentUpon>
       <SubType>Designer</SubType>

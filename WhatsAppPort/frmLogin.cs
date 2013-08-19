@@ -41,14 +41,18 @@ namespace WhatsAppPort
                 if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
                     return false;
 
-                string cc = user.Substring(0, 2);
-                string phone = user.Remove(0, 2).TrimStart('0');
-                return WhatsAppApi.Register.WhatsRegister.ExistsAndDelete(cc, phone, pass);
+                WhatSocket.Create(user, pass, this.textBoxNick.Text, true);
+                WhatSocket.Instance.Connect();
+                WhatSocket.Instance.Login();
+                //check login status
+                if (WhatSocket.Instance.ConnectionStatus == WhatsAppApi.WhatsApp.CONNECTION_STATUS.LOGGEDIN)
+                {
+                    return true;
+                }
             }
             catch (Exception)
-            {
-                return false;
-            }
+            { }
+            return false;
         }
     }
 }
