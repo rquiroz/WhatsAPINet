@@ -20,7 +20,7 @@ namespace WhatsAppPort
         {
             if (!this.CheckLogin(this.textBoxPhone.Text, this.textBoxPass.Text))
             {
-                MessageBox.Show(this, "Login fehlgeschlagen", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "Login failed", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
