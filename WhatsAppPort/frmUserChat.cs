@@ -21,14 +21,12 @@ namespace WhatsAppPort
         //public event StringDelegate MessageSentEvent;
         //public event Action MessageAckEvent;
         //public event ProtocolDelegate MessageRecievedEvent;
-        private WhatsAppApi.WhatsApp whatsApp;
         private User user;
         private bool isTyping;
 
-        public frmUserChat(WhatsAppApi.WhatsApp whats, User user)
+        public frmUserChat(User user)
         {
             InitializeComponent();
-            this.whatsApp = whats;
             this.user = user;
             this.isTyping = false;
             WhatsEventHandler.MessageRecievedEvent += WhatsEventHandlerOnMessageRecievedEvent;
@@ -53,7 +51,7 @@ namespace WhatsAppPort
             if (this.txtBxSentText.Text.Length == 0)
                 return;
 
-            this.whatsApp.Message(this.user.WhatsUser.GetFullJid(), txtBxSentText.Text);
+            WhatSocket.Instance.Message(this.user.WhatsUser.GetFullJid(), txtBxSentText.Text);
             this.AddNewText(this.user.UserName, txtBxSentText.Text);
             txtBxSentText.Clear();
         }
@@ -68,7 +66,7 @@ namespace WhatsAppPort
             if (!this.isTyping)
             {
                 this.isTyping = true;
-                this.whatsApp.WhatsSendHandler.SendComposing(this.user.WhatsUser.GetFullJid());
+                WhatSocket.Instance.WhatsSendHandler.SendComposing(this.user.WhatsUser.GetFullJid());
                 this.timerTyping.Start();
             }
         }
@@ -80,7 +78,7 @@ namespace WhatsAppPort
                 this.isTyping = false;
                 return;
             }
-            this.whatsApp.WhatsSendHandler.SendPaused(this.user.WhatsUser.GetFullJid());
+            WhatSocket.Instance.WhatsSendHandler.SendPaused(this.user.WhatsUser.GetFullJid());
             this.timerTyping.Stop();
         }
     }
