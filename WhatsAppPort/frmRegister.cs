@@ -26,8 +26,22 @@ namespace WhatsAppPort
 
         private void btnCodeRequest_Click(object sender, EventArgs e)
         {
-            this.grpStep1.Enabled = false;
-            this.grpStep2.Enabled = true;
+            if (!String.IsNullOrEmpty(this.txtPhoneNumber.Text))
+            {
+                string method = "sms";
+                if (this.radVoice.Checked)
+                {
+                    method = "voice";
+                }
+                this.number = this.txtPhoneNumber.Text;
+                string cc = this.number.Substring(0, 2);
+                string phone = this.number.Substring(2);
+                if (WhatsAppApi.Register.WhatsRegisterV2.RequestCode(cc, phone, method))
+                {
+                    this.grpStep1.Enabled = false;
+                    this.grpStep2.Enabled = true;
+                }
+            }
         }
 
         private void btnRegisterCode_Click(object sender, EventArgs e)
