@@ -54,5 +54,15 @@ namespace WhatsAppPort
             { }
             return false;
         }
+
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+            frmRegister regForm = new frmRegister(this.textBoxPhone.Text);
+            DialogResult regResult = regForm.ShowDialog(this);
+            if (regResult == System.Windows.Forms.DialogResult.OK)
+            {
+                this.textBoxPass.Text = regForm.password;
+            }
+        }
     }
 }
