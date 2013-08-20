@@ -38,9 +38,12 @@
             this.label1 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.btnRegisterCode = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.txtOutput = new System.Windows.Forms.TextBox();
+            this.btnDone = new System.Windows.Forms.Button();
+            this.grpResult = new System.Windows.Forms.GroupBox();
             this.grpStep1.SuspendLayout();
             this.grpStep2.SuspendLayout();
+            this.grpResult.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtPhoneNumber
@@ -58,6 +61,7 @@
             this.btnCodeRequest.TabIndex = 2;
             this.btnCodeRequest.Text = "Request code";
             this.btnCodeRequest.UseVisualStyleBackColor = true;
+            this.btnCodeRequest.Click += new System.EventHandler(this.btnCodeRequest_Click);
             // 
             // label2
             // 
@@ -84,13 +88,13 @@
             // 
             // grpStep2
             // 
-            this.grpStep2.Controls.Add(this.textBox2);
             this.grpStep2.Controls.Add(this.btnRegisterCode);
             this.grpStep2.Controls.Add(this.textBox1);
             this.grpStep2.Controls.Add(this.label1);
+            this.grpStep2.Enabled = false;
             this.grpStep2.Location = new System.Drawing.Point(13, 96);
             this.grpStep2.Name = "grpStep2";
-            this.grpStep2.Size = new System.Drawing.Size(259, 130);
+            this.grpStep2.Size = new System.Drawing.Size(259, 50);
             this.grpStep2.TabIndex = 5;
             this.grpStep2.TabStop = false;
             this.grpStep2.Text = "Step 2: Confirm code";
@@ -128,38 +132,59 @@
             // 
             // textBox1
             // 
-            this.textBox1.Enabled = false;
             this.textBox1.Location = new System.Drawing.Point(88, 19);
             this.textBox1.MaxLength = 6;
             this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(65, 20);
             this.textBox1.TabIndex = 1;
             // 
             // btnRegisterCode
             // 
-            this.btnRegisterCode.Enabled = false;
             this.btnRegisterCode.Location = new System.Drawing.Point(159, 17);
             this.btnRegisterCode.Name = "btnRegisterCode";
             this.btnRegisterCode.Size = new System.Drawing.Size(94, 23);
             this.btnRegisterCode.TabIndex = 2;
             this.btnRegisterCode.Text = "Confirm code";
             this.btnRegisterCode.UseVisualStyleBackColor = true;
+            this.btnRegisterCode.Click += new System.EventHandler(this.btnRegisterCode_Click);
             // 
-            // textBox2
+            // txtOutput
             // 
-            this.textBox2.Location = new System.Drawing.Point(9, 46);
-            this.textBox2.Multiline = true;
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.Size = new System.Drawing.Size(244, 78);
-            this.textBox2.TabIndex = 3;
+            this.txtOutput.Location = new System.Drawing.Point(9, 19);
+            this.txtOutput.Multiline = true;
+            this.txtOutput.Name = "txtOutput";
+            this.txtOutput.ReadOnly = true;
+            this.txtOutput.Size = new System.Drawing.Size(244, 102);
+            this.txtOutput.TabIndex = 3;
+            // 
+            // btnDone
+            // 
+            this.btnDone.Location = new System.Drawing.Point(178, 127);
+            this.btnDone.Name = "btnDone";
+            this.btnDone.Size = new System.Drawing.Size(75, 23);
+            this.btnDone.TabIndex = 6;
+            this.btnDone.Text = "Done";
+            this.btnDone.UseVisualStyleBackColor = true;
+            this.btnDone.Click += new System.EventHandler(this.btnDone_Click);
+            // 
+            // grpResult
+            // 
+            this.grpResult.Controls.Add(this.btnDone);
+            this.grpResult.Controls.Add(this.txtOutput);
+            this.grpResult.Enabled = false;
+            this.grpResult.Location = new System.Drawing.Point(13, 153);
+            this.grpResult.Name = "grpResult";
+            this.grpResult.Size = new System.Drawing.Size(259, 156);
+            this.grpResult.TabIndex = 7;
+            this.grpResult.TabStop = false;
+            this.grpResult.Text = "groupBox1";
             // 
             // frmRegister
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 238);
+            this.ClientSize = new System.Drawing.Size(284, 321);
+            this.Controls.Add(this.grpResult);
             this.Controls.Add(this.grpStep2);
             this.Controls.Add(this.grpStep1);
             this.Name = "frmRegister";
@@ -168,6 +193,8 @@
             this.grpStep1.PerformLayout();
             this.grpStep2.ResumeLayout(false);
             this.grpStep2.PerformLayout();
+            this.grpResult.ResumeLayout(false);
+            this.grpResult.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -181,9 +208,11 @@
         private System.Windows.Forms.RadioButton radSMS;
         private System.Windows.Forms.GroupBox grpStep2;
         private System.Windows.Forms.RadioButton radVoice;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox txtOutput;
         private System.Windows.Forms.Button btnRegisterCode;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btnDone;
+        private System.Windows.Forms.GroupBox grpResult;
     }
 }

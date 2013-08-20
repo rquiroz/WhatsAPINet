@@ -62,6 +62,7 @@ namespace WhatsAppPort
             if (regResult == System.Windows.Forms.DialogResult.OK)
             {
                 this.textBoxPass.Text = regForm.password;
+                this.textBoxPhone.Text = regForm.number;
             }
         }
     }
