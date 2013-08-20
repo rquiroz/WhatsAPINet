@@ -20,7 +20,7 @@ namespace WhatsAppApi.Register
                 string language, locale;
                 CultureInfo.CurrentCulture.GetLanguageAndLocale(out language, out locale);
                 string id = phoneNumber.Reverse().ToSHAString();
-                string token = string.Concat(WhatsConstants.WhatsBuildHash, phoneNumber).ToMD5String();
+                string token = string.Concat(WhatsConstants.WhatsRegToken + WhatsConstants.WhatsBuildHash, phoneNumber).ToMD5String();
                 string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc=204&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token);
                 return (GetResponse(uri).GetJsonValue("status") == "sent");
             }
