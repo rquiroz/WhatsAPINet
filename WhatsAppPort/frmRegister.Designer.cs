@@ -36,7 +36,7 @@
             this.radSMS = new System.Windows.Forms.RadioButton();
             this.radVoice = new System.Windows.Forms.RadioButton();
             this.label1 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.txtCode = new System.Windows.Forms.TextBox();
             this.btnRegisterCode = new System.Windows.Forms.Button();
             this.txtOutput = new System.Windows.Forms.TextBox();
             this.btnDone = new System.Windows.Forms.Button();
@@ -89,7 +89,7 @@
             // grpStep2
             // 
             this.grpStep2.Controls.Add(this.btnRegisterCode);
-            this.grpStep2.Controls.Add(this.textBox1);
+            this.grpStep2.Controls.Add(this.txtCode);
             this.grpStep2.Controls.Add(this.label1);
             this.grpStep2.Enabled = false;
             this.grpStep2.Location = new System.Drawing.Point(13, 96);
@@ -130,13 +130,13 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Code";
             // 
-            // textBox1
+            // txtCode
             // 
-            this.textBox1.Location = new System.Drawing.Point(88, 19);
-            this.textBox1.MaxLength = 6;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(65, 20);
-            this.textBox1.TabIndex = 1;
+            this.txtCode.Location = new System.Drawing.Point(88, 19);
+            this.txtCode.MaxLength = 6;
+            this.txtCode.Name = "txtCode";
+            this.txtCode.Size = new System.Drawing.Size(65, 20);
+            this.txtCode.TabIndex = 1;
             // 
             // btnRegisterCode
             // 
@@ -210,7 +210,7 @@
         private System.Windows.Forms.RadioButton radVoice;
         private System.Windows.Forms.TextBox txtOutput;
         private System.Windows.Forms.Button btnRegisterCode;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox txtCode;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnDone;
         private System.Windows.Forms.GroupBox grpResult;
