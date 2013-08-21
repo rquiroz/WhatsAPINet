@@ -51,9 +51,10 @@ namespace WhatsAppApi.Register
                     id = phoneNumber.Reverse().ToSHAString();
                 }
                 string uri = string.Format("https://v.whatsapp.net/v2/register?cc={0}&in={1}&id={2}&code={3}", countryCode, phoneNumber, id, code);
-                if (GetResponse(uri).GetJsonValue("status") == "ok")
+                string response = GetResponse(uri);
+                if (response.GetJsonValue("status") == "ok")
                 {
-                    return GetResponse(uri).GetJsonValue("pw");
+                    return response.GetJsonValue("pw");
                 }
                 return null;
             }
@@ -72,9 +73,10 @@ namespace WhatsAppApi.Register
                     id = phoneNumber.Reverse().ToSHAString();
                 }
                 string uri = string.Format("https://v.whatsapp.net/v2/exist?cc={0}&in={1}&id={2}", countryCode, phoneNumber, id);
-                if (GetResponse(uri).GetJsonValue("status") == "ok")
+                string response = GetResponse(uri);
+                if (response.GetJsonValue("status") == "ok")
                 {
-                    return GetResponse(uri).GetJsonValue("pw");
+                    return response.GetJsonValue("pw");
                 }
                 return null;
             }
