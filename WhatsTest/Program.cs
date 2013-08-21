@@ -116,13 +116,13 @@ namespace WhatsTest
             string countryCode = Console.ReadLine();
             Console.Write("Phonenumber (ex. 650568134): ");
             string phoneNumber = Console.ReadLine();
-
-            if (!WhatsRegisterV2.RequestCode(countryCode, phoneNumber))
+            string password = null;
+            if (!WhatsRegisterV2.RequestCode(countryCode, phoneNumber, out password))
                 return;
             Console.Write("Enter received code: ");
             string tmpCode = Console.ReadLine();
 
-            string password = WhatsRegisterV2.RegisterCode(countryCode, phoneNumber, tmpCode);
+            password = WhatsRegisterV2.RegisterCode(countryCode, phoneNumber, tmpCode);
             if (String.IsNullOrEmpty(password))
             {
                 Console.WriteLine("Error registering code");

@@ -40,7 +40,7 @@ namespace WhatsAppPort
                 this.number = this.txtPhoneNumber.Text;
                 this.cc = this.number.Substring(0, 2);
                 this.phone = this.number.Substring(2);
-                if (WhatsAppApi.Register.WhatsRegisterV2.RequestCode(this.cc, this.phone, method))
+                if (WhatsAppApi.Register.WhatsRegisterV2.RequestCode(this.cc, this.phone, out this.password, method))
                 {
                     this.grpStep1.Enabled = false;
                     this.grpStep2.Enabled = true;
