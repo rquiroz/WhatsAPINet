@@ -38,6 +38,8 @@ namespace WhatsAppPort
                     method = "voice";
                 }
                 this.number = this.txtPhoneNumber.Text;
+                this.cc = this.number.Substring(0, 2);
+                this.phone = this.number.Substring(2);
                 if (WhatsAppApi.Register.WhatsRegisterV2.RequestCode(this.cc, this.phone, method))
                 {
                     this.grpStep1.Enabled = false;
