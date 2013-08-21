@@ -35,8 +35,16 @@ namespace WhatsAppReg
                 this.phone = this.number.Substring(2);
                 if (WhatsAppApi.Register.WhatsRegisterV2.RequestCode(this.cc, this.phone, out this.password, method))
                 {
-                    this.grpStep1.Enabled = false;
-                    this.grpStep2.Enabled = true;
+                    if (!string.IsNullOrEmpty(this.password))
+                    {
+                        //password received
+                        this.OnReceivePassword();
+                    }
+                    else
+                    {
+                        this.grpStep1.Enabled = false;
+                        this.grpStep2.Enabled = true;
+                    }
                 }
             }
         }
@@ -49,11 +57,17 @@ namespace WhatsAppReg
                 this.password = WhatsAppApi.Register.WhatsRegisterV2.RegisterCode(this.cc, this.phone, code);
                 if (!String.IsNullOrEmpty(this.password))
                 {
-                    this.txtOutput.Text = String.Format("Found password:\r\n{0}\r\n\r\nWrite it down and exit the program", this.password);
-                    this.grpStep2.Enabled = false;
-                    this.grpResult.Enabled = true;
+                    this.OnReceivePassword();
                 }
             }
+        }
+
+        private void OnReceivePassword()
+        {
+            this.txtOutput.Text = String.Format("Found password:\r\n{0}\r\n\r\nWrite it down and exit the program", this.password);
+            this.grpStep1.Enabled = false;
+            this.grpStep2.Enabled = false;
+            this.grpResult.Enabled = true;
         }
     }
 }
