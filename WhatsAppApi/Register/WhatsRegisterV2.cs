@@ -13,8 +13,9 @@ namespace WhatsAppApi.Register
 {
     public static class WhatsRegisterV2
     {
-        public static bool RequestCode(string countryCode, string phoneNumber, string method = "sms")
+        public static bool RequestCode(string countryCode, string phoneNumber, out string password, string method = "sms")
         {
+            password = null;
             try
             {
                 string language, locale;
@@ -22,7 +23,13 @@ namespace WhatsAppApi.Register
                 string id = phoneNumber.Reverse().ToSHAString();
                 string token = string.Concat(WhatsConstants.WhatsRegToken + WhatsConstants.WhatsBuildHash, phoneNumber).ToMD5String();
                 string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc=204&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token);
-                return (GetResponse(uri).GetJsonValue("status") == "sent");
+                string response = GetResponse(uri);
+                password = response.GetJsonValue("pw");
+                if (!string.IsNullOrEmpty(password))
+                {
+                    return true;
+                }
+                return (response.GetJsonValue("status") == "sent");
             }
             catch
             {
