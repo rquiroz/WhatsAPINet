@@ -522,7 +522,7 @@ namespace WhatsAppApi
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 { }
             }
             return null;

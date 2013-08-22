@@ -65,7 +65,7 @@ namespace WhatsAppApi.Helper
                 StreamReader reader = new StreamReader(response.GetResponseStream());
                 return reader.ReadToEnd();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
