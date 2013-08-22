@@ -59,6 +59,7 @@
     <Compile Include="Helper\IncompleteMessageException.cs" />
     <Compile Include="Helper\KeyValue.cs" />
     <Compile Include="Helper\MediaUploader.cs" />
+    <Compile Include="Parser\PhoneNumber.cs" />
     <Compile Include="Helper\ProtocolTreeNode.cs" />
     <Compile Include="Helper\RC4.cs">
       <SubType>Code</SubType>
@@ -67,6 +68,11 @@
     <Compile Include="Parser\FMessage.cs" />
     <Compile Include="Parser\FMessageVisitor.cs" />
     <Compile Include="Parser\GroupSetting.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Register\WhatsRegister.cs" />
     <Compile Include="Register\WhatsRegisterV2.cs" />
     <Compile Include="Response\CorruptStreamException.cs" />
@@ -78,6 +84,13 @@
     <Compile Include="WhatsNetwork.cs" />
     <Compile Include="Response\WhatsParser.cs" />
     <Compile Include="WhatsSendHandler.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Parser\countries.csv" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
