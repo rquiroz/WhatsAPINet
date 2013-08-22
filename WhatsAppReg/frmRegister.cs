@@ -15,6 +15,9 @@ namespace WhatsAppReg
         protected string cc;
         protected string phone;
         protected string password;
+        protected string language;
+        protected string locale;
+        protected string mcc;
 
         public frmRegister()
         {
@@ -30,10 +33,22 @@ namespace WhatsAppReg
                 {
                     method = "voice";
                 }
-                this.number = this.txtPhoneNumber.Text;
-                this.cc = this.number.Substring(0, 2);
-                this.phone = this.number.Substring(2);
-                if (WhatsAppApi.Register.WhatsRegisterV2.RequestCode(this.cc, this.phone, out this.password, method))
+                try
+                {
+                    WhatsAppApi.Parser.PhoneNumber phonenumber = new WhatsAppApi.Parser.PhoneNumber(this.txtPhoneNumber.Text);
+                    this.number = phonenumber.FullNumber;
+                    this.cc = phonenumber.CC;
+                    this.phone = phonenumber.Number;
+                    this.language = phonenumber.ISO639;
+                    this.locale = phonenumber.ISO3166;
+                    this.mcc = phonenumber.MCC;
+                }
+                catch (Exception ex)
+                {
+                    this.txtOutput.Text = String.Format("Error: {0}", ex.Message);
+                    return;
+                }
+                if (WhatsAppApi.Register.WhatsRegisterV2.RequestCode(this.cc, this.phone, out this.password, method, null, this.language, this.locale, this.mcc))
                 {
                     if (!string.IsNullOrEmpty(this.password))
                     {
