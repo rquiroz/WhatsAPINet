@@ -13,20 +13,22 @@ namespace WhatsAppApi.Register
 {
     public static class WhatsRegisterV2
     {
-        public static bool RequestCode(string countryCode, string phoneNumber, out string password, string method = "sms", string id = null)
+        public static bool RequestCode(string countryCode, string phoneNumber, out string password, string method = "sms", string id = null, string language = null, string locale = null, string mcc = "204")
         {
             password = null;
             try
             {
-                string language, locale;
-                CultureInfo.CurrentCulture.GetLanguageAndLocale(out language, out locale);
+                if (string.IsNullOrEmpty(language) || string.IsNullOrEmpty(locale))
+                {
+                    CultureInfo.CurrentCulture.GetLanguageAndLocale(out language, out locale);
+                }
                 if (string.IsNullOrEmpty(id))
                 {
                     //auto-generate (insecure)
                     id = phoneNumber.Reverse().ToSHAString();
                 }
                 string token = string.Concat(WhatsConstants.WhatsRegToken + WhatsConstants.WhatsBuildHash, phoneNumber).ToMD5String();
-                string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc=204&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token);
+                string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc={7}&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token, mcc);
                 string response = GetResponse(uri);
                 password = response.GetJsonValue("pw");
                 if (!string.IsNullOrEmpty(password))
