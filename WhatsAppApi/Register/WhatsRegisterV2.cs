@@ -13,6 +13,11 @@ namespace WhatsAppApi.Register
 {
     public static class WhatsRegisterV2
     {
+        public static string GenerateIdentity(string phoneNumber, string salt = "")
+        {
+            return (phoneNumber + salt).Reverse().ToSHAString();
+        }
+
         public static bool RequestCode(string countryCode, string phoneNumber, out string password, string method = "sms", string id = null, string language = null, string locale = null, string mcc = "204", string salt = "")
         {
             password = null;
@@ -25,7 +30,7 @@ namespace WhatsAppApi.Register
                 if (string.IsNullOrEmpty(id))
                 {
                     //auto-generate
-                    id = (phoneNumber + salt).Reverse().ToSHAString();
+                    id = GenerateIdentity(phoneNumber, salt);
                 }
                 string token = string.Concat(WhatsConstants.WhatsRegToken + WhatsConstants.WhatsBuildHash, phoneNumber).ToMD5String();
                 string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc={7}&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token, mcc);
@@ -50,7 +55,7 @@ namespace WhatsAppApi.Register
                 if (string.IsNullOrEmpty(id))
                 {
                     //auto generate
-                    id = (phoneNumber + salt).Reverse().ToSHAString();
+                    id = GenerateIdentity(phoneNumber, salt);
                 }
                 string uri = string.Format("https://v.whatsapp.net/v2/register?cc={0}&in={1}&id={2}&code={3}", countryCode, phoneNumber, id, code);
                 string response = GetResponse(uri);
