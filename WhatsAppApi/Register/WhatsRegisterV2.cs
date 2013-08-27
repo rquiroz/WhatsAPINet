@@ -20,6 +20,13 @@ namespace WhatsAppApi.Register
 
         public static bool RequestCode(string countryCode, string phoneNumber, out string password, string method = "sms", string id = null, string language = null, string locale = null, string mcc = "204", string salt = "")
         {
+            string response = string.Empty;
+            return RequestCode(countryCode, phoneNumber, out password, out response, method, id, mcc, salt);
+        }
+
+        public static bool RequestCode(string countryCode, string phoneNumber, out string password, out string response, string method = "sms", string id = null, string language = null, string locale = null, string mcc = "204", string salt = "")
+        {
+            response = null;
             password = null;
             try
             {
@@ -34,7 +41,7 @@ namespace WhatsAppApi.Register
                 }
                 string token = string.Concat(WhatsConstants.WhatsRegToken + WhatsConstants.WhatsBuildHash, phoneNumber).ToMD5String();
                 string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc={7}&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token, mcc);
-                string response = GetResponse(uri);
+                response = GetResponse(uri);
                 password = response.GetJsonValue("pw");
                 if (!string.IsNullOrEmpty(password))
                 {
