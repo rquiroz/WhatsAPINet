@@ -39,6 +39,11 @@ namespace WhatsAppApi.Parser
                         {
                             //matched
                             this.Country = values[0].Trim(new char[] { '"' });
+                            //hook: Fix CC for North America
+                            if (values[1].StartsWith("1"))
+                            {
+                                values[1] = "1";
+                            }
                             this.CC = values[1];
                             this.Number = number.Substring(this.CC.Length);
                             this.ISO3166 = values[3].Trim(new char[] { '"' });
