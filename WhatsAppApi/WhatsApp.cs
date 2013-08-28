@@ -280,6 +280,7 @@ namespace WhatsAppApi
                 System.Threading.Thread.Sleep(50);
             } 
             while ((cnt++ < 100) && (this.loginStatus == CONNECTION_STATUS.DISCONNECTED));
+            this.sendNickname(this.name);
         }
 
         /// <summary>
@@ -521,7 +522,7 @@ namespace WhatsAppApi
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 { }
             }
             return null;
@@ -721,9 +722,13 @@ namespace WhatsAppApi
                     if (ProtocolTreeNode.TagEquals(node, "message"))
                     {
                         this.AddMessage(node);
-                        if (node.GetChild("received") == null)
+                        if (node.GetChild("request") != null)
                         {
                             this.sendMessageReceived(node);
+                        }
+                        else if (node.GetChild("received") != null)
+                        {
+                            this.sendMessageReceived(node, "ack");
                         }
                     }
                     if (ProtocolTreeNode.TagEquals(node, "stream:error"))
@@ -793,15 +798,10 @@ namespace WhatsAppApi
         /// Tell the server we recieved the message
         /// </summary>
         /// <param name="msg">The ProtocolTreeNode that contains the message</param>
-        protected void sendMessageReceived(ProtocolTreeNode msg)
+        protected void sendMessageReceived(ProtocolTreeNode msg, string response = "received")
         {
-            ProtocolTreeNode requestNode = msg.GetChild("request");
-            if (requestNode == null ||
-                !requestNode.GetAttribute("xmlns").Equals("urn:xmpp:receipts", StringComparison.OrdinalIgnoreCase))
-                return;
-
             FMessage tmpMessage = new FMessage(new FMessage.Key(msg.GetAttribute("from"), true, msg.GetAttribute("id")));
-            this.WhatsParser.WhatsSendHandler.SendMessageReceived(tmpMessage);
+            this.WhatsParser.WhatsSendHandler.SendMessageReceived(tmpMessage, response);
         }
 
         /// <summary>

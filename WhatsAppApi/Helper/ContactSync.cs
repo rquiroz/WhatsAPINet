@@ -40,7 +40,7 @@ namespace WhatsAppApi.Helper
             foreach (string contact in contacts)
             {
                 string con = contact;
-                if(!con.Contains('+'))
+                if (!con.Contains('+'))
                 {
                     con = "%2B" + con;
                 }
@@ -59,9 +59,16 @@ namespace WhatsAppApi.Helper
             {
                 writer.Write(postfields);
             }
-            HttpWebResponse response = this.request.GetResponse() as HttpWebResponse;
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-            return reader.ReadToEnd();
+            try
+            {
+                HttpWebResponse response = this.request.GetResponse() as HttpWebResponse;
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+                return reader.ReadToEnd();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         protected string _getSyncNonce()
@@ -93,7 +100,7 @@ namespace WhatsAppApi.Helper
 
         protected static string _hash(string data, bool raw)
         {
-            byte[] bytes = System.Text.Encoding.Default.GetBytes(data);
+            byte[] bytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(data);
             MD5 md5 = MD5.Create();
             md5.ComputeHash(bytes);
             if (!raw)
@@ -102,7 +109,7 @@ namespace WhatsAppApi.Helper
             }
             else
             {
-                return System.Text.Encoding.Default.GetString(md5.Hash);
+                return Encoding.GetEncoding("ISO-8859-1").GetString(md5.Hash);
             }
         }
 
@@ -119,7 +126,7 @@ namespace WhatsAppApi.Helper
         protected void _setHeaders(string nonce, long contentlength)
         {
             this.request.Headers.Clear();
-            this.request.UserAgent = "WhatsApp/2.4.7 S40Version/14.26 Device/Nokia302";
+            this.request.UserAgent = WhatsAppApi.Settings.WhatsConstants.UserAgent;
             this.request.Accept = "text/json";
             this.request.ContentType = "application/x-www-form-urlencoded";
             string foo = this._generateAuth(nonce);
@@ -134,7 +141,7 @@ namespace WhatsAppApi.Helper
             string nc = "00000001";
             string digestUri = "WAWA/s.whatsapp.net";
             string credentials = this.username + ":s.whatsapp.net:";
-            credentials += System.Text.Encoding.Default.GetString(Convert.FromBase64String(this.password));
+            credentials += Encoding.GetEncoding("ISO-8859-1").GetString(Convert.FromBase64String(this.password));
             string response = _hash(_hash(_hash(credentials, true) + ":" + nonce + ":" + cnonce) + ":" + nonce + ":" + nc + ":" + cnonce + ":auth:" + _hash("AUTHENTICATE:" + digestUri));
             return "X-WAWA:username=\"" + this.username + "\",realm=\"s.whatsapp.net\",nonce=\"" + nonce + "\",cnonce=\"" + cnonce + "\",nc=\"" + nc + "\",qop=\"auth\",digest-uri=\"" + digestUri + "\",response=\"" + response + "\",charset=\"utf-8\"";
         }

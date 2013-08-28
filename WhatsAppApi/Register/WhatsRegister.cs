@@ -92,7 +92,7 @@ namespace WhatsAppApi.Register
                 tmpLocalCode = "US";
             }
             string phoneNumber = phonenum;
-            const string buildHash = WhatsConstants.WhatsBuildHash;
+            const string buildHash = WhatsConstants.WhatsRegToken + WhatsConstants.WhatsBuildHash;
             string tmpToken = ("k7Iy3bWARdNeSL8gYgY6WveX12A1g4uTNXrRzt1H" + buildHash + phoneNumber).MD5String().ToLower();
             string regString = string.Format("cc={0}&in={1}&lg={2}&lc={3}&method={4}&mcc=000&mnc=000&imsi=000&token={5}", new object[] { countryCode, phoneNumber, tmpLangCode, tmpLocalCode, codeType, tmpToken });
             return regString;

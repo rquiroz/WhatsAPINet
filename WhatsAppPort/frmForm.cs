@@ -18,7 +18,6 @@ namespace WhatsAppPort
 {
     public partial class frmForm : Form
     {
-        private WhatsApp wa;
         private WhatsMessageHandler messageHandler;
         private BackgroundWorker bgWorker;
         private volatile bool isRunning;
@@ -42,7 +41,6 @@ namespace WhatsAppPort
             this.bgWorker.ProgressChanged += NewMessageArrived;
             this.bgWorker.WorkerSupportsCancellation = true;
             this.bgWorker.WorkerReportsProgress = true;
-            this.wa = new WhatsApp(this.phoneNum, this.phonePass, this.phoneNick);
             this.messageHandler = new WhatsMessageHandler();
         }
 
@@ -67,8 +65,8 @@ namespace WhatsAppPort
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.wa.Connect();
-            this.wa.Login();
+            WhatSocket.Instance.Connect();
+            WhatSocket.Instance.Login();
             this.bgWorker.RunWorkerAsync();
         }
 
@@ -79,14 +77,14 @@ namespace WhatsAppPort
 
             while (this.isRunning)
             {
-                if (!wa.HasMessages())
+                if (!WhatSocket.Instance.HasMessages())
                 {
-                    wa.PollMessages();
+                    WhatSocket.Instance.PollMessages();
                     Thread.Sleep(100);
                     continue;
                 }
 
-                var tmpMessages = wa.GetAllMessages();
+                var tmpMessages = WhatSocket.Instance.GetAllMessages();
                 (sender as BackgroundWorker).ReportProgress(1, tmpMessages);
             }
         }
@@ -144,7 +142,7 @@ namespace WhatsAppPort
             var selItem = tmpListView.SelectedItems[0];
             var tmpUser = selItem.Tag as User;
 
-            var tmpDialog = new frmUserChat(this.wa, tmpUser);
+            var tmpDialog = new frmUserChat(tmpUser);
             //tmpDialog.MessageRecievedEvent += new frmUserChat.ProtocolDelegate(tmpDialog_MessageRecievedEvent);
             tmpDialog.Show();
         }

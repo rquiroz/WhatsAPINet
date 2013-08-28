@@ -20,7 +20,7 @@ namespace WhatsAppPort
         {
             if (!this.CheckLogin(this.textBoxPhone.Text, this.textBoxPass.Text))
             {
-                MessageBox.Show(this, "Login fehlgeschlagen", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "Login failed", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -41,13 +41,28 @@ namespace WhatsAppPort
                 if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
                     return false;
 
-                string cc = user.Substring(0, 2);
-                string phone = user.Remove(0, 2).TrimStart('0');
-                return WhatsAppApi.Register.WhatsRegister.ExistsAndDelete(cc, phone, pass);
+                WhatSocket.Create(user, pass, this.textBoxNick.Text, true);
+                WhatSocket.Instance.Connect();
+                WhatSocket.Instance.Login();
+                //check login status
+                if (WhatSocket.Instance.ConnectionStatus == WhatsAppApi.WhatsApp.CONNECTION_STATUS.LOGGEDIN)
+                {
+                    return true;
+                }
             }
             catch (Exception)
+            { }
+            return false;
+        }
+
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+            frmRegister regForm = new frmRegister(this.textBoxPhone.Text);
+            DialogResult regResult = regForm.ShowDialog(this);
+            if (regResult == System.Windows.Forms.DialogResult.OK)
             {
-                return false;
+                this.textBoxPass.Text = regForm.password;
+                this.textBoxPhone.Text = regForm.number;
             }
         }
     }

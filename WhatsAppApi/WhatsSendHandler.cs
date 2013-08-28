@@ -490,9 +490,9 @@ namespace WhatsAppApi
         /// Tell the server the message has been recieved.
         /// </summary>
         /// <param name="message">An instance of the FMessage class.</param>
-        public void SendMessageReceived(FMessage message)
+        public void SendMessageReceived(FMessage message, string response)
         {
-            var child = new ProtocolTreeNode("received", new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
+            var child = new ProtocolTreeNode(response, new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
             var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", message.key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.key.id) }, child);
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }

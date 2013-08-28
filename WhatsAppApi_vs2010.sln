@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsAppApi", "WhatsAppApi\WhatsAppApi.csproj", "{3FC9096A-C4D2-40C7-BE7B-D98ACAB3BD2B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsAppPort", "WhatsAppPort\WhatsAppPort.csproj", "{91D9D263-BFB7-4C31-890F-4A42F734670E}"
