@@ -65,6 +65,13 @@ namespace WhatsAppApi.Register
                     id = GenerateIdentity(phoneNumber, salt);
                 }
                 string token = System.Uri.EscapeDataString(WhatsRegisterV2.GetToken(phoneNumber));
+
+                if (token == "iplimit")
+                {
+                    response = token;
+                    return false;
+                }
+
                 string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc={7}&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token, mcc);
                 response = GetResponse(uri);
                 password = response.GetJsonValue("pw");
@@ -74,14 +81,22 @@ namespace WhatsAppApi.Register
                 }
                 return (response.GetJsonValue("status") == "sent");
             }
-            catch
+            catch(Exception e)
             {
+                response = e.Message;
                 return false;
             }
         }
 
         public static string RegisterCode(string countryCode, string phoneNumber, string code, string id = null, string salt = "")
         {
+            string response = string.Empty;
+            return WhatsRegisterV2.RegisterCode(countryCode, phoneNumber, code, out response, id, salt);
+        }
+
+        public static string RegisterCode(string countryCode, string phoneNumber, string code, out string response, string id = null, string salt = "")
+        {
+            response = string.Empty;
             try
             {
                 if (string.IsNullOrEmpty(id))
@@ -90,7 +105,7 @@ namespace WhatsAppApi.Register
                     id = GenerateIdentity(phoneNumber, salt);
                 }
                 string uri = string.Format("https://v.whatsapp.net/v2/register?cc={0}&in={1}&id={2}&code={3}", countryCode, phoneNumber, id, code);
-                string response = GetResponse(uri);
+                response = GetResponse(uri);
                 if (response.GetJsonValue("status") == "ok")
                 {
                     return response.GetJsonValue("pw");
@@ -142,11 +157,57 @@ namespace WhatsAppApi.Register
             return new string(s.ToArray()).ToSHAString();
         }
 
+        public static string UrlEncode(string data)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (char c in data.ToCharArray())
+            {
+                int i = (int)c;
+                if (
+                    (
+                        i >= 0 && i <= 31
+                    )
+                    ||
+                    (
+                        i >= 32 && i <= 47
+                    )
+                    ||
+                    (
+                        i >= 58 && i <= 64
+                    )
+                    ||
+                    (
+                        i >= 91 && i <= 96
+                    )
+                    ||
+                    (
+                        i >= 123 && i <= 126
+                    )
+                    ||
+                    i > 127
+                )
+                {
+                    //encode 
+                    sb.Append('%'); 
+                    sb.AppendFormat("{0:x2}", (byte)c); 
+                }
+                else
+                {
+                    //do not encode
+                    sb.Append(c);
+                }
+            }
+
+            return sb.ToString();
+        }
+
         private static string ToSHAString(this string s)
         {
             byte[] data = SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(s));
-            string str = Encoding.ASCII.GetString(data);
-            return System.Uri.EscapeDataString(str).ToLower();
+            string str = Encoding.GetEncoding("iso-8859-1").GetString(data);
+            str = WhatsRegisterV2.UrlEncode(str).ToLower();
+            return str;
         }
 
         private static string ToMD5String(this IEnumerable<char> s)
