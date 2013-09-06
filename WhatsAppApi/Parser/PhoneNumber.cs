@@ -48,7 +48,13 @@ namespace WhatsAppApi.Parser
                             this.Number = number.Substring(this.CC.Length);
                             this.ISO3166 = values[3].Trim(new char[] { '"' });
                             this.ISO639 = values[4].Trim(new char[] { '"' });
-                            this.MCC = values[2];
+                            this.MCC = values[2].Trim(new char[] { '"' });
+                            if (this.MCC.Contains('|'))
+                            {
+                                //take first one
+                                string[] parts = this.MCC.Split(new char[] { '|' });
+                                this.MCC = parts[0];
+                            }
                             return;
                         }
                     }
