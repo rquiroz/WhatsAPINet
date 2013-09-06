@@ -32,3 +32,11 @@ the Android client uses this encryption, which seems to be TLS as specified by
 the XMPP RFC. However, I did not really look into this. Also, the mapping of
 keywords to bytes seems to have also changed in the latest version of the
 Android app.
+
+
+### Code request token
+The current implementation for token generation is a server side solution created by [Jake](https://github.com/dynogic).
+
+I only support WhatsApiNet implementations for personal use, so there's a limit of 10 unique phone number token requests per IP address per day.
+This is to prevent abuse by spammers and other scum.
+If you disagree with this limit, send me an email, explain your case, and I might add you to my whitelist :)
