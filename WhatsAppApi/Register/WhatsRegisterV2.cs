@@ -21,26 +21,7 @@ namespace WhatsAppApi.Register
 
         private static string GetToken(string number)
         {
-            HttpWebRequest request = WebRequest.Create(WhatsRegisterV2.TOKEN_URL) as HttpWebRequest;
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-            using (StreamWriter writer = new StreamWriter(request.GetRequestStream()))
-            {
-                writer.Write(String.Format("in={0}", number));
-            }
-            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            string token = null;
-            try
-            {
-            using(StreamReader sr = new StreamReader(response.GetResponseStream()))
-            {
-                token = sr.ReadToEnd();
-            }
-            } catch(Exception e)
-            {
-                throw new Exception("Could not request token", e);
-            }
-            return token;
+            return WaToken.GenerateToken(number);
         }
 
         public static bool RequestCode(string countryCode, string phoneNumber, out string password, string method = "sms", string id = null, string language = null, string locale = null, string mcc = "204", string salt = "")
@@ -65,12 +46,6 @@ namespace WhatsAppApi.Register
                     id = GenerateIdentity(phoneNumber, salt);
                 }
                 string token = System.Uri.EscapeDataString(WhatsRegisterV2.GetToken(phoneNumber));
-
-                if (token == "iplimit")
-                {
-                    response = token;
-                    return false;
-                }
 
                 string uri = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc={7}&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token, mcc);
                 response = GetResponse(uri);
