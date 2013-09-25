@@ -73,6 +73,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Register\WaToken.cs" />
     <Compile Include="Register\WhatsRegisterV2.cs" />
     <Compile Include="Response\CorruptStreamException.cs" />
     <Compile Include="Response\MessageRecvResponse.cs" />
