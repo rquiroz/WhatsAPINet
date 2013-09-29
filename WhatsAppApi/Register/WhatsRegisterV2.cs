@@ -13,13 +13,12 @@ namespace WhatsAppApi.Register
 {
     public static class WhatsRegisterV2
     {
-        const string TOKEN_URL = "http://mywapi.nl/token";
         public static string GenerateIdentity(string phoneNumber, string salt = "")
         {
             return (phoneNumber + salt).Reverse().ToSHAString();
         }
 
-        private static string GetToken(string number)
+        public static string GetToken(string number)
         {
             return WaToken.GenerateToken(number);
         }
