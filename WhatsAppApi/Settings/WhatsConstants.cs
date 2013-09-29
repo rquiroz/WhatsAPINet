@@ -47,7 +47,7 @@ namespace WhatsAppApi.Settings
         /// <summary>
         /// The port that needs to be connected to
         /// </summary>
-        public const int WhatsPort = 5222;
+        public const int WhatsPort = 443;
 
         /// <summary>
         /// iPhone device
