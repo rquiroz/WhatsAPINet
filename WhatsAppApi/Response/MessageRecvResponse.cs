@@ -138,7 +138,7 @@ namespace WhatsAppApi.Response
                 else if (ProtocolTreeNode.TagEquals(itemNode, "body") && (tmpAttrbId != null))
                 {
                     string dataString = WhatsApp.SYSEncoding.GetString(itemNode.GetData());
-                    var tmpMessKey = new FMessage.Key(tmpAttrFrom, false, tmpAttrbId);
+                    var tmpMessKey = new FMessage.FMessageIdentifierKey(tmpAttrFrom, false, tmpAttrbId);
                     builder.Key(tmpMessKey).Remote_resource(tmpAttrFromJid).NewIncomingInstance().Data(dataString);
                 }
                 else if (ProtocolTreeNode.TagEquals(itemNode, "media") && (tmpAttrbId != null))
@@ -208,7 +208,7 @@ namespace WhatsAppApi.Response
                             builder.Data(WhatsApp.SYSEncoding.GetString(itemNode.GetData()));
                         }
                     }
-                    var tmpMessageKey = new FMessage.Key(tmpAttrFrom, false, tmpAttrbId);
+                    var tmpMessageKey = new FMessage.FMessageIdentifierKey(tmpAttrFrom, false, tmpAttrbId);
                     builder.Key(tmpMessageKey).Remote_resource(tmpAttrFromJid).NewIncomingInstance();
                 }
                 else if (ProtocolTreeNode.TagEquals(itemNode, "request"))
@@ -220,14 +220,14 @@ namespace WhatsAppApi.Response
                     string str16 = itemNode.GetAttribute("xmlns");
                     if ("jabber:x:event".Equals(str16) && (tmpAttrbId != null))
                     {
-                        var tmpMessageKey = new FMessage.Key(tmpAttrFrom, true, tmpAttrbId);
+                        var tmpMessageKey = new FMessage.FMessageIdentifierKey(tmpAttrFrom, true, tmpAttrbId);
                     }
                 }
                 else if (ProtocolTreeNode.TagEquals(itemNode, "received"))
                 {
                     if (tmpAttrbId != null)
                     {
-                        var tmpMessageKey = new FMessage.Key(tmpAttrFrom, true, tmpAttrbId);
+                        var tmpMessageKey = new FMessage.FMessageIdentifierKey(tmpAttrFrom, true, tmpAttrbId);
                         if (true) 
                         {
                             string tmpAttrType = itemNode.GetAttribute("type");
@@ -324,7 +324,7 @@ namespace WhatsAppApi.Response
             }
             if ((tmpAttrFrom != null) && (tmpAttrbId != null))
             {
-                FMessage.Key key = new FMessage.Key(tmpAttrFrom, true, tmpAttrbId);
+                FMessage.FMessageIdentifierKey key = new FMessage.FMessageIdentifierKey(tmpAttrFrom, true, tmpAttrbId);
             }
         }
     }

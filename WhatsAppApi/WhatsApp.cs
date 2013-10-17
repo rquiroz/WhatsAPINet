@@ -290,7 +290,7 @@ namespace WhatsAppApi
         /// <param name="txt">The text that needs to be send</param>
         public void Message(string to, string txt)
         {
-            var tmpMessage = new FMessage(this.GetJID(to), true) { key = { id = TicketManager.GenerateId() }, data = txt };
+            var tmpMessage = new FMessage(this.GetJID(to), true) { identifier_key = { id = TicketManager.GenerateId() }, data = txt };
             this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage);
         }
 
@@ -364,7 +364,7 @@ namespace WhatsAppApi
             if (response != null && !String.IsNullOrEmpty(response.url))
             {
                 //send message
-                FMessage msg = new FMessage(to, true) { key = { id = TicketManager.GenerateId() }, media_wa_type = FMessage.Type.Image, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url, binary_data = this.CreateThumbnail(filepath) };
+                FMessage msg = new FMessage(to, true) { identifier_key = { id = TicketManager.GenerateId() }, media_wa_type = FMessage.Type.Image, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url, binary_data = this.CreateThumbnail(filepath) };
                 this.WhatsSendHandler.SendMessage(msg);
             }
 
@@ -800,7 +800,7 @@ namespace WhatsAppApi
         /// <param name="msg">The ProtocolTreeNode that contains the message</param>
         protected void sendMessageReceived(ProtocolTreeNode msg, string response = "received")
         {
-            FMessage tmpMessage = new FMessage(new FMessage.Key(msg.GetAttribute("from"), true, msg.GetAttribute("id")));
+            FMessage tmpMessage = new FMessage(new FMessage.FMessageIdentifierKey(msg.GetAttribute("from"), true, msg.GetAttribute("id")));
             this.WhatsParser.WhatsSendHandler.SendMessageReceived(tmpMessage, response);
         }
 

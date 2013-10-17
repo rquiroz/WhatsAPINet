@@ -6,7 +6,7 @@ namespace WhatsAppApi.Parser
     public class FMessage
     {
         public bool gap_behind;
-        public Key key;
+        public FMessageIdentifierKey identifier_key;
         public double latitude;
         public string location_details;
         public string location_url;
@@ -26,11 +26,11 @@ namespace WhatsAppApi.Parser
 
         public WhatsAppApi.Account.WhatsUser User { get; private set; }
 
-        public FMessage(Key key)
+        public FMessage(FMessageIdentifierKey key)
         {
             this.status = Status.Undefined;
             this.gap_behind = true;
-            this.key = key;
+            this.identifier_key = key;
         }
 
         internal FMessage(WhatsAppApi.Account.WhatsUser remote_user, bool from_me)
@@ -38,13 +38,13 @@ namespace WhatsAppApi.Parser
             this.status = Status.Undefined;
             this.gap_behind = true;
             this.User = remote_user;
-            this.key = new Key(remote_user.GetFullJid(), from_me, TicketManager.GenerateId());
+            this.identifier_key = new FMessageIdentifierKey(remote_user.GetFullJid(), from_me, TicketManager.GenerateId());
         }
         internal FMessage(string remote_jid, bool from_me)
         {
             this.status = Status.Undefined;
             this.gap_behind = true;
-            this.key = new Key(remote_jid, from_me, TicketManager.GenerateId());
+            this.identifier_key = new FMessageIdentifierKey(remote_jid, from_me, TicketManager.GenerateId());
         }
 
         public FMessage(string remote_jid, string data, object image)
@@ -203,7 +203,7 @@ namespace WhatsAppApi.Parser
                 }
                 if (((this.remote_jid != null) && this.from_me.HasValue) && (this.id != null))
                 {
-                    this.message.key = new FMessage.Key(this.remote_jid, this.from_me.Value, this.id);
+                    this.message.identifier_key = new FMessage.FMessageIdentifierKey(this.remote_jid, this.from_me.Value, this.id);
                 }
                 if (this.remote_resource != null)
                 {
@@ -310,12 +310,12 @@ namespace WhatsAppApi.Parser
                 return (this.message != null);
             }
 
-            public FMessage.Key Key()
+            public FMessage.FMessageIdentifierKey Key()
             {
-                return new FMessage.Key(this.remote_jid, (!this.from_me.HasValue && this.from_me.Value), this.id);
+                return new FMessage.FMessageIdentifierKey(this.remote_jid, (!this.from_me.HasValue && this.from_me.Value), this.id);
             }
 
-            public FMessage.Builder Key(FMessage.Key key)
+            public FMessage.Builder Key(FMessage.FMessageIdentifierKey key)
             {
                 this.remote_jid = key.remote_jid;
                 this.from_me = new bool?(key.from_me);
@@ -430,7 +430,7 @@ namespace WhatsAppApi.Parser
                         "missing required property before instantiating new incoming message");
                 }
                 this.message =
-                    new FMessage(new FMessage.Key(this.remote_jid, this.from_me.Value, this.id));
+                    new FMessage(new FMessage.FMessageIdentifierKey(this.remote_jid, this.from_me.Value, this.id));
                 return this;
             }
 
@@ -522,14 +522,14 @@ namespace WhatsAppApi.Parser
             }
         }
 
-        public class Key
+        public class FMessageIdentifierKey
         {
             public bool from_me;
             public string id;
             public string remote_jid;
             public string serverNickname;
 
-            public Key(string remote_jid, bool from_me, string id)
+            public FMessageIdentifierKey(string remote_jid, bool from_me, string id)
             {
                 this.remote_jid = remote_jid;
                 this.from_me = from_me;
@@ -548,7 +548,7 @@ namespace WhatsAppApi.Parser
                     {
                         return false;
                     }
-                    FMessage.Key key = (FMessage.Key)obj;
+                    FMessage.FMessageIdentifierKey key = (FMessage.FMessageIdentifierKey)obj;
                     if (this.from_me != key.from_me)
                     {
                         return false;

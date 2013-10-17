@@ -493,7 +493,7 @@ namespace WhatsAppApi
         public void SendMessageReceived(FMessage message, string response)
         {
             var child = new ProtocolTreeNode(response, new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
-            var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", message.key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.key.id) }, child);
+            var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", message.identifier_key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.identifier_key.id) }, child);
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
@@ -710,7 +710,7 @@ namespace WhatsAppApi
         public void SendStatusUpdate(string status, Action onComplete, Action<int> onError)
         {
             string id = TicketManager.GenerateId();
-            FMessage message = new FMessage(new FMessage.Key("s.us", true, id));
+            FMessage message = new FMessage(new FMessage.FMessageIdentifierKey("s.us", true, id));
             var messageNode = GetMessageNode(message, new ProtocolTreeNode("body", null, WhatsApp.SYSEncoding.GetBytes(status)));
             this.whatsNetwork.SendData(this._binWriter.Write(messageNode));
         }
@@ -904,7 +904,7 @@ namespace WhatsAppApi
         /// <returns>An instance of the ProtocolTreeNode class.</returns>
         internal static ProtocolTreeNode GetMessageNode(FMessage message, ProtocolTreeNode pNode)
         {
-            return new ProtocolTreeNode("message", new[] { new KeyValue("to", message.key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.key.id) }, pNode);
+            return new ProtocolTreeNode("message", new[] { new KeyValue("to", message.identifier_key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.identifier_key.id) }, pNode);
         }
 
         /// <summary>
