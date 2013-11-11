@@ -148,7 +148,6 @@ namespace WhatsAppApi
         public WhatsApp(string phoneNum, string imei, string nick, bool debug = false)
         {
             this.messageQueue = new List<ProtocolTreeNode>();
-
             this.phoneNumber = phoneNum;
             this.imei = imei;
             this.name = nick;
@@ -261,7 +260,7 @@ namespace WhatsAppApi
             Encryption.encryptionOutgoing = null;
 
             string resource = string.Format(@"{0}-{1}-{2}",
-                WhatsConstants.IphoneDevice,
+                WhatsConstants.Device,
                 WhatsConstants.WhatsAppVer,
                 WhatsConstants.WhatsPort);
             var data = this.writer.StartStream(WhatsConstants.WhatsAppServer, resource);
@@ -599,9 +598,11 @@ namespace WhatsAppApi
         protected ProtocolTreeNode addAuth()
         {
             var node = new ProtocolTreeNode("auth",
-                new KeyValue[] { new KeyValue("xmlns", @"urn:ietf:params:xml:ns:xmpp-sasl"),
-                new KeyValue("mechanism", "WAUTH-1"),
-                new KeyValue("user", this.phoneNumber) });
+                new KeyValue[] { 
+                    new KeyValue("xmlns", @"urn:ietf:params:xml:ns:xmpp-sasl"),
+                    new KeyValue("mechanism", "WAUTH-1"),
+                    new KeyValue("user", this.phoneNumber)
+                });
             return node;
         }
 
