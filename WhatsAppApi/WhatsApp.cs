@@ -591,6 +591,11 @@ namespace WhatsAppApi
             this.WhatsParser.WhatsSendHandler.SendAvailableForChat(nickname);
         }
 
+        public void SetPhoto(byte[] imageBytes, byte[] thumbnailBytes)
+        {
+            this.WhatsSendHandler.SendSetPhoto(this.GetJID(this.phoneNumber), imageBytes, thumbnailBytes);
+        }
+
         /// <summary>
         /// Add the authenication nodes
         /// </summary>

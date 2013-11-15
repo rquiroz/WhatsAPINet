@@ -664,7 +664,7 @@ namespace WhatsAppApi
         /// <param name="thumbnailBytes">The amount of bytes needed for the thumbanil</param>
         /// <param name="onSuccess">Action to execute when the request was successful</param>
         /// <param name="onError">Action to execute when the request failed</param>
-        public void SendSetPhoto(string jid, byte[] bytes, byte[] thumbnailBytes, Action onSuccess, Action<int> onError)
+        public void SendSetPhoto(string jid, byte[] bytes, byte[] thumbnailBytes)
         {
             string id = TicketCounter.MakeId("set_photo_");
             var list = new List<ProtocolTreeNode> { new ProtocolTreeNode("picture", new[] { new KeyValue("xmlns", "w:profile:picture") }, null, bytes) };
