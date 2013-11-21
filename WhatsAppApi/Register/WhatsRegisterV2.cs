@@ -94,6 +94,13 @@ namespace WhatsAppApi.Register
 
         public static string RequestExist(string countryCode, string phoneNumber, string id = null)
         {
+            string response = string.Empty;
+            return RequestExist(countryCode, phoneNumber, out response, id);
+        }
+
+        public static string RequestExist(string countryCode, string phoneNumber, out string response, string id = null)
+        {
+            response = string.Empty;
             try
             {
                 if (String.IsNullOrEmpty(id))
@@ -101,7 +108,7 @@ namespace WhatsAppApi.Register
                     id = phoneNumber.Reverse().ToSHAString();
                 }
                 string uri = string.Format("https://v.whatsapp.net/v2/exist?cc={0}&in={1}&id={2}", countryCode, phoneNumber, id);
-                string response = GetResponse(uri);
+                response = GetResponse(uri);
                 if (response.GetJsonValue("status") == "ok")
                 {
                     return response.GetJsonValue("pw");
