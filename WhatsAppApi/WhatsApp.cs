@@ -412,6 +412,58 @@ namespace WhatsAppApi
             }
         }
 
+        public void MessageAudio(string to, string filepath)
+        {
+            to = this.GetJID(to);
+            FileInfo finfo = new FileInfo(filepath);
+            string type = string.Empty;
+            switch (finfo.Extension)
+            {
+                case ".wav":
+                    type = "audio/wav";
+                    break;
+                case ".ogg":
+                    type = "audio/ogg";
+                    break;
+                case ".aif":
+                    type = "audio/x-aiff";
+                    break;
+                case ".aac":
+                    type = "audio/aac";
+                    break;
+                case ".m4a":
+                    type = "audio/mp4";
+                    break;
+                default:
+                    type = "audio/mpeg";
+                    break;
+            }
+
+            //create hash
+            string filehash = string.Empty;
+            using (FileStream fs = File.OpenRead(filepath))
+            {
+                using (BufferedStream bs = new BufferedStream(fs))
+                {
+                    using (HashAlgorithm sha = HashAlgorithm.Create("sha256"))
+                    {
+                        byte[] raw = sha.ComputeHash(bs);
+                        filehash = Convert.ToBase64String(raw);
+                    }
+                }
+            }
+
+            //request upload
+            UploadResponse response = this.UploadFile(filehash, "audio", finfo.Length, filepath, to, type);
+
+            if (response != null && !String.IsNullOrEmpty(response.url))
+            {
+                //send message
+                FMessage msg = new FMessage(to, true) { identifier_key = { id = TicketManager.GenerateId() }, media_wa_type = FMessage.Type.Audio, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url };
+                this.WhatsSendHandler.SendMessage(msg);
+            }
+        }
+
         private byte[] CreateThumbnail(string path)
         {
             if (File.Exists(path))
