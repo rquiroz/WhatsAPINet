@@ -51,10 +51,10 @@ namespace WhatsAppApi.Helper
                 }
             }
             ret += ">";
-            //if (this.data.Length > 0)
-            //{
-            //    ret += WhatsApp.SYSEncoding.GetString(this.data);
-            //}
+            if (this.data.Length > 0 && this.data.Length <= 1024)
+            {
+                ret += WhatsApp.SYSEncoding.GetString(this.data);
+            }
             if (this.children != null && this.children.Count() > 0)
             {
                 foreach (var item in this.children)
