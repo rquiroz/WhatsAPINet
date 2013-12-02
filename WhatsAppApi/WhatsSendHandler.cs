@@ -486,6 +486,64 @@ namespace WhatsAppApi
             }
         }
 
+        //overload
+        public void SendMessageBroadcast(string[] to, string message)
+        {
+            this.SendMessageBroadcast(to, new FMessage(string.Empty, true) { data = message, media_wa_type = FMessage.Type.Undefined});
+        }
+
+        //overload
+        public void SendMessageBroadcast(string to, FMessage message)
+        {
+            this.SendMessageBroadcast(new string[] { to }, message);
+        }
+
+        //overload
+        public void SendMessageBroadcast(string to, string message)
+        {
+            this.SendMessageBroadcast(new string[] { to }, new FMessage(string.Empty, true) { data = message, media_wa_type = FMessage.Type.Undefined });
+        }
+
+        //send broadcast
+        public void SendMessageBroadcast(string[] to, FMessage message)
+        {
+            if (to != null && to.Length > 0 && message != null && !string.IsNullOrEmpty(message.data))
+            {
+                ProtocolTreeNode child;
+                if (message.media_wa_type == FMessage.Type.Undefined)
+                {
+                    //text broadcast
+                    child = new ProtocolTreeNode("body", null, null, WhatsApp.SYSEncoding.GetBytes(message.data));
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+                //compose broadcast envelope
+                ProtocolTreeNode xnode = new ProtocolTreeNode("x", new KeyValue[] {
+                    new KeyValue("xmlns", "jabber:x:event")
+                }, new ProtocolTreeNode("server", null));
+                List<ProtocolTreeNode> toNodes = new List<ProtocolTreeNode>();
+                foreach (string target in to)
+                {
+                    toNodes.Add(new ProtocolTreeNode("to", new KeyValue[] { new KeyValue("jid", WhatsAppApi.WhatsApp.GetJID(target)) }));
+                }
+
+                ProtocolTreeNode broadcastNode = new ProtocolTreeNode("broadcast", null, toNodes);
+                ProtocolTreeNode messageNode = new ProtocolTreeNode("message", new KeyValue[] {
+                    new KeyValue("to", "broadcast"),
+                    new KeyValue("type", "chat"),
+                    new KeyValue("id", TicketManager.GenerateId())
+                }, new ProtocolTreeNode[] {
+                    broadcastNode,
+                    xnode,
+                    child
+                });
+                this.SendNode(messageNode);
+            }
+        }
+
         /// <summary>
         /// Tell the server the message has been recieved.
         /// </summary>
