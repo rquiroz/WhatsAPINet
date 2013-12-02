@@ -213,12 +213,12 @@ namespace WhatsAppApi
 
         public void GetStatus(string jid)
         {
-            this.WhatsSendHandler.SendGetStatus(this.GetJID(jid));
+            this.WhatsSendHandler.SendGetStatus(GetJID(jid));
         }
 
         public void PresenceSubscription(string target)
         {
-            this.WhatsSendHandler.SendPresenceSubscriptionRequest(this.GetJID(target));
+            this.WhatsSendHandler.SendPresenceSubscriptionRequest(GetJID(target));
         }
 
         /// <summary>
@@ -289,7 +289,7 @@ namespace WhatsAppApi
         /// <param name="txt">The text that needs to be send</param>
         public void Message(string to, string txt)
         {
-            var tmpMessage = new FMessage(this.GetJID(to), true) { identifier_key = { id = TicketManager.GenerateId() }, data = txt };
+            var tmpMessage = new FMessage(GetJID(to), true) { identifier_key = { id = TicketManager.GenerateId() }, data = txt };
             this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage);
         }
 
@@ -297,7 +297,7 @@ namespace WhatsAppApi
         /// Convert the input string to a JID if necessary
         /// </summary>
         /// <param name="target">Phonenumber or JID</param>
-        public string GetJID(string target)
+        public static string GetJID(string target)
         {
             if (!target.Contains('@'))
             {
@@ -327,7 +327,7 @@ namespace WhatsAppApi
         /// <param name="icon">Icon</param>
         public void MessageImage(string to, string filepath)
         {
-            to = this.GetJID(to);
+            to = GetJID(to);
             FileInfo finfo = new FileInfo(filepath);
             string type = string.Empty;
             switch (finfo.Extension)
@@ -371,7 +371,7 @@ namespace WhatsAppApi
 
         public void MessageVideo(string to, string filepath)
         {
-            to = this.GetJID(to);
+            to = GetJID(to);
             FileInfo finfo = new FileInfo(filepath);
             string type = string.Empty;
             switch (finfo.Extension)
@@ -414,7 +414,7 @@ namespace WhatsAppApi
 
         public void MessageAudio(string to, string filepath)
         {
-            to = this.GetJID(to);
+            to = GetJID(to);
             FileInfo finfo = new FileInfo(filepath);
             string type = string.Empty;
             switch (finfo.Extension)
@@ -674,7 +674,7 @@ namespace WhatsAppApi
         /// <param name="jid">Jabber id</param>
         public void RequestLastSeen(string jid)
         {
-            this.WhatsParser.WhatsSendHandler.SendQueryLastOnline(this.GetJID(jid));
+            this.WhatsParser.WhatsSendHandler.SendQueryLastOnline(GetJID(jid));
         }
 
         /// <summary>
@@ -688,7 +688,7 @@ namespace WhatsAppApi
 
         public void SetPhoto(byte[] imageBytes, byte[] thumbnailBytes)
         {
-            this.WhatsSendHandler.SendSetPhoto(this.GetJID(this.phoneNumber), imageBytes, thumbnailBytes);
+            this.WhatsSendHandler.SendSetPhoto(GetJID(this.phoneNumber), imageBytes, thumbnailBytes);
         }
 
         /// <summary>
