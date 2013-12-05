@@ -83,6 +83,12 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
+        public void SendUnavailable()
+        {
+            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "unavailable") });
+            this.whatsNetwork.SendData(this._binWriter.Write(node));
+        }
+
         public void SendClearDirty(IEnumerable<string> categoryNames)
         {
             string id = TicketCounter.MakeId("clean_dirty_");
@@ -962,7 +968,15 @@ namespace WhatsAppApi
         /// <returns>An instance of the ProtocolTreeNode class.</returns>
         internal static ProtocolTreeNode GetMessageNode(FMessage message, ProtocolTreeNode pNode)
         {
-            return new ProtocolTreeNode("message", new[] { new KeyValue("to", message.identifier_key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.identifier_key.id) }, pNode);
+            return new ProtocolTreeNode("message", new[] { 
+                new KeyValue("to", message.identifier_key.remote_jid), 
+                new KeyValue("type", "chat"), 
+                new KeyValue("id", message.identifier_key.id) 
+            }, 
+            new ProtocolTreeNode[] {
+                new ProtocolTreeNode("x", new KeyValue[] { new KeyValue("xmlns", "jabber:x:event") }, new ProtocolTreeNode("server", null)),
+                pNode
+            });
         }
 
         /// <summary>
