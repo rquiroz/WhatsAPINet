@@ -56,6 +56,11 @@ namespace WhatsAppApi
         private string imei;
 
         /// <summary>
+        /// Hide online status
+        /// </summary>
+        protected bool hidden;
+
+        /// <summary>
         /// Holds the login status
         /// </summary>
         private CONNECTION_STATUS loginStatus;
@@ -145,12 +150,13 @@ namespace WhatsAppApi
         /// <param name="imei">The imei / mac</param>
         /// <param name="nick">User nickname</param>
         /// <param name="debug">Debug on or off, false by default</param>
-        public WhatsApp(string phoneNum, string imei, string nick, bool debug = false)
+        public WhatsApp(string phoneNum, string imei, string nick, bool debug = false, bool hidden = false)
         {
             this.messageQueue = new List<ProtocolTreeNode>();
             this.phoneNumber = phoneNum;
             this.imei = imei;
             this.name = nick;
+            this.hidden = hidden;
             WhatsApp.DEBUG = debug;
             string[] dict = DecodeHelper.getDictionary();
             this.writer = new BinTreeNodeWriter(dict);
@@ -279,7 +285,16 @@ namespace WhatsAppApi
                 System.Threading.Thread.Sleep(50);
             } 
             while ((cnt++ < 100) && (this.loginStatus == CONNECTION_STATUS.DISCONNECTED));
-            this.sendNickname(this.name);
+
+            //hidden mode
+            if (!this.hidden)
+            {
+                this.sendNickname(this.name);
+            }
+            else
+            {
+                this.sendOffline();
+            }
         }
 
         /// <summary>
@@ -684,6 +699,14 @@ namespace WhatsAppApi
         public void sendNickname(string nickname)
         {
             this.WhatsParser.WhatsSendHandler.SendAvailableForChat(nickname);
+        }
+
+        /// <summary>
+        /// Send unavailable status
+        /// </summary>
+        public void sendOffline()
+        {
+            this.WhatsParser.WhatsSendHandler.SendUnavailable();
         }
 
         public void SetPhoto(byte[] imageBytes, byte[] thumbnailBytes)
