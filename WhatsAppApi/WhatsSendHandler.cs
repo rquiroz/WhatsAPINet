@@ -374,7 +374,7 @@ namespace WhatsAppApi
                 attrList.Add(new KeyValue("id", expectedPhotoId));
             }
             var child = new ProtocolTreeNode("picture", attrList.ToArray());
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", jid) }, child);
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsAppApi.WhatsApp.GetJID(jid)) }, child);
             this.whatsNetwork.SendData(this._binWriter.Write(node));
             return id;
         }
