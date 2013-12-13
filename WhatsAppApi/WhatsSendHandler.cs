@@ -77,9 +77,9 @@ namespace WhatsAppApi
             this.SendVerbParticipants(gjid, participants, id, "add");
         }
 
-        public void SendAvailableForChat(string nickName)
+        public void SendAvailableForChat(string nickName, bool isHidden = false)
         {
-            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", nickName) });
+            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", nickName), new KeyValue("type", isHidden?"inactive":"active") });
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
@@ -212,7 +212,7 @@ namespace WhatsAppApi
         /// </summary>
         /// <param name="onSuccess">The action to be executed when the request was successful.</param>
         /// <param name="onError">The action to be executed when the request failed.</param>
-        public void SendDeleteAccount(Action onSuccess, Action<int> onError)
+        public void SendDeleteAccount()
         {
             string id = TicketCounter.MakeId("del_acct_");
             var node = new ProtocolTreeNode("iq",
@@ -480,7 +480,7 @@ namespace WhatsAppApi
         /// Sends a message, message properties are defined in the instance of FMessage.
         /// </summary>
         /// <param name="message">An instance of the FMessage class.</param>
-        public void SendMessage(FMessage message)
+        public void SendMessage(FMessage message, bool hidden = false)
         {   
             if (message.media_wa_type != FMessage.Type.Undefined)
             {
@@ -488,7 +488,7 @@ namespace WhatsAppApi
             }
             else
             {
-                this.SendMessageWithBody(message);
+                this.SendMessageWithBody(message, hidden);
             }
         }
 
@@ -837,10 +837,10 @@ namespace WhatsAppApi
         /// Send a message with a body (Plain text);
         /// </summary>
         /// <param name="message">An instance of the FMessage class.</param>
-        internal void SendMessageWithBody(FMessage message)
+        internal void SendMessageWithBody(FMessage message, bool hidden = false)
         {
             var child = new ProtocolTreeNode("body", null, null, WhatsApp.SYSEncoding.GetBytes(message.data));
-            this.whatsNetwork.SendData(this._binWriter.Write(GetMessageNode(message, child)));
+            this.whatsNetwork.SendData(this._binWriter.Write(GetMessageNode(message, child, hidden)));
         }
 
         /// <summary>
@@ -966,7 +966,7 @@ namespace WhatsAppApi
         /// <param name="message">the message</param>
         /// <param name="pNode">The protocol tree node</param>
         /// <returns>An instance of the ProtocolTreeNode class.</returns>
-        internal static ProtocolTreeNode GetMessageNode(FMessage message, ProtocolTreeNode pNode)
+        internal static ProtocolTreeNode GetMessageNode(FMessage message, ProtocolTreeNode pNode, bool hidden = false)
         {
             return new ProtocolTreeNode("message", new[] { 
                 new KeyValue("to", message.identifier_key.remote_jid), 
@@ -975,7 +975,8 @@ namespace WhatsAppApi
             }, 
             new ProtocolTreeNode[] {
                 new ProtocolTreeNode("x", new KeyValue[] { new KeyValue("xmlns", "jabber:x:event") }, new ProtocolTreeNode("server", null)),
-                pNode
+                pNode,
+                new ProtocolTreeNode("offline", null)
             });
         }
 

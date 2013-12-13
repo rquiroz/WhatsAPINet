@@ -286,15 +286,7 @@ namespace WhatsAppApi
             } 
             while ((cnt++ < 100) && (this.loginStatus == CONNECTION_STATUS.DISCONNECTED));
 
-            //hidden mode
-            if (!this.hidden)
-            {
-                this.sendNickname(this.name);
-            }
-            else
-            {
-                this.sendOffline();
-            }
+            this.sendNickname(this.name);
         }
 
         /// <summary>
@@ -305,7 +297,7 @@ namespace WhatsAppApi
         public void Message(string to, string txt)
         {
             var tmpMessage = new FMessage(GetJID(to), true) { identifier_key = { id = TicketManager.GenerateId() }, data = txt };
-            this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage);
+            this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage, this.hidden);
         }
 
         /// <summary>
@@ -698,7 +690,7 @@ namespace WhatsAppApi
         /// <param name="nickname">The nickname</param>
         public void sendNickname(string nickname)
         {
-            this.WhatsParser.WhatsSendHandler.SendAvailableForChat(nickname);
+            this.WhatsParser.WhatsSendHandler.SendAvailableForChat(nickname, this.hidden);
         }
 
         /// <summary>
@@ -722,11 +714,17 @@ namespace WhatsAppApi
         {
             var node = new ProtocolTreeNode("auth",
                 new KeyValue[] { 
+                    new KeyValue("passive", this.hidden?"true":"false"),
                     new KeyValue("xmlns", @"urn:ietf:params:xml:ns:xmpp-sasl"),
                     new KeyValue("mechanism", "WAUTH-1"),
                     new KeyValue("user", this.phoneNumber)
                 });
             return node;
+        }
+
+        public void sendDeleteAccount()
+        {
+            this.WhatsSendHandler.SendDeleteAccount();
         }
 
         /// <summary>
@@ -769,9 +767,11 @@ namespace WhatsAppApi
         {
             var child = new ProtocolTreeNode("receipt_acks", null);
             var child2 = new ProtocolTreeNode("w:profile:picture", new KeyValue[] { new KeyValue("type", "all") });
+            var child3 = new ProtocolTreeNode("status", null);
             var childList = new List<ProtocolTreeNode>();
             childList.Add(child);
             childList.Add(child2);
+            childList.Add(child3);
             var parent = new ProtocolTreeNode("stream:features", null, childList, null);
             return parent;
         }
