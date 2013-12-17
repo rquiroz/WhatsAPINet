@@ -308,7 +308,7 @@ namespace WhatsAppApi
         {
             string id = TicketCounter.MakeId("get_g_info_");
             var child = new ProtocolTreeNode("query", new[] { new KeyValue("xmlns", "w:g") });
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", gjid) }, new ProtocolTreeNode[] {child});
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsAppApi.WhatsApp.GetJID(gjid)) }, new ProtocolTreeNode[] {child});
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
@@ -340,7 +340,7 @@ namespace WhatsAppApi
         {
             string id = TicketCounter.MakeId("get_participants_");
             var child = new ProtocolTreeNode("list", new[] { new KeyValue("xmlns", "w:g") });
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", gjid) }, child);
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsApp.GetJID(gjid)) }, child);
             this.whatsNetwork.SendData(this._binWriter.Write(node));
         }
 
