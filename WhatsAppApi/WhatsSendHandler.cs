@@ -540,7 +540,7 @@ namespace WhatsAppApi
                 ProtocolTreeNode messageNode = new ProtocolTreeNode("message", new KeyValue[] {
                     new KeyValue("to", "broadcast"),
                     new KeyValue("type", "chat"),
-                    new KeyValue("id", TicketManager.GenerateId())
+                    new KeyValue("id", message.identifier_key.id)
                 }, new ProtocolTreeNode[] {
                     broadcastNode,
                     xnode,
