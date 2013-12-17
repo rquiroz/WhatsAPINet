@@ -257,7 +257,7 @@ namespace WhatsAppApi.Response
                         builder.from_me = false;
                         builder.id = tmpAttrbId;
                         builder.remote_jid = tmpAttrFromJid;
-                        builder.Key().serverNickname = tmpAttrName;
+                        builder.serverNickname = tmpAttrName;
                     }
                 }
             }
