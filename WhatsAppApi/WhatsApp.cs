@@ -187,7 +187,22 @@ namespace WhatsAppApi
         /// </summary>
         public void Connect()
         {
-            this.whatsNetwork.Connect();
+            try
+            {
+                this.whatsNetwork.Connect();
+                //success
+                if (this.OnConnectSuccess != null)
+                {
+                    this.OnConnectSuccess();
+                }
+            }
+            catch (Exception e)
+            {
+                if (this.OnConnectFailed != null)
+                {
+                    this.OnConnectFailed(e);
+                }
+            }
         }
 
         /// <summary>
@@ -197,6 +212,10 @@ namespace WhatsAppApi
         {
             this.whatsNetwork.Disconenct();
             this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
+            if (this.OnDisconnect != null)
+            {
+                this.OnDisconnect(null);
+            }
         }
 
         /// <summary>
@@ -838,10 +857,18 @@ namespace WhatsAppApi
                                                            node.GetAttribute("kind"),
                                                            node.GetAttribute("creation"),
                                                            node.GetAttribute("expiration"));
+                        if (this.OnLoginSuccess != null)
+                        {
+                            this.OnLoginSuccess(node.GetData());
+                        }
                     }
                     else if (ProtocolTreeNode.TagEquals(node, "failure"))
                     {
                         this.loginStatus = CONNECTION_STATUS.UNAUTHORIZED;
+                        if (this.OnLoginFailed != null)
+                        {
+                            this.OnLoginFailed(node.children.First().tag);
+                        }
                     }
                     if (ProtocolTreeNode.TagEquals(node, "message"))
                     {
@@ -969,5 +996,24 @@ namespace WhatsAppApi
         {
             this.DebugPrint(p);
         }
+
+
+
+
+
+        // events
+        public event NullDelegate OnConnectSuccess;
+        public event ExceptionDelegate OnConnectFailed;
+        public event ExceptionDelegate OnDisconnect;
+        public event ByteArrayDelegate OnLoginSuccess;
+        public event StringDelegate OnLoginFailed;
+
+
+
+        //event delegates
+        public delegate void NullDelegate();
+        public delegate void ExceptionDelegate(Exception ex);
+        public delegate void ByteArrayDelegate(byte[] data);
+        public delegate void StringDelegate(string data);
     }
 }
