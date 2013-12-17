@@ -889,6 +889,24 @@ namespace WhatsAppApi
                     {
                         this.Pong(node.GetAttribute("id"));
                     }
+                    if (ProtocolTreeNode.TagEquals(node, "iq")
+                        && node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                        && ProtocolTreeNode.TagEquals(node.children.First(), "group"))
+                    {
+                        //group(s) info
+                        foreach (ProtocolTreeNode group in node.children)
+                        {
+                            this.AddMessage(group);
+                        }
+                    }
+                    if (ProtocolTreeNode.TagEquals(node, "iq")
+                        && node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                        && ProtocolTreeNode.TagEquals(node.children.First(), "participant"))
+                    {
+                        //group participants
+                        this.AddMessage(node);
+                    }
+
                     if (ProtocolTreeNode.TagEquals(node, "stream:error"))
                     {
                         var textNode = node.GetChild("text");
