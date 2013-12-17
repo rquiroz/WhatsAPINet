@@ -296,7 +296,7 @@ namespace WhatsAppApi
         /// <param name="txt">The text that needs to be send</param>
         public void Message(string to, string txt)
         {
-            var tmpMessage = new FMessage(GetJID(to), true) { identifier_key = { id = TicketManager.GenerateId() }, data = txt };
+            var tmpMessage = new FMessage(GetJID(to), true) { data = txt };
             this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage, this.hidden);
         }
 
