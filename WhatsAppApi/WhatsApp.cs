@@ -208,13 +208,13 @@ namespace WhatsAppApi
         /// <summary>
         /// Disconnect from the whatsapp network
         /// </summary>
-        public void Disconnect()
+        public void Disconnect(Exception ex = null)
         {
             this.whatsNetwork.Disconenct();
             this.loginStatus = CONNECTION_STATUS.DISCONNECTED;
             if (this.OnDisconnect != null)
             {
-                this.OnDisconnect(null);
+                this.OnDisconnect(ex);
             }
         }
 
@@ -884,10 +884,78 @@ namespace WhatsAppApi
                                 this.OnGetMessage(node.GetAttribute("from"), node.GetAttribute("id"), (node.GetChild("notify") != null?node.GetChild("notify").GetAttribute("name"):null), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()));
                             }
                         }
+                        if (node.GetChild("received") != null)
+                        {
+                            //client received
+                            if (this.OnGetMessageReceivedClient != null)
+                            {
+                                this.OnGetMessageReceivedClient(node.GetAttribute("from"), node.GetAttribute("id"));
+                            }
+                        }
                         if (node.GetChild("media") != null)
                         {
+                            ProtocolTreeNode media = node.GetChild("media");
                             //media message
-                            throw new NotImplementedException();
+
+                            //define variables in switch
+                            string file, url, from, name, id;
+                            int size;
+                            byte[] preview, dat;
+                            id = node.GetAttribute("id");
+                            from = node.GetAttribute("from");
+                            switch (media.GetAttribute("type"))
+                            {
+                                case "image":
+                                    if (this.OnGetMessageImage != null)
+                                    {
+                                        url = media.GetAttribute("url");
+                                        file = media.GetAttribute("file");
+                                        size = Int32.Parse(media.GetAttribute("size"));
+                                        preview = media.GetData();
+                                        this.OnGetMessageImage(from, id, file, size, url, preview);
+                                    }
+                                    break;
+                                case "audio":
+                                    if (this.OnGetMessageAudio != null)
+                                    {
+                                        file = media.GetAttribute("file");
+                                        size = Int32.Parse(media.GetAttribute("size"));
+                                        url = media.GetAttribute("url");
+                                        preview = media.GetData();
+                                        this.OnGetMessageAudio(from, id, file, size, url, preview);
+                                    }
+                                    break;
+                                case "video":
+                                    if(this.OnGetMessageVideo != null)
+                                    {
+                                        file = media.GetAttribute("file");
+                                        size = Int32.Parse(media.GetAttribute("size"));
+                                        url = media.GetAttribute("url");
+                                        preview = media.GetData();
+                                        this.OnGetMessageVideo(from, id, file, size, url, preview);
+                                    }
+                                    break;
+                                case "location":
+                                    if (this.OnGetMessageLocation != null)
+                                    {
+                                        double lon = double.Parse(media.GetAttribute("longitude"));
+                                        double lat = double.Parse(media.GetAttribute("latitude"));
+                                        preview = media.GetData();
+                                        name = media.GetAttribute("name");
+                                        url = media.GetAttribute("url");
+                                        this.OnGetMessageLocation(from, id, lon, lat, url, name, preview);
+                                    }
+                                    break;
+                                case "vcard":
+                                    if (this.OnGetMessageVcard != null)
+                                    {
+                                        ProtocolTreeNode vcard = media.GetChild("vcard");
+                                        name = vcard.GetAttribute("name");
+                                        dat = vcard.GetData();
+                                        this.OnGetMessageVcard(from, id, name, dat);
+                                    }
+                                    break;
+                            }
                         }
                         ProtocolTreeNode x = node.GetChild("x");
                         if (x != null && x.GetAttribute("xmlns") == "jabber:x:event")
@@ -895,10 +963,6 @@ namespace WhatsAppApi
                             if (x.GetChild("server") != null && this.OnGetMessageReceivedServer != null)
                             {
                                 this.OnGetMessageReceivedServer(node.GetAttribute("from"), node.GetAttribute("id"));
-                            }
-                            else
-                            {
-                                throw new NotImplementedException();
                             }
                         }
                         ProtocolTreeNode notification = node.GetChild("notification");
@@ -918,6 +982,22 @@ namespace WhatsAppApi
                         {
                             this.sendMessageReceived(node, "ack");
                         }
+                        if (node.GetChild("composing") != null)
+                        {
+                            //typing
+                            if (this.OnGetTyping != null)
+                            {
+                                this.OnGetTyping(node.GetAttribute("from"));
+                            }
+                        }
+                        if (node.GetChild("paused") != null)
+                        {
+                            //paused
+                            if (this.OnGetPaused != null)
+                            {
+                                this.OnGetPaused(node.GetAttribute("from"));
+                            }
+                        }
                     }
                     if (ProtocolTreeNode.TagEquals(node, "stream:error"))
                     {
@@ -926,10 +1006,15 @@ namespace WhatsAppApi
                     if (ProtocolTreeNode.TagEquals(node, "iq")
                         && node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
                         && ProtocolTreeNode.TagEquals(node.children.First(), "query")
+                        && node.children.First().GetAttribute("xmlns") == "jabber:iq:last"
                         )
                     {
                         //last seen
-                        throw new NotImplementedException();
+                        DateTime lastSeen = DateTime.Now.AddSeconds(double.Parse(node.children.First().GetAttribute("seconds")) * -1);
+                        if(this.OnGetLastSeen != null)
+                        {
+                            this.OnGetLastSeen(node.GetAttribute("from"), lastSeen);
+                        }
                     }
                     if (ProtocolTreeNode.TagEquals(node, "iq")
                         && node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
@@ -945,7 +1030,24 @@ namespace WhatsAppApi
                         )
                     {
                         //profile picture
-                        throw new NotImplementedException();
+                        string from = node.GetAttribute("from");
+                        string id = node.GetChild("picture").GetAttribute("id");
+                        byte[] dat = node.GetChild("picture").GetData();
+                        string type = node.GetChild("picture").GetAttribute("type");
+                        if (type == "preview")
+                        {
+                            if (this.OnGetPhotoPreview != null)
+                            {
+                                this.OnGetPhotoPreview(from, id, dat);
+                            }
+                        }
+                        else
+                        {
+                            if (this.OnGetPhoto != null)
+                            {
+                                this.OnGetPhoto(from, id, dat);
+                            }
+                        }
                     }
                     if (ProtocolTreeNode.TagEquals(node, "iq")
                         && node.GetAttribute("type").Equals("get", StringComparison.OrdinalIgnoreCase)
@@ -958,9 +1060,21 @@ namespace WhatsAppApi
                         && ProtocolTreeNode.TagEquals(node.children.First(), "group"))
                     {
                         //group(s) info
+                        List<GroupInfo> groups = new List<GroupInfo>();
                         foreach (ProtocolTreeNode group in node.children)
                         {
-                            throw new NotImplementedException();
+                            groups.Add(new GroupInfo(
+                                group.GetAttribute("id"),
+                                group.GetAttribute("owner"),
+                                long.Parse(group.GetAttribute("creation")),
+                                group.GetAttribute("subject"),
+                                long.Parse(group.GetAttribute("s_t")),
+                                group.GetAttribute("s_o")
+                                ));
+                        }
+                        if (this.OnGetGroups != null)
+                        {
+                            this.OnGetGroups(groups.ToArray());
                         }
                     }
                     if (ProtocolTreeNode.TagEquals(node, "iq")
@@ -968,7 +1082,18 @@ namespace WhatsAppApi
                         && ProtocolTreeNode.TagEquals(node.children.First(), "participant"))
                     {
                         //group participants
-                        throw new NotImplementedException();
+                        List<string> participants = new List<string>();
+                        foreach (ProtocolTreeNode part in node.GetAllChildren())
+                        {
+                            if (part.tag == "participant" && !string.IsNullOrEmpty(part.GetAttribute("jid")))
+                            {
+                                participants.Add(part.GetAttribute("jid"));
+                            }
+                        }                            
+                        if (this.OnGetGroupParticipants != null)
+                        {
+                            this.OnGetGroupParticipants(node.GetAttribute("from"), participants.ToArray());
+                        }
                     }
 
                     if (ProtocolTreeNode.TagEquals(node, "stream:error"))
@@ -980,7 +1105,7 @@ namespace WhatsAppApi
                             Console.WriteLine("Error : " + content);
                             if (content.Equals("Replaced by new connection", StringComparison.OrdinalIgnoreCase))
                             {
-                                this.Disconnect();
+                                this.Disconnect(new Exception(content));
                                 this.Connect();
                                 this.Login();
                             }
@@ -989,7 +1114,10 @@ namespace WhatsAppApi
                     if (ProtocolTreeNode.TagEquals(node, "presence"))
                     {
                         //presence node
-                        throw new NotImplementedException();
+                        if (this.OnGetPresence != null)
+                        {
+                            this.OnGetPresence(node.GetAttribute("from"), node.GetAttribute("type"));
+                        }
                     }
                     node = this.reader.nextTree();
                 }
@@ -1046,12 +1174,26 @@ namespace WhatsAppApi
         public event StringDelegate OnLoginFailed;
 
         public event OnGetMessageDelegate OnGetMessage;
+        public event OnGetMediaDelegate OnGetMessageImage;
+        public event OnGetMediaDelegate OnGetMessageVideo;
+        public event OnGetMediaDelegate OnGetMessageAudio;
+        public event OnGetLocationDelegate OnGetMessageLocation;
+        public event OnGetVcardDelegate OnGetMessageVcard;
 
         public event OnErrorDelegate OnError;
         public event OnNotificationPictureDelegate OnNotificationPicture;
         
         public event OnGetMessageReceivedDelegate OnGetMessageReceivedServer;
         public event OnGetMessageReceivedDelegate OnGetMessageReceivedClient;
+
+        public event OnGetPresenceDelegate OnGetPresence;
+        public event OnGetGroupParticipantsDelegate OnGetGroupParticipants;
+        public event OnGetLastSeenDelegate OnGetLastSeen;
+        public event OnGetchatStateDelegate OnGetTyping;
+        public event OnGetchatStateDelegate OnGetPaused;
+        public event OnGetPictureDelegate OnGetPhoto;
+        public event OnGetPictureDelegate OnGetPhotoPreview;
+        public event OnGetGroupsDelegate OnGetGroups;
 
         //event delegates
         public delegate void NullDelegate();
@@ -1062,5 +1204,34 @@ namespace WhatsAppApi
         public delegate void OnGetMessageReceivedDelegate(string from, string id);
         public delegate void OnNotificationPictureDelegate(string type, string jid, string id);
         public delegate void OnGetMessageDelegate(string from, string id, string name, string message);
+        public delegate void OnGetPresenceDelegate(string from, string type);
+        public delegate void OnGetGroupParticipantsDelegate(string gjid, string[] jids);
+        public delegate void OnGetLastSeenDelegate(string from, DateTime lastSeen);
+        public delegate void OnGetchatStateDelegate(string from);
+        public delegate void OnGetMediaDelegate(string from, string id, string fileName, int fileSize, string url, byte[] preview);
+        public delegate void OnGetLocationDelegate(string from, string id, double lon, double lat, string url, string name, byte[] preview);
+        public delegate void OnGetVcardDelegate(string from, string id, string name, byte[] data);
+        public delegate void OnGetPictureDelegate(string from, string id, byte[] data);
+        public delegate void OnGetGroupsDelegate(GroupInfo[] groups);
+
+        public class GroupInfo
+        {
+            public readonly string id;
+            public readonly string owner;
+            public readonly long creation;
+            public readonly string subject;
+            public readonly long subjectChangedTime;
+            public readonly string subjectChangedBy;
+
+            internal GroupInfo(string id, string owner, long creation, string subject, long subjectChanged, string subjectChangedBy)
+            {
+                this.id = id;
+                this.owner = owner;
+                this.creation = creation;
+                this.subject = subject;
+                this.subjectChangedTime = subjectChanged;
+                this.subjectChangedBy = subjectChangedBy;
+            }
+        }
     }
 }
