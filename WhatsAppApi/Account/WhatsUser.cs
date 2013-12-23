@@ -21,7 +21,7 @@ namespace WhatsAppApi.Account
 
         public string GetFullJid()
         {
-            return string.Format("{0}@{1}", this.Jid, this.serverUrl);
+            return WhatsAppApi.WhatsApp.GetJID(this.Jid);
         }
 
         internal void SetServerUrl(string srvUrl)
