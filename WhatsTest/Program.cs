@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -22,23 +23,166 @@ namespace WhatsTest
             var tmpEncoding = Encoding.UTF8;
             System.Console.OutputEncoding = Encoding.Default;
             System.Console.InputEncoding = Encoding.Default;
-            string nickname = "WhatsAPI Test";
-            string sender = "3526********"; // Mobile number with country code (but without + or 00)
-            string password = "JJ9gQWk******************Y=";//v2 password
+            string nickname = "WhatsApiNet";
+            string sender = "316********"; // Mobile number with country code (but without + or 00)
+            string password = "K/1**************yeix87Q=";//v2 password
             string target = "316********";// Mobile number to send the message to
 
             WhatsApp wa = new WhatsApp(sender, password, nickname, true);
-            
+
+            //event bindings
+            wa.OnLoginSuccess += wa_OnLoginSuccess;
+            wa.OnLoginFailed += wa_OnLoginFailed;
+            wa.OnGetMessage += wa_OnGetMessage;
+            wa.OnGetMessageReceivedClient += wa_OnGetMessageReceivedClient;
+            wa.OnGetMessageReceivedServer += wa_OnGetMessageReceivedServer;
+            wa.OnNotificationPicture += wa_OnNotificationPicture;
+            wa.OnGetPresence += wa_OnGetPresence;
+            wa.OnGetGroupParticipants += wa_OnGetGroupParticipants;
+            wa.OnGetLastSeen += wa_OnGetLastSeen;
+            wa.OnGetTyping += wa_OnGetTyping;
+            wa.OnGetPaused += wa_OnGetPaused;
+            wa.OnGetMessageImage += wa_OnGetMessageImage;
+            wa.OnGetMessageAudio += wa_OnGetMessageAudio;
+            wa.OnGetMessageVideo += wa_OnGetMessageVideo;
+            wa.OnGetMessageLocation += wa_OnGetMessageLocation;
+            wa.OnGetMessageVcard += wa_OnGetMessageVcard;
+            wa.OnGetPhoto += wa_OnGetPhoto;
+            wa.OnGetPhotoPreview += wa_OnGetPhotoPreview;
+            wa.OnGetGroups += wa_OnGetGroups;
+
             wa.Connect();
             wa.Login();
-            wa.PollMessages();
 
-            wa.Message(target, "Hi this is sent using WhatsApiNet");
-            wa.PollMessages();
-
-            ProcessChat(wa, "");
-
+            ProcessChat(wa, target);
             Console.ReadKey();
+        }
+
+        static void wa_OnGetGroups(WhatsApp.GroupInfo[] groups)
+        {
+            Console.WriteLine("Got groups:");
+            foreach (WhatsAppApi.WhatsApp.GroupInfo info in groups)
+            {
+                Console.WriteLine("\t{0} {1}", info.subject, info.id);
+            }
+        }
+
+        static void wa_OnGetPhotoPreview(string from, string id, byte[] data)
+        {
+            Console.WriteLine("Got preview photo for {0}", from);
+            File.WriteAllBytes(string.Format("preview_{0}.jpg", from), data);
+        }
+
+        static void wa_OnGetPhoto(string from, string id, byte[] data)
+        {
+            Console.WriteLine("Got full photo for {0}", from);
+            File.WriteAllBytes(string.Format("{0}.jpg", from), data);
+        }
+
+        static void wa_OnGetMessageVcard(string from, string id, string name, byte[] data)
+        {
+            Console.WriteLine("Got vcard \"{0}\" from {1}", name, from);
+            File.WriteAllBytes(string.Format("{0}.vcf", name), data);
+        }
+
+        static void wa_OnGetMessageLocation(string from, string id, double lon, double lat, string url, string name, byte[] preview)
+        {
+            Console.WriteLine("Got location from {0} ({1}, {2})", from, lat, lon);
+            if(!string.IsNullOrEmpty(name))
+            {
+                Console.WriteLine("\t{0}", name);
+            }
+            File.WriteAllBytes(string.Format("{0}{1}.jpg", lat, lon), preview);
+        }
+
+        static void wa_OnGetMessageVideo(string from, string id, string fileName, int fileSize, string url, byte[] preview)
+        {
+            Console.WriteLine("Got video from {0}", from, fileName);
+            OnGetMedia(fileName, url, preview);
+        }
+
+        static void OnGetMedia(string file, string url, byte[] data)
+        {
+            //save preview
+            File.WriteAllBytes(string.Format("preview_{0}.jpg", file), data);
+            //download
+            using (WebClient wc = new WebClient())
+            {
+                wc.DownloadFileAsync(new Uri(url), file, null);
+            }
+        }
+
+        static void wa_OnGetMessageAudio(string from, string id, string fileName, int fileSize, string url, byte[] preview)
+        {
+            Console.WriteLine("Got audio from {0}", from, fileName);
+            OnGetMedia(fileName, url, preview);
+        }
+
+        static void wa_OnGetMessageImage(string from, string id, string fileName, int size, string url, byte[] preview)
+        {
+            Console.WriteLine("Got image from {0}", from, fileName);
+            OnGetMedia(fileName, url, preview);
+        }
+
+        static void wa_OnGetPaused(string from)
+        {
+            Console.WriteLine("{0} stopped typing", from);
+        }
+
+        static void wa_OnGetTyping(string from)
+        {
+            Console.WriteLine("{0} is typing...", from);
+        }
+
+        static void wa_OnGetLastSeen(string from, DateTime lastSeen)
+        {
+            Console.WriteLine("{0} last seen on {1}", from, lastSeen.ToString());
+        }
+
+        static void wa_OnGetMessageReceivedServer(string from, string id)
+        {
+            Console.WriteLine("Message {0} to {1} received by server", id, from);
+        }
+
+        static void wa_OnGetMessageReceivedClient(string from, string id)
+        {
+            Console.WriteLine("Message {0} to {1} received by client", id, from);
+        }
+
+        static void wa_OnGetGroupParticipants(string gjid, string[] jids)
+        {
+            Console.WriteLine("Got participants from {0}:", gjid);
+            foreach (string jid in jids)
+            {
+                Console.WriteLine("\t{0}", jid);
+            }
+        }
+
+        static void wa_OnGetPresence(string from, string type)
+        {
+            Console.WriteLine("Presence from {0}: {1}", from, type);
+        }
+
+        static void wa_OnNotificationPicture(string type, string jid, string id)
+        {
+            //TODO
+            throw new NotImplementedException();
+        }
+
+        static void wa_OnGetMessage(string from, string id, string name, string message)
+        {
+            Console.WriteLine("Message from {0} (1): {2}", name, from, message);
+        }
+
+        private static void wa_OnLoginFailed(string data)
+        {
+            Console.WriteLine("Login failed. Reason: {0}", data);
+        }
+
+        private static void wa_OnLoginSuccess(byte[] data)
+        {
+            Console.WriteLine("Login success. Next password:");
+            Console.WriteLine(data);
         }
 
 
@@ -50,20 +194,18 @@ namespace WhatsTest
                                             {
                                                 while (wa != null)
                                                 {
-                                                    if (!wa.HasMessages())
-                                                    {
-                                                        wa.PollMessages();
-                                                        Thread.Sleep(100);
-                                                        continue;
-                                                    }
-                                                    var buff = wa.GetAllMessages();
+                                                    wa.PollMessages();
+                                                    Thread.Sleep(100);
+                                                    continue;
                                                 }
+                                                    
                                             }
                                             catch (ThreadAbortException)
                                             {
                                             }
                                         }) {IsBackground = true};
             thRecv.Start();
+
             WhatsUserManager usrMan = new WhatsUserManager();
             var tmpUser = usrMan.CreateUser(dst, "User");
 
@@ -78,13 +220,13 @@ namespace WhatsTest
                 {
                     case "/query":
                         //var dst = dst//trim(strstr($line, ' ', FALSE));
-                        PrintToConsole("[] Interactive conversation with {0}:", tmpUser);
+                        Console.WriteLine("[] Interactive conversation with {0}:", tmpUser);
                         break;
                     case "/accountinfo":
-                        PrintToConsole("[] Account Info: {0}", wa.GetAccountInfo().ToString());
+                        Console.WriteLine("[] Account Info: {0}", wa.GetAccountInfo().ToString());
                         break;
                     case "/lastseen":
-                        PrintToConsole("[] Request last seen {0}", tmpUser);
+                        Console.WriteLine("[] Request last seen {0}", tmpUser);
                         wa.RequestLastSeen(tmpUser.GetFullJid());
                         break;
                     case "/exit":
@@ -97,48 +239,12 @@ namespace WhatsTest
                     case "/pause":
                         wa.WhatsSendHandler.SendPaused(tmpUser.GetFullJid());
                         break;
-                    case "/register":
-                        {
-                            RegisterAccount();
-                            break;
-                        }
                     default:
-                        PrintToConsole("[] Send message to {0}: {1}", tmpUser, line);
+                        Console.WriteLine("[] Send message to {0}: {1}", tmpUser, line);
                         wa.Message(tmpUser.GetFullJid(), line);
                         break;
                 }
            } 
-        }
-
-        private static void RegisterAccount()
-        {
-            Console.Write("CountryCode (ex. 31): ");
-            string countryCode = Console.ReadLine();
-            Console.Write("Phonenumber (ex. 650568134): ");
-            string phoneNumber = Console.ReadLine();
-            string password = null;
-            if (!WhatsRegisterV2.RequestCode(countryCode, phoneNumber, out password))
-                return;
-            Console.Write("Enter received code: ");
-            string tmpCode = Console.ReadLine();
-
-            password = WhatsRegisterV2.RegisterCode(countryCode, phoneNumber, tmpCode);
-            if (String.IsNullOrEmpty(password))
-            {
-                Console.WriteLine("Error registering code");
-            }
-            else
-            {
-                Console.WriteLine(String.Format("Registration succesful. Password = {0}", password));
-            }
-            Console.ReadLine();
-        }
-
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        private static void PrintToConsole(string value, params object[] tmpParams)
-        {
-            Console.WriteLine(value, tmpParams);
         }
     }
 }
