@@ -69,6 +69,10 @@ namespace WhatsAppApi.Helper
         protected void decode(int stanzaSize, bool useDecrypt)
         {
             int size = stanzaSize;
+            if (stanzaSize > this.buffer.Count)
+            {
+                throw new IncompleteMessageException(System.Text.Encoding.UTF8.GetString(buffer.ToArray()));
+            }
             byte[] data = new byte[size];
             byte[] dataReal = null;
             Buffer.BlockCopy(this.buffer.ToArray(), 0, data, 0, size);
