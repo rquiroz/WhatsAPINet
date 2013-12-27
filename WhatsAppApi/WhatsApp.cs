@@ -847,7 +847,7 @@ namespace WhatsAppApi
                         //this.AddMessage(node);
                         if (this.OnError != null)
                         {
-                            this.OnError(node.GetAttribute("id"), node.children.First().tag);
+                            this.OnError(node.GetAttribute("id"), node.GetAttribute("from"), Int32.Parse(node.GetChild("error").GetAttribute("code")), node.GetChild("error").GetAttribute("text"));
                         }
                     }
                     if (ProtocolTreeNode.TagEquals(node, "challenge"))
@@ -876,12 +876,20 @@ namespace WhatsAppApi
                     }
                     if (ProtocolTreeNode.TagEquals(node, "message"))
                     {
+                        if (node.GetChild("notify") != null)
+                        {
+                            string name = node.GetChild("notify").GetAttribute("name");
+                            if (this.OnGetContactName != null)
+                            {
+                                this.OnGetContactName(node.GetAttribute("from"), name);
+                            }
+                        }
                         if (node.GetChild("body") != null)
                         {
                             //text message
                             if (this.OnGetMessage != null)
                             {
-                                this.OnGetMessage(node.GetAttribute("from"), node.GetAttribute("id"), (node.GetChild("notify") != null?node.GetChild("notify").GetAttribute("name"):null), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()));
+                                this.OnGetMessage(node.GetAttribute("from"), node.GetAttribute("id"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()));
                             }
                         }
                         if (node.GetChild("received") != null)
@@ -898,7 +906,7 @@ namespace WhatsAppApi
                             //media message
 
                             //define variables in switch
-                            string file, url, from, name, id;
+                            string file, url, from, id;
                             int size;
                             byte[] preview, dat;
                             id = node.GetAttribute("id");
@@ -1194,16 +1202,18 @@ namespace WhatsAppApi
         public event OnGetPictureDelegate OnGetPhoto;
         public event OnGetPictureDelegate OnGetPhotoPreview;
         public event OnGetGroupsDelegate OnGetGroups;
+        public event OnContactNameDelegate OnGetContactName;
 
         //event delegates
+        public delegate void OnContactNameDelegate(string from, string contactName);
         public delegate void NullDelegate();
         public delegate void ExceptionDelegate(Exception ex);
         public delegate void ByteArrayDelegate(byte[] data);
         public delegate void StringDelegate(string data);
-        public delegate void OnErrorDelegate(string id, string error);
+        public delegate void OnErrorDelegate(string id, string from, int code, string text);
         public delegate void OnGetMessageReceivedDelegate(string from, string id);
         public delegate void OnNotificationPictureDelegate(string type, string jid, string id);
-        public delegate void OnGetMessageDelegate(string from, string id, string name, string message);
+        public delegate void OnGetMessageDelegate(string from, string id, string message);
         public delegate void OnGetPresenceDelegate(string from, string type);
         public delegate void OnGetGroupParticipantsDelegate(string gjid, string[] jids);
         public delegate void OnGetLastSeenDelegate(string from, DateTime lastSeen);
