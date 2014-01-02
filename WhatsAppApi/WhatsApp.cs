@@ -964,8 +964,8 @@ namespace WhatsAppApi
                                 case "location":
                                     if (this.OnGetMessageLocation != null)
                                     {
-                                        double lon = double.Parse(media.GetAttribute("longitude"));
-                                        double lat = double.Parse(media.GetAttribute("latitude"));
+                                        double lon = double.Parse(media.GetAttribute("longitude"), System.Globalization.CultureInfo.InvariantCulture);
+                                        double lat = double.Parse(media.GetAttribute("latitude"), System.Globalization.CultureInfo.InvariantCulture);
                                         preview = media.GetData();
                                         name = media.GetAttribute("name");
                                         url = media.GetAttribute("url");
