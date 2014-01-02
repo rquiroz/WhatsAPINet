@@ -433,7 +433,7 @@ namespace WhatsAppApi
             if (response != null && !String.IsNullOrEmpty(response.url))
             {
                 //send message
-                FMessage msg = new FMessage(to, true) { media_wa_type = FMessage.Type.Video, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url };
+                FMessage msg = new FMessage(to, true) { media_wa_type = FMessage.Type.Video, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url, media_duration_seconds = response.duration };
                 this.WhatsSendHandler.SendMessage(msg);
             }
         }
@@ -485,7 +485,7 @@ namespace WhatsAppApi
             if (response != null && !String.IsNullOrEmpty(response.url))
             {
                 //send message
-                FMessage msg = new FMessage(to, true) { media_wa_type = FMessage.Type.Audio, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url };
+                FMessage msg = new FMessage(to, true) { media_wa_type = FMessage.Type.Audio, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url, media_duration_seconds = response.duration };
                 this.WhatsSendHandler.SendMessage(msg);
             }
         }
@@ -658,6 +658,12 @@ namespace WhatsAppApi
             public int width { get; set; }
             public int height { get; set; }
 
+            public int duration { get; set; } 
+            public string acodec { get; set; }
+            public int asampfreq { get; set; }
+            public string asampfmt { get; set; }
+            public int abitrate { get; set; }
+
             public UploadResponse()
             { }
 
@@ -666,13 +672,25 @@ namespace WhatsAppApi
                 node = node.GetChild("duplicate");
                 if (node != null)
                 {
+                    int oSize, oWidth, oHeight, oDuration, oAsampfreq, oAbitrate;
                     this.url = node.GetAttribute("url");
                     this.mimetype = node.GetAttribute("mimetype");
-                    this.size = Int32.Parse(node.GetAttribute("size"));
+                    Int32.TryParse(node.GetAttribute("size"), out oSize);
                     this.filehash = node.GetAttribute("filehash");
                     this.type = node.GetAttribute("type");
-                    this.width = Int32.Parse(node.GetAttribute("width"));
-                    this.height = Int32.Parse(node.GetAttribute("height"));
+                    Int32.TryParse(node.GetAttribute("width"), out oWidth);
+                    Int32.TryParse(node.GetAttribute("height"), out oHeight);
+                    Int32.TryParse(node.GetAttribute("duration"), out oDuration);
+                    this.acodec = node.GetAttribute("acodec");
+                    Int32.TryParse(node.GetAttribute("asampfreq"), out oAsampfreq);
+                    this.asampfmt = node.GetAttribute("asampfmt");
+                    Int32.TryParse(node.GetAttribute("abitrate"), out oAbitrate);
+                    this.size = oSize;
+                    this.width = oWidth;
+                    this.height = oHeight;
+                    this.duration = oDuration;
+                    this.asampfreq = oAsampfreq;
+                    this.abitrate = oAbitrate;
                 }
             }
         }
@@ -976,9 +994,9 @@ namespace WhatsAppApi
                         ProtocolTreeNode notification = node.GetChild("notification");
                         if (notification != null)
                         {
-                            if (notification.GetAttribute("type") == "picture" && this.OnNotificationPicture != null)
+                            if (notification.GetAttribute("type") == "picture" && this.OnNotificationPicture != null && notification.GetChild("set") != null)
                             {
-                                this.OnNotificationPicture(notification.tag, notification.GetAttribute("jid"), notification.GetAttribute("id"));
+                                this.OnNotificationPicture(notification.tag, notification.GetChild("set").GetAttribute("jid"), notification.GetChild("set").GetAttribute("id"));
                             }
                         }
 
