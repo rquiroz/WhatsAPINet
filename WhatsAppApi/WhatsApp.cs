@@ -907,7 +907,7 @@ namespace WhatsAppApi
                             //text message
                             if (this.OnGetMessage != null)
                             {
-                                this.OnGetMessage(node.GetAttribute("from"), node.GetAttribute("id"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()));
+                                this.OnGetMessage(node.GetAttribute("from"), node.GetAttribute("id"), node.GetChild("notify").GetAttribute("name"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()));
                             }
                         }
                         if (node.GetChild("received") != null)
@@ -1231,7 +1231,7 @@ namespace WhatsAppApi
         public delegate void OnErrorDelegate(string id, string from, int code, string text);
         public delegate void OnGetMessageReceivedDelegate(string from, string id);
         public delegate void OnNotificationPictureDelegate(string type, string jid, string id);
-        public delegate void OnGetMessageDelegate(string from, string id, string message);
+        public delegate void OnGetMessageDelegate(string from, string id, string name, string message);
         public delegate void OnGetPresenceDelegate(string from, string type);
         public delegate void OnGetGroupParticipantsDelegate(string gjid, string[] jids);
         public delegate void OnGetLastSeenDelegate(string from, DateTime lastSeen);
