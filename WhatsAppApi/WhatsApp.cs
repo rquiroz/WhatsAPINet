@@ -319,6 +319,33 @@ namespace WhatsAppApi
             this.WhatsParser.WhatsSendHandler.SendMessage(tmpMessage, this.hidden);
         }
 
+        public void SendSync(string[] numbers, string mode = "full", string context = "registration", int index = 0, bool last = true)
+        {
+            List<ProtocolTreeNode> users = new List<ProtocolTreeNode>();
+            foreach (string number in numbers)
+            {
+                users.Add(new ProtocolTreeNode("user", null, System.Text.Encoding.UTF8.GetBytes(number)));
+            }
+            ProtocolTreeNode node = new ProtocolTreeNode("iq", new KeyValue[]
+            {
+                new KeyValue("to", GetJID(this.phoneNumber)),
+                new KeyValue("type", "get"),
+                new KeyValue("id", TicketCounter.MakeId("sendsync_")),
+                new KeyValue("xmlns", "urn:xmpp:whatsapp:sync")
+            }, new ProtocolTreeNode("sync", new KeyValue[]
+                {
+                    new KeyValue("mode", mode),
+                    new KeyValue("context", context),
+                    new KeyValue("sid", DateTime.Now.ToFileTimeUtc().ToString()),
+                    new KeyValue("index", index.ToString()),
+                    new KeyValue("last", last.ToString())
+                },
+                users.ToArray()
+                )
+            );
+            this.WhatsSendHandler.SendNode(node);
+        }
+
         /// <summary>
         /// Convert the input string to a JID if necessary
         /// </summary>
