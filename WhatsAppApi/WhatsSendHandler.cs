@@ -79,7 +79,7 @@ namespace WhatsAppApi
 
         public void SendAvailableForChat(string nickName, bool isHidden = false)
         {
-            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", nickName), new KeyValue("type", isHidden?"inactive":"active") });
+            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", nickName) });
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -92,15 +92,21 @@ namespace WhatsAppApi
         public void SendClearDirty(IEnumerable<string> categoryNames)
         {
             string id = TicketCounter.MakeId("clean_dirty_");
-            IEnumerable<ProtocolTreeNode> source = from category in categoryNames select new ProtocolTreeNode("category", new[] { new KeyValue("name", category) });
-            var child = new ProtocolTreeNode("clean", new[] { new KeyValue("xmlns", "urn:xmpp:whatsapp:dirty") }, source);
+            List<ProtocolTreeNode> children = new List<ProtocolTreeNode>();
+            foreach (string category in categoryNames)
+            {
+                ProtocolTreeNode cat = new ProtocolTreeNode("clean", new[] { new KeyValue("type", category) });
+                children.Add(cat);
+            }
             var node = new ProtocolTreeNode("iq",
                                             new[]
                                                 {
-                                                    new KeyValue("id", id), new KeyValue("type", "set"),
-                                                    new KeyValue("to", "s.whatsapp.net")
-                                                }, child);
-            this.whatsNetwork.SendData(this.BinWriter.Write(node));
+                                                    new KeyValue("id", id), 
+                                                    new KeyValue("type", "set"),
+                                                    new KeyValue("to", "s.whatsapp.net"),
+                                                    new KeyValue("xmlns", "urn:xmpp:whatsapp:dirty")
+                                                }, children);
+            this.SendNode(node);
         }
 
         public void SendClearDirty(string category)
@@ -630,8 +636,8 @@ namespace WhatsAppApi
         public void SendQueryLastOnline(string jid)
         {
             string id = TicketCounter.MakeId("last_");
-            var child = new ProtocolTreeNode("query", new[] { new KeyValue("xmlns", "jabber:iq:last") });
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", jid) }, child);
+            var child = new ProtocolTreeNode("query", null);
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", jid), new KeyValue("xmlns", "jabber:iq:last") }, child);
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
