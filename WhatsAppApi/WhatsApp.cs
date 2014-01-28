@@ -858,27 +858,12 @@ namespace WhatsAppApi
             try
             {
                 byte[] msgdata = this.whatsNetwork.ReadNextNode();
-                //List<byte> foo = new List<byte>();
-                //if (this._incompleteBytes.Count > 0)
-                //{
-                //    foreach (IncompleteMessageException e in this._incompleteBytes)
-                //    {
-                //        foo.AddRange(e.getInput());
-                //    }
-                //    this._incompleteBytes.Clear();
-                //}
-                //if (data != null)
-                //{
-                //    foo.AddRange(data);
-                //}
                 ProtocolTreeNode node = this.reader.nextTree(msgdata);
                 while (node != null)
                 {
-                    //this.WhatsParser.ParseProtocolNode(node);
                     if (node.tag == "iq"
                     && node.GetAttribute("type") == "error")
                     {
-                        //this.AddMessage(node);
                         if (this.OnError != null)
                         {
                             this.OnError(node.GetAttribute("id"), node.GetAttribute("from"), Int32.Parse(node.GetChild("error").GetAttribute("code")), node.GetChild("error").GetAttribute("text"));
@@ -910,9 +895,9 @@ namespace WhatsAppApi
                     }
                     if (ProtocolTreeNode.TagEquals(node, "message"))
                     {
-                        if (node.GetChild("notify") != null)
+                        if (!string.IsNullOrEmpty(node.GetAttribute("notify")))
                         {
-                            string name = node.GetChild("notify").GetAttribute("name");
+                            string name = node.GetAttribute("notify");
                             if (this.OnGetContactName != null)
                             {
                                 this.OnGetContactName(node.GetAttribute("from"), name);
@@ -923,7 +908,7 @@ namespace WhatsAppApi
                             //text message
                             if (this.OnGetMessage != null)
                             {
-                                this.OnGetMessage(node.GetAttribute("from"), node.GetAttribute("id"), node.GetChild("notify").GetAttribute("name"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()));
+                                this.OnGetMessage(node.GetAttribute("from"), node.GetAttribute("id"), node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()));
                             }
                         }
                         if (node.GetChild("received") != null)
