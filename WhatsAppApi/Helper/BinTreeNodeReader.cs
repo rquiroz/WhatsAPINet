@@ -1,129 +1,90 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 
 namespace WhatsAppApi.Helper
 {
     public class BinTreeNodeReader
     {
-        private string[] dictionary;
-        public byte[] Encryptionkey { get; set; }
+        public KeyStream Key;
         private List<byte> buffer;
 
-        public BinTreeNodeReader(string[] dict)
+        public BinTreeNodeReader()
         {
-            this.dictionary = dict;
-            this.Encryptionkey = null;
+            
+        }
+
+        public void SetKey(byte[] key, byte[] mac)
+        {
+            this.Key = new KeyStream(key, mac);
         }
 
         public ProtocolTreeNode nextTree(byte[] pInput = null, bool useDecrypt = true)
         {
-            if (pInput != null)
+
+            if (pInput != null && pInput.Length > 0)
             {
-                if (pInput.Length == 0)
-                    return null;
                 this.buffer = new List<byte>();
                 this.buffer.AddRange(pInput);
-            }
 
-            int stanzaFlag = (this.peekInt8() & 0xF0) >> 4;
-            int stanzaSize = this.peekInt16(1);
+                int stanzaFlag = (this.peekInt8() & 0xF0) >> 4;
+                int stanzaSize = this.peekInt16(1);
 
-            int flags = stanzaFlag;
-            int size = stanzaSize;
+                int flags = stanzaFlag;
+                int size = stanzaSize;
 
-            if (stanzaSize > this.buffer.Count)
-            {
-                var exception = new IncompleteMessageException("Incomplete message");
-                exception.setInput(this.buffer.ToArray());
-                throw exception;
-            }
+                this.readInt24();
 
-            this.readInt24();
+                bool isEncrypted = (stanzaFlag & 8) != 0;
 
-            bool isEncrypted = (stanzaFlag & 8) != 0;
-
-            if (isEncrypted)
-            {
-                if (Encryptionkey != null)
+                if (isEncrypted)
                 {
-                    decode(size, useDecrypt);
+                    if (this.Key != null)
+                    {
+                        var realStanzaSize = stanzaSize - 4;
+                        var macOffset = stanzaSize - 4;
+                        var treeData = this.buffer.ToArray();
+                        try
+                        {
+                            this.Key.DecodeMessage(treeData, macOffset, 0, realStanzaSize);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                        this.buffer.Clear();
+                        this.buffer.AddRange(treeData);
+                    }
+                    else
+                    {
+                        throw new Exception("Received encrypted message, encryption key not set");
+                    }
                 }
-                else
-                {
-                    throw new Exception("Received encrypted message, encryption key not set");
-                }
-            }
 
-            if(stanzaSize > 0)
-            {
-                ProtocolTreeNode node = this.nextTreeInternal();
-                if (node != null)
-                    this.DebugPrint(node.NodeString("RECVD: "));
-                return node;
+                if (stanzaSize > 0)
+                {
+                    ProtocolTreeNode node = this.nextTreeInternal();
+                    if (node != null)
+                        this.DebugPrint(node.NodeString("RECVD: "));
+                    return node;
+                }
             }
             return null;
         }
 
-        protected void decode(int stanzaSize, bool useDecrypt)
-        {
-            int size = stanzaSize;
-            if (stanzaSize > this.buffer.Count)
-            {
-                throw new IncompleteMessageException(System.Text.Encoding.UTF8.GetString(buffer.ToArray()));
-            }
-            byte[] data = new byte[size];
-            byte[] dataReal = null;
-            Buffer.BlockCopy(this.buffer.ToArray(), 0, data, 0, size);
-
-            byte[] packet = new byte[size - 4];
-
-            byte[] hashServerByte = new byte[4];
-            Buffer.BlockCopy(data, 0, hashServerByte, 0, 4);
-            Buffer.BlockCopy(data, 4, packet, 0, size - 4);
-
-            System.Security.Cryptography.HMACSHA1 h = new System.Security.Cryptography.HMACSHA1(this.Encryptionkey);
-            byte[] hashByte = new byte[4];
-            Buffer.BlockCopy(h.ComputeHash(packet, 0, packet.Length), 0, hashByte, 0, 4);
-
-            if (hashServerByte.SequenceEqual(hashByte))
-            {
-                this.buffer.RemoveRange(0, 4);
-                if (useDecrypt)
-                {
-                    dataReal = Encryption.WhatsappDecrypt(this.Encryptionkey, packet);
-                }
-                else
-                {
-                    dataReal = Encryption.WhatsappEncrypt(this.Encryptionkey, packet, true);
-                    //dataReal = new byte[foo.Length - 4];
-                    //Buffer.BlockCopy(foo, 0, dataReal, 0, dataReal.Length);
-                }
-
-                for (int i = 0; i < size - 4; i++)
-                {
-                    this.buffer[i] = dataReal[i];
-                }
-            }
-            else
-            {
-                throw new Exception("Hash doesnt match");
-            }
-        }
-
         protected string getToken(int token)
         {
-            string ret = "";
-            if ((token >= 0) && (token < this.dictionary.Length))
+            string tokenString = null;
+            int num = -1;
+            new TokenDictionary().GetToken(token, ref num, ref tokenString);
+            if (tokenString == null)
             {
-                ret = this.dictionary[token];
+                token = readInt8();
+                new TokenDictionary().GetToken(token, ref num, ref tokenString);
             }
-            else
-            {
-                throw new Exception("BinTreeNodeReader->getToken: Invalid token " + token);
-            }
-            return ret;
+            return tokenString;
         }
 
         protected byte[] readBytes(int token)
@@ -133,7 +94,7 @@ namespace WhatsAppApi.Helper
             {
                 throw new Exception("BinTreeNodeReader->readString: Invalid token " + token);
             }
-            if ((token > 4) && (token < 0xf5))
+            if ((token > 2) && (token < 245))
             {
                 ret = WhatsApp.SYSEncoding.GetBytes(this.getToken(token));
             }
@@ -141,22 +102,22 @@ namespace WhatsAppApi.Helper
             {
                 ret = new byte[0];
             }
-            else if (token == 0xfc)
+            else if (token == 252)
             {
                 int size = this.readInt8();
                 ret = this.fillArray(size);
             }
-            else if (token == 0xfd)
+            else if (token == 253)
             {
                 int size = this.readInt24();
                 ret = this.fillArray(size);
             }
-            else if (token == 0xfe)
+            else if (token == 254)
             {
                 int tmpToken = this.readInt8();
                 ret = WhatsApp.SYSEncoding.GetBytes(this.getToken(tmpToken + 0xf5));
             }
-            else if (token == 0xfa)
+            else if (token == 250)
             {
                 string user = WhatsApp.SYSEncoding.GetString(this.readBytes(this.readInt8()));
                 string server = WhatsApp.SYSEncoding.GetString(this.readBytes(this.readInt8()));

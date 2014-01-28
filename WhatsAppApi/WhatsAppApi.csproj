@@ -51,14 +51,13 @@
     <Compile Include="Helper\AccountInfo.cs" />
     <Compile Include="Helper\BinTreeNodeReader.cs" />
     <Compile Include="Helper\BinTreeNodeWriter.cs" />
-    <Compile Include="Helper\ContactSync.cs" />
-    <Compile Include="Helper\DecodeHelper.cs" />
     <Compile Include="Helper\DisconnectedException.cs" />
-    <Compile Include="Helper\Encryption.cs" />
     <Compile Include="Helper\Func.cs" />
     <Compile Include="Helper\IncompleteMessageException.cs" />
+    <Compile Include="Helper\KeyStream.cs" />
     <Compile Include="Helper\KeyValue.cs" />
     <Compile Include="Helper\MediaUploader.cs" />
+    <Compile Include="Helper\TokenMap.cs" />
     <Compile Include="Parser\PhoneNumber.cs" />
     <Compile Include="Helper\ProtocolTreeNode.cs" />
     <Compile Include="Helper\RC4.cs">

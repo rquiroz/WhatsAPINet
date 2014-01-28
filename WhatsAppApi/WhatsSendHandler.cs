@@ -27,7 +27,7 @@ namespace WhatsAppApi
         /// <summary>
         /// Holds an instance of the BinTreeNodeWriter
         /// </summary>
-        private BinTreeNodeWriter _binWriter;
+        internal BinTreeNodeWriter BinWriter;
 
         /// <summary>
         /// Holds an instance of the WhatsNetwork class
@@ -42,7 +42,7 @@ namespace WhatsAppApi
         internal WhatsSendHandler(WhatsNetwork net, BinTreeNodeWriter writer)
         {
             this.whatsNetwork = net;
-            this._binWriter = writer;
+            this.BinWriter = writer;
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace WhatsAppApi
         public void SendActive()
         {
             var node = new ProtocolTreeNode("presence", new[] {new KeyValue("type", "active")});
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -80,13 +80,13 @@ namespace WhatsAppApi
         public void SendAvailableForChat(string nickName, bool isHidden = false)
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", nickName), new KeyValue("type", isHidden?"inactive":"active") });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         public void SendUnavailable()
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "unavailable") });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         public void SendClearDirty(IEnumerable<string> categoryNames)
@@ -100,7 +100,7 @@ namespace WhatsAppApi
                                                     new KeyValue("id", id), new KeyValue("type", "set"),
                                                     new KeyValue("to", "s.whatsapp.net")
                                                 }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         public void SendClearDirty(string category)
@@ -119,7 +119,7 @@ namespace WhatsAppApi
             string v = TicketCounter.MakeId("config_");
             var child = new ProtocolTreeNode("config", new[] { new KeyValue("xmlns", "urn:xmpp:whatsapp:push"), new KeyValue("platform", platform), new KeyValue("lg", lg), new KeyValue("lc", lc) });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", v), new KeyValue("type", "set"), new KeyValue("to", whatsAppRealm) }, new ProtocolTreeNode[] { child });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace WhatsAppApi
                                                 },
                                             this.ProcessGroupSettings(groups))
                                         });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace WhatsAppApi
         public void SendClose()
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "unavailable") });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace WhatsAppApi
         {
             var child = new ProtocolTreeNode("composing", new[] { new KeyValue("xmlns", "http://jabber.org/protocol/chatstates") });
             var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", to), new KeyValue("type", "chat") }, new ProtocolTreeNode[] {child});
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("create_group_");
             var child = new ProtocolTreeNode("group", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("action", "create"), new KeyValue("subject", subject) });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", "g.us") }, new ProtocolTreeNode[] {child});
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace WhatsAppApi
                                                                                  new KeyValue("xmlns", "urn:xmpp:whatsapp:account")
                                                                              })
                                                 });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace WhatsAppApi
             var innerChild = new ProtocolTreeNode("item", new[] { new KeyValue("jid", jid), new KeyValue("subscription", "remove") });
             var child = new ProtocolTreeNode("query", new[] { new KeyValue("xmlns", "jabber:iq:roster") }, new ProtocolTreeNode[] {innerChild});
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("type", "set"), new KeyValue("id", v) }, new ProtocolTreeNode[] {child});
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -275,7 +275,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("remove_group_");
             var child = new ProtocolTreeNode("group", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("action", "delete") });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", gjid) }, new ProtocolTreeNode[] {child});
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -286,7 +286,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("get_config_");
             var child = new ProtocolTreeNode("config", new[] { new KeyValue("xmlns", "urn:xmpp:whatsapp:push") });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", this.whatsAppRealm) }, new ProtocolTreeNode[] { child });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("get_dirty_");
             var child = new ProtocolTreeNode("status", new[] { new KeyValue("xmlns", "urn:xmpp:whatsapp:dirty") });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", "s.whatsapp.net") }, new ProtocolTreeNode[] {child});
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("get_g_info_");
             var child = new ProtocolTreeNode("query", new[] { new KeyValue("xmlns", "w:g") });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsAppApi.WhatsApp.GetJID(gjid)) }, new ProtocolTreeNode[] {child});
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -341,7 +341,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("get_participants_");
             var child = new ProtocolTreeNode("list", new[] { new KeyValue("xmlns", "w:g") });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsApp.GetJID(gjid)) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -375,7 +375,7 @@ namespace WhatsAppApi
             }
             var child = new ProtocolTreeNode("picture", attrList.ToArray());
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsAppApi.WhatsApp.GetJID(jid)) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
             return id;
         }
 
@@ -389,7 +389,7 @@ namespace WhatsAppApi
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", this.MyJID) },
                 new ProtocolTreeNode("list", new[] { new KeyValue("xmlns", "w:profile:picture") },
                     (from jid in jids select new ProtocolTreeNode("user", new[] { new KeyValue("jid", jid) })).ToArray<ProtocolTreeNode>()));
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -401,7 +401,7 @@ namespace WhatsAppApi
             var innerChild = new ProtocolTreeNode("list", new[] { new KeyValue("name", "default") });
             var child = new ProtocolTreeNode("query", new KeyValue[] { new KeyValue("xmlns", "jabber:iq:privacy") }, innerChild);
             var node = new ProtocolTreeNode("iq", new KeyValue[] { new KeyValue("id", id), new KeyValue("type", "get") }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -412,7 +412,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("get_server_properties_");
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", "s.whatsapp.net") },
                 new ProtocolTreeNode("props", new[] { new KeyValue("xmlns", "w") }));
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace WhatsAppApi
                 string v = TicketManager.GenerateId();
                 var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", jid), new KeyValue("type", "action"), new KeyValue("id", v) },
                     new ProtocolTreeNode("action", new[] { new KeyValue("type", "get") }));
-                this.whatsNetwork.SendData(this._binWriter.Write(node));
+                this.whatsNetwork.SendData(this.BinWriter.Write(node));
             }
         }
 
@@ -438,7 +438,7 @@ namespace WhatsAppApi
         public void SendInactive()
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "inactive") });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -473,7 +473,7 @@ namespace WhatsAppApi
             IEnumerable<ProtocolTreeNode> innerChilds = from gjid in gjids select new ProtocolTreeNode("group", new[] { new KeyValue("id", gjid) });
             var child = new ProtocolTreeNode("leave", new KeyValue[] { new KeyValue("xmlns", "w:g") }, innerChilds);
             var node = new ProtocolTreeNode("iq", new KeyValue[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", "g.us") }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -558,7 +558,7 @@ namespace WhatsAppApi
         {
             var child = new ProtocolTreeNode(response, new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
             var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", message.identifier_key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.identifier_key.id) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -566,7 +566,7 @@ namespace WhatsAppApi
         /// </summary>
         public void SendNop()
         {
-            this.whatsNetwork.SendData(this._binWriter.Write(null));
+            this.whatsNetwork.SendData(this.BinWriter.Write(null));
         }
 
         /// <summary>
@@ -578,7 +578,7 @@ namespace WhatsAppApi
         {
             var child = new ProtocolTreeNode("received", new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
             var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", jid), new KeyValue("type", "notification"), new KeyValue("id", id) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -589,7 +589,7 @@ namespace WhatsAppApi
         {
             var child = new ProtocolTreeNode("paused", new[] { new KeyValue("xmlns", "http://jabber.org/protocol/chatstates") });
             var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", to), new KeyValue("type", "chat") }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -600,7 +600,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("ping_");
             var child = new ProtocolTreeNode("ping", new[] { new KeyValue("xmlns", "w:p") });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get") }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -610,7 +610,7 @@ namespace WhatsAppApi
         public void SendPong(string id)
         {
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("type", "result"), new KeyValue("to", this.whatsAppRealm), new KeyValue("id", id) });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -620,7 +620,7 @@ namespace WhatsAppApi
         public void SendPresenceSubscriptionRequest(string to)
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "subscribe"), new KeyValue("to", to) });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -632,7 +632,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("last_");
             var child = new ProtocolTreeNode("query", new[] { new KeyValue("xmlns", "jabber:iq:last") });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", jid) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -645,7 +645,7 @@ namespace WhatsAppApi
             string v = TicketCounter.MakeId("relay_");
             var child = new ProtocolTreeNode("config", new[] { new KeyValue("xmlns", "urn:xmpp:whatsapp:push"), new KeyValue("platform", platform), new KeyValue("relay", value ? "1" : "0") });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", v), new KeyValue("type", "set"), new KeyValue("to", this.whatsAppRealm) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -657,7 +657,7 @@ namespace WhatsAppApi
         {
             var child = new ProtocolTreeNode("relay", new[] { new KeyValue("elapsed", millis.ToString(CultureInfo.InvariantCulture)) });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("xmlns", "w:p:r"), new KeyValue("type", "result"), new KeyValue("to", "s.whatsapp.net"), new KeyValue("id", id) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -669,7 +669,7 @@ namespace WhatsAppApi
             var innerChild = new ProtocolTreeNode("remote-server-timeout", new[] { new KeyValue("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas") });
             var child = new ProtocolTreeNode("error", new[] { new KeyValue("code", "504"), new KeyValue("type", "wait") }, innerChild);
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("xmlns", "w:p:r"), new KeyValue("type", "error"), new KeyValue("to", "s.whatsapp.net"), new KeyValue("id", id) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -717,7 +717,7 @@ namespace WhatsAppApi
             string id = TicketCounter.MakeId("set_group_subject_");
             var child = new ProtocolTreeNode("subject", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("value", subject) });
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", gjid) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -737,7 +737,7 @@ namespace WhatsAppApi
                 list.Add(new ProtocolTreeNode("picture", new[] { new KeyValue("type", "preview") }, null, thumbnailBytes));
             }
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", jid) }, list.ToArray());
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -762,7 +762,7 @@ namespace WhatsAppApi
             var child = new ProtocolTreeNode("list", new KeyValue[] { new KeyValue("name", "default") }, (nodeArray.Length == 0) ? null : nodeArray);
             var node2 = new ProtocolTreeNode("query", new KeyValue[] { new KeyValue("xmlns", "jabber:iq:privacy") }, child);
             var node3 = new ProtocolTreeNode("iq", new KeyValue[] { new KeyValue("id", id), new KeyValue("type", "set") }, node2);
-            this.whatsNetwork.SendData(this._binWriter.Write(node3));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node3));
         }
 
         /// <summary>
@@ -776,7 +776,7 @@ namespace WhatsAppApi
             string id = TicketManager.GenerateId();
             FMessage message = new FMessage(new FMessage.FMessageIdentifierKey("s.us", true, id));
             var messageNode = GetMessageNode(message, new ProtocolTreeNode("body", null, WhatsApp.SYSEncoding.GetBytes(status)));
-            this.whatsNetwork.SendData(this._binWriter.Write(messageNode));
+            this.whatsNetwork.SendData(this.BinWriter.Write(messageNode));
         }
 
         /// <summary>
@@ -788,7 +788,7 @@ namespace WhatsAppApi
         {
             var child = new ProtocolTreeNode("received", new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
             var node = GetSubjectMessage(to, id, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -798,7 +798,7 @@ namespace WhatsAppApi
         public void SendUnsubscribeHim(string jid)
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "unsubscribed"), new KeyValue("to", jid) });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -808,7 +808,7 @@ namespace WhatsAppApi
         public void SendUnsubscribeMe(string jid)
         {
             var node = new ProtocolTreeNode("presence", new[] { new KeyValue("type", "unsubscribe"), new KeyValue("to", jid) });
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -830,7 +830,7 @@ namespace WhatsAppApi
         {
             var child = new ProtocolTreeNode("list", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("type", type) });
             var  node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", "g.us") }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -840,7 +840,7 @@ namespace WhatsAppApi
         internal void SendMessageWithBody(FMessage message, bool hidden = false)
         {
             var child = new ProtocolTreeNode("body", null, null, WhatsApp.SYSEncoding.GetBytes(message.data));
-            this.whatsNetwork.SendData(this._binWriter.Write(GetMessageNode(message, child, hidden)));
+            this.whatsNetwork.SendData(this.BinWriter.Write(GetMessageNode(message, child, hidden)));
         }
 
         /// <summary>
@@ -899,12 +899,12 @@ namespace WhatsAppApi
                 }
                 node = new ProtocolTreeNode("media", list.ToArray(), null, data);
             }
-            this.whatsNetwork.SendData(this._binWriter.Write(GetMessageNode(message, node)));
+            this.whatsNetwork.SendData(this.BinWriter.Write(GetMessageNode(message, node)));
         }
 
         public void SendNode(ProtocolTreeNode node)
         {
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -919,7 +919,7 @@ namespace WhatsAppApi
             IEnumerable<ProtocolTreeNode> source = from jid in participants select new ProtocolTreeNode("participant", new[] { new KeyValue("jid", jid) });
             var child = new ProtocolTreeNode(inner_tag, new[] { new KeyValue("xmlns", "w:g") }, source);
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", gjid) }, child);
-            this.whatsNetwork.SendData(this._binWriter.Write(node));
+            this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
         /// <summary>
@@ -957,7 +957,7 @@ namespace WhatsAppApi
                                                                  new KeyValue("type", "chat"),
                                                                  new KeyValue("id", id)
                                                              }, tmpChild);
-            this.whatsNetwork.SendData(this._binWriter.Write(resultNode));
+            this.whatsNetwork.SendData(this.BinWriter.Write(resultNode));
         }
 
         /// <summary>

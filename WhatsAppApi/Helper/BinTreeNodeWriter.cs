@@ -8,23 +8,10 @@ namespace WhatsAppApi.Helper
     public class BinTreeNodeWriter
     {
         private List<byte> buffer;
-        private Dictionary<string, int> tokenMap;
-        public byte[] Encryptionkey { get; set; }
+        public KeyStream Key;
 
-        public BinTreeNodeWriter(string[] dict)
+        public BinTreeNodeWriter()
         {
-            this.tokenMap = new Dictionary<string, int>();
-            for (int i = 0; i < dict.Length; i++)
-            {
-                if (dict[i] != null && dict[i].Length > 0)
-                {
-                    if (!this.tokenMap.ContainsKey(dict[i]))
-                        this.tokenMap.Add(dict[i], i);
-                    else
-                        this.tokenMap[dict[i]] = i;
-                }
-            }
-
             buffer = new List<byte>();
         }
 
@@ -44,7 +31,7 @@ namespace WhatsAppApi.Helper
             this.buffer.Add((byte)'W');
             this.buffer.Add((byte)'A');
             this.buffer.Add(0x1);
-            this.buffer.Add(0x2);
+            this.buffer.Add(0x4);
             this.buffer.AddRange(ret);
             ret = buffer.ToArray();
             this.buffer = new List<byte>();
@@ -70,19 +57,26 @@ namespace WhatsAppApi.Helper
             byte[] data = this.buffer.ToArray();
             byte[] data2 = new byte[data.Length + 4];
             Buffer.BlockCopy(data, 0, data2, 0, data.Length);
-            int len = data.Length;
 
-            byte[] size = this.GetInt24(len);
-            if (encrypt && this.Encryptionkey != null)
+            byte[] size = this.GetInt24(data.Length);
+            if (encrypt && this.Key != null)
             {
-                data = Encryption.WhatsappEncrypt(Encryptionkey, data, true);
-                len += 4;
-                size = this.GetInt24(len);
-                size[0] |= (1 << 4);
+                byte[] paddedData = new byte[data.Length + 4];
+                Array.Copy(data, paddedData, data.Length);
+                this.Key.EncodeMessage(paddedData, paddedData.Length - 4, 0, paddedData.Length - 4);
+                data = paddedData;
+
+                //add encryption signature
+                uint encryptedBit = 0u;
+                encryptedBit |= 8u;
+                long dataLength = data.Length;
+                size[0] = (byte)((ulong)((ulong)encryptedBit << 4) | (ulong)((dataLength & 16711680L) >> 16));
+                size[1] = (byte)((dataLength & 65280L) >> 8);
+                size[2] = (byte)(dataLength & 255L);
             }
             byte[] ret = new byte[data.Length + 3];
             Buffer.BlockCopy(size, 0, ret, 0, 3);
-            Buffer.BlockCopy(data, 0, ret, 3, len);
+            Buffer.BlockCopy(data, 0, ret, 3, data.Length);
             this.buffer = new List<byte>();
             return ret;
         }
@@ -219,25 +213,26 @@ namespace WhatsAppApi.Helper
 
         protected void writeString(string tag)
         {
-            if (this.tokenMap.ContainsKey(tag))
+            int intValue = -1;
+            int num = -1;
+            if (new TokenDictionary().TryGetToken(tag, ref num, ref intValue))
             {
-                int value = this.tokenMap[tag];
-                this.writeToken(value);
+                if (num >= 0)
+                {
+                    this.writeToken(num);
+                }
+                this.writeToken(intValue);
+                return;
             }
-            else
+            int num2 = tag.IndexOf('@');
+            if (num2 < 1)
             {
-                int index = tag.IndexOf('@');
-                if (index != -1)
-                {
-                    string server = tag.Substring(index + 1);
-                    string user = tag.Substring(0, index);
-                    this.writeJid(user, server);
-                }
-                else
-                {
-                    this.writeBytes(tag);
-                }
+                this.writeBytes(tag);
+                return;
             }
+            string server = tag.Substring(num2 + 1);
+            string user = tag.Substring(0, num2);
+            this.writeJid(user, server);
         }
 
         protected void writeToken(int token)

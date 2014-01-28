@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -71,6 +72,8 @@ namespace WhatsAppApi
             this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket.Connect(this.whatsHost, this.whatsPort);
             this.socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, this.recvTimeout);
+            this.socket.ReceiveBufferSize = Int32.MaxValue;
+            //this.socket.SendBufferSize = Int32.MaxValue;
 
             if (!this.socket.Connected)
                 throw new ConnectionException("Cannot connect");
@@ -91,11 +94,9 @@ namespace WhatsAppApi
         /// Read 1024 bytes 
         /// </summary>
         /// <returns></returns>
-        public byte[] ReadData()
+        public byte[] ReadData(int length = 1024)
         {
-            List<byte> buff = new List<byte>();
-            byte[] ret = Socket_read(1024);
-            return ret;
+            return Socket_read(length);
         }
 
         /// <summary>
@@ -114,6 +115,30 @@ namespace WhatsAppApi
         public void SendData(byte[] data)
         {
             Socket_send(data);
+        }
+
+        public byte[] ReadNextNode()
+        {
+            byte[] nodeHeader = this.ReadData(3);
+            if (nodeHeader.Length != 3)
+            {
+                throw new Exception("Failed to read node header");
+            }
+            int nodeLength = 0;
+            nodeLength = (int)nodeHeader[1] << 8;
+            nodeLength |= (int)nodeHeader[2] << 0;
+
+            byte[] nodeData = this.ReadData(nodeLength);
+            if (nodeData.Length != nodeLength)
+            {
+                throw new Exception("Read Next Tree error");
+            }
+
+            byte[] fullData = new byte[nodeHeader.Length + nodeData.Length];
+            List<byte> buff = new List<byte>();
+            buff.AddRange(nodeHeader);
+            buff.AddRange(nodeData);
+            return buff.ToArray();
         }
        
         /// <summary>
