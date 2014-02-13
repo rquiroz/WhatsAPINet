@@ -24,9 +24,9 @@ namespace WhatsTest
             System.Console.OutputEncoding = Encoding.Default;
             System.Console.InputEncoding = Encoding.Default;
             string nickname = "WhatsApiNet";
-            string sender = "316********"; // Mobile number with country code (but without + or 00)
-            string password = "K/1**************yeix87Q=";//v2 password
-            string target = "316********";// Mobile number to send the message to
+            string sender = "316******3"; // Mobile number with country code (but without + or 00)
+            string password = "xLl***************GSA=";//v2 password
+            string target = "316********6";// Mobile number to send the message to
 
             WhatsApp wa = new WhatsApp(sender, password, nickname, true);
 
@@ -50,12 +50,26 @@ namespace WhatsTest
             wa.OnGetPhoto += wa_OnGetPhoto;
             wa.OnGetPhotoPreview += wa_OnGetPhotoPreview;
             wa.OnGetGroups += wa_OnGetGroups;
+            wa.OnGetSyncResult += wa_OnGetSyncResult;
 
             wa.Connect();
             wa.Login();
 
             ProcessChat(wa, target);
             Console.ReadKey();
+        }
+
+        static void wa_OnGetSyncResult(int index, string sid, Dictionary<string, string> existingUsers, string[] failedNumbers)
+        {
+            Console.WriteLine("Sync result for {0}:", sid);
+            foreach (KeyValuePair<string, string> item in existingUsers)
+            {
+                Console.WriteLine("Existing: {0} (username {1})", item.Key, item.Value);
+            }
+            foreach(string item in failedNumbers)
+            {
+                Console.WriteLine("Non-Existing: {0}", item);
+            }
         }
 
         static void wa_OnGetGroups(WhatsApp.GroupInfo[] groups)
@@ -166,7 +180,7 @@ namespace WhatsTest
         static void wa_OnNotificationPicture(string type, string jid, string id)
         {
             //TODO
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         static void wa_OnGetMessage(string from, string id, string name, string message)
@@ -182,7 +196,7 @@ namespace WhatsTest
         private static void wa_OnLoginSuccess(byte[] data)
         {
             Console.WriteLine("Login success. Next password:");
-            Console.WriteLine(data);
+            Console.WriteLine(System.Text.Encoding.UTF8.GetString(data));
         }
 
 

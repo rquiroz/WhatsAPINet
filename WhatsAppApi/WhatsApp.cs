@@ -796,7 +796,6 @@ namespace WhatsAppApi
 
             if (this._challengeBytes != null)
             {
-
                 byte[][] keys = KeyStream.GenerateKeys(this.encryptPassword(), this._challengeBytes);
 
                 this.reader.Key = new KeyStream(keys[2], keys[3]);
@@ -985,6 +984,31 @@ namespace WhatsAppApi
                     }
                     if (ProtocolTreeNode.TagEquals(node, "iq"))
                     {
+                        if (node.GetChild("sync") != null)
+                        {
+                            //sync result
+                            ProtocolTreeNode sync = node.GetChild("sync");
+                            ProtocolTreeNode existing = sync.GetChild("in");
+                            ProtocolTreeNode nonexisting = sync.GetChild("out");
+                            //process existing first
+                            Dictionary<string, string> existingUsers = new Dictionary<string, string>();
+                            foreach (ProtocolTreeNode child in existing.GetAllChildren())
+                            {
+                                existingUsers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()), child.GetAttribute("jid"));
+                            }
+                            //now process failed numbers
+                            List<string> failedNumbers = new List<string>();
+                            foreach (ProtocolTreeNode child in nonexisting.GetAllChildren())
+                            {
+                                failedNumbers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()));
+                            }
+                            int index = 0;
+                            Int32.TryParse(sync.GetAttribute("index"), out index);
+                            if (this.OnGetSyncResult != null)
+                            {
+                                this.OnGetSyncResult(index, sync.GetAttribute("sid"), existingUsers, failedNumbers.ToArray());
+                            }
+                        }
                         if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
                             && node.children.FirstOrDefault().tag == "query"
                             && node.children.FirstOrDefault().GetAttribute("xmlns") == "jabber:iq:last"
@@ -1296,6 +1320,8 @@ namespace WhatsAppApi
         public event OnContactNameDelegate OnGetContactName;
         public event OnGetStatusDelegate OnGetStatus;
 
+        public event OnGetSyncResultDelegate OnGetSyncResult;
+
         //event delegates
         public delegate void OnContactNameDelegate(string from, string contactName);
         public delegate void NullDelegate();
@@ -1316,6 +1342,7 @@ namespace WhatsAppApi
         public delegate void OnGetPictureDelegate(string from, string id, byte[] data);
         public delegate void OnGetGroupsDelegate(GroupInfo[] groups);
         public delegate void OnGetStatusDelegate(string from, string type, string name, string status);
+        public delegate void OnGetSyncResultDelegate(int index, string sid, Dictionary<string, string> existingUsers, string[] failedNumbers);
 
         public class GroupInfo
         {
