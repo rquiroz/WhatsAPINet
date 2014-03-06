@@ -185,8 +185,14 @@ namespace WhatsAppApi
         /// <param name="to">The recipient, the one the client is talking to.</param>
         public void SendComposing(string to)
         {
-            var child = new ProtocolTreeNode("composing", new[] { new KeyValue("xmlns", "http://jabber.org/protocol/chatstates") });
-            var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", to), new KeyValue("type", "chat") }, new ProtocolTreeNode[] {child});
+            this.SendChatState(to, "composing");
+        }
+
+        protected void SendChatState(string to, string type)
+        {
+            var node = new ProtocolTreeNode("chatstate", new[] { new KeyValue("to", WhatsApp.GetJID(to)) }, new [] { 
+                new ProtocolTreeNode(type, null)
+            });
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -596,9 +602,7 @@ namespace WhatsAppApi
         /// <param name="to">The jabber id of the reciever</param>
         public void SendPaused(string to)
         {
-            var child = new ProtocolTreeNode("paused", new[] { new KeyValue("xmlns", "http://jabber.org/protocol/chatstates") });
-            var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", to), new KeyValue("type", "chat") }, child);
-            this.whatsNetwork.SendData(this.BinWriter.Write(node));
+            this.SendChatState(to, "paused");
         }
 
         /// <summary>
