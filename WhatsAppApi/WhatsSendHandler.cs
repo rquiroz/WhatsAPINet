@@ -562,8 +562,11 @@ namespace WhatsAppApi
         /// <param name="message">An instance of the FMessage class.</param>
         public void SendMessageReceived(FMessage message, string response)
         {
-            var child = new ProtocolTreeNode(response, new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
-            var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", message.identifier_key.remote_jid), new KeyValue("type", "chat"), new KeyValue("id", message.identifier_key.id) }, child);
+            ProtocolTreeNode node = new ProtocolTreeNode("receipt", new[] {
+                new KeyValue("to", message.identifier_key.remote_jid),
+                new KeyValue("id", message.identifier_key.id)
+            });
+            
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
