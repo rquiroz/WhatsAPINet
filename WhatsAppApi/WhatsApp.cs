@@ -1258,7 +1258,7 @@ namespace WhatsAppApi
         /// Tell the server we recieved the message
         /// </summary>
         /// <param name="msg">The ProtocolTreeNode that contains the message</param>
-        protected void sendMessageReceived(ProtocolTreeNode msg, string response = "received")
+        public void sendMessageReceived(ProtocolTreeNode msg, string response = "received")
         {
             FMessage tmpMessage = new FMessage(new FMessage.FMessageIdentifierKey(msg.GetAttribute("from"), true, msg.GetAttribute("id")));
             this.WhatsParser.WhatsSendHandler.SendMessageReceived(tmpMessage, response);
