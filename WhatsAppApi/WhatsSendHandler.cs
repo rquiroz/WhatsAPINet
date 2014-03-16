@@ -983,7 +983,7 @@ namespace WhatsAppApi
         {
             return new ProtocolTreeNode("message", new[] { 
                 new KeyValue("to", message.identifier_key.remote_jid), 
-                new KeyValue("type", "text"), 
+                new KeyValue("type", message.media_wa_type == FMessage.Type.Undefined?"text":"media"), 
                 new KeyValue("id", message.identifier_key.id) 
             }, 
             new ProtocolTreeNode[] {

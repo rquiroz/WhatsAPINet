@@ -550,7 +550,6 @@ namespace WhatsAppApi
         private UploadResponse UploadFile(string b64hash, string type, long size, string path, string to, string contenttype)
         {
             ProtocolTreeNode media = new ProtocolTreeNode("media", new KeyValue[] {
-                new KeyValue("xmlns", "w:m"),
                 new KeyValue("hash", b64hash),
                 new KeyValue("type", type),
                 new KeyValue("size", size.ToString())
@@ -559,7 +558,8 @@ namespace WhatsAppApi
             ProtocolTreeNode node = new ProtocolTreeNode("iq", new KeyValue[] {
                 new KeyValue("id", id),
                 new KeyValue("to", WhatsConstants.WhatsAppServer),
-                new KeyValue("type", "set")
+                new KeyValue("type", "set"),
+                new KeyValue("xmlns", "w:m")
             }, media);
             this.uploadResponse = null;
             this.WhatsSendHandler.SendNode(node);
