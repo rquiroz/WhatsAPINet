@@ -716,7 +716,7 @@ namespace WhatsAppApi
         /// <summary>
         /// Retrieve messages from the server
         /// </summary>
-        public void PollMessages(bool autoReceipt = false)
+        public void PollMessages(bool autoReceipt = true)
         {
             this.processInboundData(autoReceipt);
         }
@@ -852,7 +852,7 @@ namespace WhatsAppApi
         /// Process inbound data
         /// </summary>
         /// <param name="data">Data to process</param>
-        protected void processInboundData(bool autoReceipt = false)
+        protected void processInboundData(bool autoReceipt = true)
         {
             try
             {
