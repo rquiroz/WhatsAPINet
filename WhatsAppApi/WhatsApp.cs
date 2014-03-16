@@ -716,9 +716,9 @@ namespace WhatsAppApi
         /// <summary>
         /// Retrieve messages from the server
         /// </summary>
-        public void PollMessages()
+        public void PollMessages(bool autoReceipt = false)
         {
-            this.processInboundData();
+            this.processInboundData(autoReceipt);
         }
 
         /// <summary>
@@ -852,7 +852,7 @@ namespace WhatsAppApi
         /// Process inbound data
         /// </summary>
         /// <param name="data">Data to process</param>
-        protected void processInboundData()
+        protected void processInboundData(bool autoReceipt = false)
         {
             try
             {
@@ -911,9 +911,12 @@ namespace WhatsAppApi
                             //text message
                             if (this.OnGetMessage != null)
                             {
-                                this.OnGetMessage(node.GetAttribute("from"), node.GetAttribute("id"), node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()));
+                                this.OnGetMessage(node, node.GetAttribute("from"), node.GetAttribute("id"), node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()), autoReceipt);
                             }
-                            this.sendMessageReceived(node);
+                            if (autoReceipt)
+                            {
+                                this.sendMessageReceived(node);
+                            }
                         }
                         if (node.GetChild("media") != null)
                         {
@@ -1331,7 +1334,7 @@ namespace WhatsAppApi
         public delegate void OnErrorDelegate(string id, string from, int code, string text);
         public delegate void OnGetMessageReceivedDelegate(string from, string id);
         public delegate void OnNotificationPictureDelegate(string type, string jid, string id);
-        public delegate void OnGetMessageDelegate(string from, string id, string name, string message);
+        public delegate void OnGetMessageDelegate(ProtocolTreeNode messageNode, string from, string id, string name, string message, bool receipt_sent);
         public delegate void OnGetPresenceDelegate(string from, string type);
         public delegate void OnGetGroupParticipantsDelegate(string gjid, string[] jids);
         public delegate void OnGetLastSeenDelegate(string from, DateTime lastSeen);

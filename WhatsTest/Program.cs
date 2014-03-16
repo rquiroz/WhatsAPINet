@@ -183,7 +183,7 @@ namespace WhatsTest
             //throw new NotImplementedException();
         }
 
-        static void wa_OnGetMessage(string from, string id, string name, string message)
+        static void wa_OnGetMessage(ProtocolTreeNode node, string from, string id, string name, string message, bool receipt_sent)
         {
             Console.WriteLine("Message from {0} (1): {2}", name, from, message);
         }
