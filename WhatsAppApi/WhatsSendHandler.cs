@@ -744,12 +744,12 @@ namespace WhatsAppApi
         public void SendSetPhoto(string jid, byte[] bytes, byte[] thumbnailBytes)
         {
             string id = TicketCounter.MakeId("set_photo_");
-            var list = new List<ProtocolTreeNode> { new ProtocolTreeNode("picture", new[] { new KeyValue("xmlns", "w:profile:picture") }, null, bytes) };
+            var list = new List<ProtocolTreeNode> { new ProtocolTreeNode("picture", null, null, bytes) };
             if (thumbnailBytes != null)
             {
                 list.Add(new ProtocolTreeNode("picture", new[] { new KeyValue("type", "preview") }, null, thumbnailBytes));
             }
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", jid) }, list.ToArray());
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("xmlns", "w:profile:picture"), new KeyValue("to", jid) }, list.ToArray());
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
