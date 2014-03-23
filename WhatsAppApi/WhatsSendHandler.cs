@@ -214,8 +214,8 @@ namespace WhatsAppApi
         public void SendCreateGroupChat(string subject, Action<string> onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("create_group_");
-            var child = new ProtocolTreeNode("group", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("action", "create"), new KeyValue("subject", subject) });
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", "g.us") }, new ProtocolTreeNode[] {child});
+            var child = new ProtocolTreeNode("group", new[] { new KeyValue("action", "create"), new KeyValue("subject", subject) });
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("xmlns", "w:g"), new KeyValue("to", "g.us") }, new ProtocolTreeNode[] { child });
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -285,8 +285,8 @@ namespace WhatsAppApi
         public void SendEndGroupChat(string gjid, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("remove_group_");
-            var child = new ProtocolTreeNode("group", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("action", "delete") });
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", gjid) }, new ProtocolTreeNode[] {child});
+            var child = new ProtocolTreeNode("group", new[] { new KeyValue("action", "delete") });
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("xmlns", "w:g"), new KeyValue("to", gjid) }, new ProtocolTreeNode[] { child });
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -319,8 +319,8 @@ namespace WhatsAppApi
         public void SendGetGroupInfo(string gjid)
         {
             string id = TicketCounter.MakeId("get_g_info_");
-            var child = new ProtocolTreeNode("query", new[] { new KeyValue("xmlns", "w:g") });
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsAppApi.WhatsApp.GetJID(gjid)) }, new ProtocolTreeNode[] {child});
+            var child = new ProtocolTreeNode("query", null);
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("xmlns", "w:g"), new KeyValue("to", WhatsAppApi.WhatsApp.GetJID(gjid)) }, new ProtocolTreeNode[] { child });
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -351,8 +351,8 @@ namespace WhatsAppApi
         public void SendGetParticipants(string gjid)
         {
             string id = TicketCounter.MakeId("get_participants_");
-            var child = new ProtocolTreeNode("list", new[] { new KeyValue("xmlns", "w:g") });
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsApp.GetJID(gjid)) }, child);
+            var child = new ProtocolTreeNode("list", null);
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("xmlns", "w:g"), new KeyValue("to", WhatsApp.GetJID(gjid)) }, child);
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -483,8 +483,8 @@ namespace WhatsAppApi
         {
             string id = TicketCounter.MakeId("leave_group_");
             IEnumerable<ProtocolTreeNode> innerChilds = from gjid in gjids select new ProtocolTreeNode("group", new[] { new KeyValue("id", gjid) });
-            var child = new ProtocolTreeNode("leave", new KeyValue[] { new KeyValue("xmlns", "w:g") }, innerChilds);
-            var node = new ProtocolTreeNode("iq", new KeyValue[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", "g.us") }, child);
+            var child = new ProtocolTreeNode("leave", null, innerChilds);
+            var node = new ProtocolTreeNode("iq", new KeyValue[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("xmlns", "w:g"), new KeyValue("to", "g.us") }, child);
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -728,8 +728,8 @@ namespace WhatsAppApi
         public void SendSetGroupSubject(string gjid, string subject, Action onSuccess, Action<int> onError)
         {
             string id = TicketCounter.MakeId("set_group_subject_");
-            var child = new ProtocolTreeNode("subject", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("value", subject) });
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", gjid) }, child);
+            var child = new ProtocolTreeNode("subject", new[] { new KeyValue("value", subject) });
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("xmlns", "w:g"), new KeyValue("to", gjid) }, child);
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -841,8 +841,8 @@ namespace WhatsAppApi
         /// <param name="type">The type</param>
         internal void SendGetGroups(string id, string type)
         {
-            var child = new ProtocolTreeNode("list", new[] { new KeyValue("xmlns", "w:g"), new KeyValue("type", type) });
-            var  node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", "g.us") }, child);
+            var child = new ProtocolTreeNode("list", new[] { new KeyValue("type", type) });
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("xmlns", "w:g"), new KeyValue("to", "g.us") }, child);
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
@@ -930,8 +930,8 @@ namespace WhatsAppApi
         internal void SendVerbParticipants(string gjid, IEnumerable<string> participants, string id, string inner_tag)
         {
             IEnumerable<ProtocolTreeNode> source = from jid in participants select new ProtocolTreeNode("participant", new[] { new KeyValue("jid", jid) });
-            var child = new ProtocolTreeNode(inner_tag, new[] { new KeyValue("xmlns", "w:g") }, source);
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("to", gjid) }, child);
+            var child = new ProtocolTreeNode(inner_tag, null, source);
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("xmlns", "w:g"), new KeyValue("to", gjid) }, child);
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
         }
 
