@@ -376,7 +376,7 @@ namespace WhatsAppApi
         public string SendGetPhoto(string jid, string expectedPhotoId, bool largeFormat, Action onComplete)
         {
             string id = TicketCounter.MakeId("get_photo_");
-            var attrList = new List<KeyValue> { new KeyValue("xmlns", "w:profile:picture") };
+            var attrList = new List<KeyValue>();
             if (!largeFormat)
             {
                 attrList.Add(new KeyValue("type", "preview"));
@@ -386,7 +386,7 @@ namespace WhatsAppApi
                 attrList.Add(new KeyValue("id", expectedPhotoId));
             }
             var child = new ProtocolTreeNode("picture", attrList.ToArray());
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", WhatsAppApi.WhatsApp.GetJID(jid)) }, child);
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("xmlns", "w:profile:picture"), new KeyValue("to", WhatsAppApi.WhatsApp.GetJID(jid)) }, child);
             this.whatsNetwork.SendData(this.BinWriter.Write(node));
             return id;
         }
