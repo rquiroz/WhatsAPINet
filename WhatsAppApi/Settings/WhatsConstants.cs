@@ -21,7 +21,7 @@ namespace WhatsAppApi.Settings
         /// <summary>
         /// The whatsapp host
         /// </summary>
-        public const string WhatsAppHost = "c.whatsapp.net";
+        public const string WhatsAppHost = "c3.whatsapp.net";
 
         /// <summary>
         /// The whatsapp XMPP realm
@@ -42,7 +42,7 @@ namespace WhatsAppApi.Settings
         /// <summary>
         /// The whatsapp version the client complies to
         /// </summary>
-        public const string WhatsAppVer = "2.11.209";
+        public const string WhatsAppVer = "2.11.224";
 
         /// <summary>
         /// The port that needs to be connected to
@@ -57,7 +57,7 @@ namespace WhatsAppApi.Settings
         /// <summary>
         /// The useragent used for http requests
         /// </summary>
-        public const string UserAgent = "WhatsApp/2.11.209 Android/4.4.2 Device/GalaxyS4";
+        public const string UserAgent = "WhatsApp/2.11.224 Android/4.4.2 Device/GalaxyS4";
 
         #endregion
 
