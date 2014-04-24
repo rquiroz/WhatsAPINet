@@ -120,6 +120,13 @@ namespace WhatsAppApi
         public byte[] ReadNextNode()
         {
             byte[] nodeHeader = this.ReadData(3);
+
+            if (nodeHeader.Length == 0)
+            {
+                //empty response
+                return null;
+            }
+
             if (nodeHeader.Length != 3)
             {
                 throw new Exception("Failed to read node header");
