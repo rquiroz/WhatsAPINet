@@ -128,16 +128,24 @@ namespace WhatsAppApi
             nodeLength = (int)nodeHeader[1] << 8;
             nodeLength |= (int)nodeHeader[2] << 0;
 
-            byte[] nodeData = this.ReadData(nodeLength);
-            if (nodeData.Length != nodeLength)
+            //buffered read
+            int toRead = nodeLength;
+            List<byte> nodeData = new List<byte>();
+            do
+            {
+                byte[] nodeBuff = this.ReadData(toRead);
+                nodeData.AddRange(nodeBuff);
+                toRead -= nodeBuff.Length;
+            } while (toRead > 0);
+
+            if (nodeData.Count != nodeLength)
             {
                 throw new Exception("Read Next Tree error");
             }
 
-            byte[] fullData = new byte[nodeHeader.Length + nodeData.Length];
             List<byte> buff = new List<byte>();
             buff.AddRange(nodeHeader);
-            buff.AddRange(nodeData);
+            buff.AddRange(nodeData.ToArray());
             return buff.ToArray();
         }
        
