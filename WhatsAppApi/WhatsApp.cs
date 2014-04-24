@@ -275,7 +275,6 @@ namespace WhatsAppApi
 
             ProtocolTreeNode authResp = this.addAuthResponse();
             this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(authResp, false));
-            int cnt = 0;
             this.pollMessage();
 
             this.sendNickname(this.name);
@@ -878,6 +877,33 @@ namespace WhatsAppApi
                             this.OnLoginFailed(node.children.FirstOrDefault().tag);
                         }
                     }
+                    else if (ProtocolTreeNode.TagEquals(node, "receipt"))
+                    {
+                        string from = node.GetAttribute("from");
+                        string id = node.GetAttribute("id");
+                        string type = node.GetAttribute("type") ?? "delivery";
+                        switch (type)
+                        {
+                            case "delivery":
+                                //delivered to target
+                                if (this.OnGetMessageReceivedClient != null)
+                                {
+                                    this.OnGetMessageReceivedClient(from, id);
+                                }
+                                break;
+                            case "read":
+                                //read by target
+                                //todo
+                                break;
+                            case "played":
+                                //played by target
+                                //todo
+                                break;
+                        }
+
+                        //send ack
+                        SendNotificationAck(node, type);
+                    }
                     if (ProtocolTreeNode.TagEquals(node, "message"))
                     {
                         if (!string.IsNullOrEmpty(node.GetAttribute("notify")))
@@ -1152,8 +1178,20 @@ namespace WhatsAppApi
 
                     if (node.tag == "ack")
                     {
-                        //do nothing
-                        //throw new NotImplementedException(node.NodeString());
+                        string cls = node.GetAttribute("class");
+                        if (cls == "message")
+                        {
+                            //server receipt
+                            if (this.OnGetMessageReceivedServer != null)
+                            {
+                                this.OnGetMessageReceivedServer(node.GetAttribute("from"), node.GetAttribute("id"));
+                            }
+                        }
+                        else if(cls == "receipt")
+                        {
+                            //message received ack
+                            //do nothing
+                        }
                     }
 
                     if (node.tag == "notification")
@@ -1198,13 +1236,16 @@ namespace WhatsAppApi
             return false;
         }
 
-        private void SendNotificationAck(ProtocolTreeNode node)
+        private void SendNotificationAck(ProtocolTreeNode node, string type = null)
         {
             string from = node.GetAttribute("from");
             string to = node.GetAttribute("to");
             string participant = node.GetAttribute("participant");
             string id = node.GetAttribute("id");
-            string type = node.GetAttribute("type");
+            if (type == null)
+            {
+                type = node.GetAttribute("type");
+            }
             List<KeyValue> attributes = new List<KeyValue>();
             if(!string.IsNullOrEmpty(to))
             {
@@ -1216,7 +1257,7 @@ namespace WhatsAppApi
             }
             attributes.AddRange(new [] {
                 new KeyValue("to", from),
-                new KeyValue("class", "notification"),
+                new KeyValue("class", node.tag),
                 new KeyValue("id", id),
                 new KeyValue("type", type)
             });
