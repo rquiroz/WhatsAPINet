@@ -545,10 +545,10 @@ namespace WhatsAppApi
             this.uploadResponse = null;
             this.WhatsSendHandler.SendNode(node);
             int i = 0;
-            while (this.uploadResponse == null && i < 5)
+            while (this.uploadResponse == null && i <= 10)
             {
                 i++;
-                this.PollMessages();
+                this.pollMessage();
             }
             if (this.uploadResponse != null && this.uploadResponse.GetChild("duplicate") != null)
             {
