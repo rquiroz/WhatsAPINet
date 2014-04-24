@@ -165,7 +165,7 @@ namespace WhatsAppApi
         {
             if (!socket.Connected)
             {
-                throw new ConnectionException();
+                throw new ConnectionException("Socket not connected");
             }
 
             var buff = new byte[length];
@@ -187,6 +187,12 @@ namespace WhatsAppApi
                     {
                         throw new ConnectionException("Unknown error occured", excpt);
                     }
+                }
+
+                //sleep to prevent CPU intensive loop
+                if (receiveLength <= 0)
+                {
+                    System.Threading.Thread.Sleep(100);
                 }
             } 
             while (receiveLength <= 0);
