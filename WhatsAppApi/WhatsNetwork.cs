@@ -163,26 +163,23 @@ namespace WhatsAppApi
 
             var buff = new byte[length];
             int receiveLength = 0;
-            do
+            
+            try
             {
-                try
+                receiveLength = socket.Receive(buff, 0, length, 0);
+            }
+            catch (SocketException excpt)
+            {
+                if (excpt.SocketErrorCode == SocketError.TimedOut)
                 {
-                    receiveLength = socket.Receive(buff, 0, length, 0);
+                    Console.WriteLine("Socket-Timout");
+                    return null;
                 }
-                catch (SocketException excpt)
+                else
                 {
-                    if (excpt.SocketErrorCode == SocketError.TimedOut)
-                    {
-                        Console.WriteLine("Socket-Timout");
-                        return null;
-                    }
-                    else
-                    {
-                        throw new ConnectionException("Unknown error occured", excpt);
-                    }
+                    throw new ConnectionException("Unknown error occured", excpt);
                 }
-            } 
-            while (receiveLength <= 0);
+            }
 
             byte[] tmpRet = new byte[receiveLength];
             if (receiveLength > 0)
