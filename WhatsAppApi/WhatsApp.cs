@@ -33,11 +33,6 @@ namespace WhatsAppApi
             LOGGEDIN
         }
 
-        public void ClearIncomplete()
-        {
-            this._incompleteBytes.Clear();
-        }
-
         private ProtocolTreeNode uploadResponse;
     
         /// <summary>
@@ -124,19 +119,9 @@ namespace WhatsAppApi
         public static readonly Encoding SYSEncoding = Encoding.UTF8;
 
         /// <summary>
-        /// Empty bytes to hold the encryption key
-        /// </summary>
-        private byte[] _encryptionKey;
-
-        /// <summary>
         /// Empty bytes to hold the challenge
         /// </summary>
         private byte[] _challengeBytes;
-
-        /// <summary>
-        /// A list of exceptions for incomplete bytes
-        /// </summary>
-        private List<IncompleteMessageException> _incompleteBytes;
 
         /// <summary>
         /// Default class constructor
@@ -158,8 +143,6 @@ namespace WhatsAppApi
             this.whatsNetwork = new WhatsNetwork(WhatsConstants.WhatsAppHost, WhatsConstants.WhatsPort, this.timeout);
             this.WhatsParser = new WhatsParser(this.whatsNetwork, new BinTreeNodeWriter());
             this.WhatsSendHandler = this.WhatsParser.WhatsSendHandler;
-
-            _incompleteBytes = new List<IncompleteMessageException>();
         }
 
         /// <summary>
@@ -285,16 +268,15 @@ namespace WhatsAppApi
             this.whatsNetwork.SendData(data);
             this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(feat, false));
             this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(auth, false));
-            this.PollMessages();
+
+            this.pollMessage();//stream start
+            this.pollMessage();//features
+            this.pollMessage();//challenge
+
             ProtocolTreeNode authResp = this.addAuthResponse();
             this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(authResp, false));
             int cnt = 0;
-            do
-            {
-                this.PollMessages();
-                System.Threading.Thread.Sleep(50);
-            } 
-            while ((cnt++ < 100) && (this.loginStatus == CONNECTION_STATUS.DISCONNECTED));
+            this.pollMessage();
 
             this.sendNickname(this.name);
         }
@@ -718,7 +700,17 @@ namespace WhatsAppApi
         /// </summary>
         public void PollMessages(bool autoReceipt = true)
         {
-            this.processInboundData(autoReceipt);
+            while (pollMessage(autoReceipt)) ;
+        }
+
+        public bool pollMessage(bool autoReceipt = true)
+        {
+            byte[] nodeData = this.whatsNetwork.ReadNextNode();
+            if(nodeData != null)
+            {
+                return this.processInboundData(nodeData, autoReceipt);
+            }
+            return false;
         }
 
         /// <summary>
@@ -788,12 +780,6 @@ namespace WhatsAppApi
         /// <returns>An instance of the ProtocolTreeNode</returns>
         protected ProtocolTreeNode addAuthResponse()
         {
-            while (this._challengeBytes == null)
-            {
-                this.PollMessages();
-                System.Threading.Thread.Sleep(500);
-            }
-
             if (this._challengeBytes != null)
             {
                 byte[][] keys = KeyStream.GenerateKeys(this.encryptPassword(), this._challengeBytes);
@@ -852,13 +838,12 @@ namespace WhatsAppApi
         /// Process inbound data
         /// </summary>
         /// <param name="data">Data to process</param>
-        protected void processInboundData(bool autoReceipt = true)
+        protected bool processInboundData(byte[] msgdata, bool autoReceipt = true)
         {
             try
             {
-                byte[] msgdata = this.whatsNetwork.ReadNextNode();
                 ProtocolTreeNode node = this.reader.nextTree(msgdata);
-                while (node != null)
+                if(node != null)
                 {
                     if (node.tag == "iq"
                     && node.GetAttribute("type") == "error")
@@ -1201,14 +1186,15 @@ namespace WhatsAppApi
                         }
                         this.SendNotificationAck(node);
                     }
-                    node = this.reader.nextTree();
+
+                    return true;
                 }
             }
             catch (Exception e)
             {
-                //whatever
-                this._incompleteBytes.Clear();
+                throw e;
             }
+            return false;
         }
 
         private void SendNotificationAck(ProtocolTreeNode node)
