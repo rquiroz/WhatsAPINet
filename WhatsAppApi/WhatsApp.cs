@@ -759,13 +759,14 @@ namespace WhatsAppApi
         /// <returns>An instance of the ProtocolTreeNode class</returns>
         protected ProtocolTreeNode addAuth()
         {
-            var node = new ProtocolTreeNode("auth",
-                new KeyValue[] { 
-                    new KeyValue("passive", this.hidden?"true":"false"),
-                    new KeyValue("xmlns", @"urn:ietf:params:xml:ns:xmpp-sasl"),
-                    new KeyValue("mechanism", Helper.KeyStream.AuthMethod),
-                    new KeyValue("user", this.phoneNumber)
-                });
+            List<KeyValue> attr = new List<KeyValue>(new KeyValue[] {
+                new KeyValue("mechanism", Helper.KeyStream.AuthMethod),
+                new KeyValue("user", this.phoneNumber)});
+            if (this.hidden)
+            {
+                attr.Add(new KeyValue("passive", "true"));
+            }
+            var node = new ProtocolTreeNode("auth", attr.ToArray());
             return node;
         }
 
