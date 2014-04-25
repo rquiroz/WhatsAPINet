@@ -183,7 +183,6 @@ namespace WhatsAppApi.Parser
             internal string thumb_image;
             internal DateTime? timestamp;
             internal bool? wants_receipt;
-            internal string serverNickname;
 
             public byte[] BinaryData()
             {
@@ -205,7 +204,6 @@ namespace WhatsAppApi.Parser
                 if (((this.remote_jid != null) && this.from_me.HasValue) && (this.id != null))
                 {
                     this.message.identifier_key = new FMessage.FMessageIdentifierKey(this.remote_jid, this.from_me.Value, this.id);
-                    this.message.identifier_key.serverNickname = this.serverNickname;
                 }
                 if (this.remote_resource != null)
                 {
