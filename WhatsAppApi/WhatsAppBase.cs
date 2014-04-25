@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using WhatsAppApi.Helper;
 using WhatsAppApi.Parser;
@@ -212,6 +213,19 @@ namespace WhatsAppApi
             }
         }
 
+        protected string md5(string pass)
+        {
+            MD5 md5 = MD5.Create();
+            byte[] dataMd5 = md5.ComputeHash(WhatsApp.SYSEncoding.GetBytes(pass));
+            var sb = new StringBuilder();
+            for (int i = 0; i < dataMd5.Length; i++)
+                sb.AppendFormat("{0:x2}", dataMd5[i]);
+            return sb.ToString();
+        }
 
+        protected void SendNode(ProtocolTreeNode node)
+        {
+            this.SendData(this.BinWriter.Write(node));
+        }
     }
 }
