@@ -213,7 +213,14 @@ namespace WhatsAppApi
         /// <param name="data">The data that needs to be send as a byte array</param>
         private void Socket_send(byte[] data)
         {
-            this.socket.Send(data);
+            if (this.socket != null && this.socket.Connected)
+            {
+                this.socket.Send(data);
+            }
+            else
+            {
+                throw new ConnectionException("Socket not connected");
+            }
         }
 
         /// <summary>
