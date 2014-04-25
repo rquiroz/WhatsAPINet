@@ -273,9 +273,9 @@ namespace WhatsAppApi
             var data = this.WhatsSendHandler.BinWriter.StartStream(WhatsConstants.WhatsAppServer, resource);
             var feat = this.addFeatures();
             var auth = this.addAuth();
-            this.whatsNetwork.SendData(data);
-            this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(feat, false));
-            this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(auth, false));
+            this.SendData(data);
+            this.SendData(this.WhatsSendHandler.BinWriter.Write(feat, false));
+            this.SendData(this.WhatsSendHandler.BinWriter.Write(auth, false));
 
             this.pollMessage();//stream start
             this.pollMessage();//features
@@ -285,11 +285,23 @@ namespace WhatsAppApi
             {
                 //oneshot failed
                 ProtocolTreeNode authResp = this.addAuthResponse();
-                this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(authResp, false));
+                this.SendData(this.WhatsSendHandler.BinWriter.Write(authResp, false));
                 this.pollMessage();
             }
 
             this.sendNickname(this.name);
+        }
+
+        protected void SendData(byte[] data)
+        {
+            try
+            {
+                this.whatsNetwork.SendData(data);
+            }
+            catch (Exception ex)
+            {
+                this.Disconnect();
+            }
         }
 
         /// <summary>
