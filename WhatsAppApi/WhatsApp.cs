@@ -166,6 +166,7 @@ namespace WhatsAppApi
             try
             {
                 this.whatsNetwork.Connect();
+                this.loginStatus = CONNECTION_STATUS.CONNECTED;
                 //success
                 if (this.OnConnectSuccess != null)
                 {
@@ -704,10 +705,21 @@ namespace WhatsAppApi
 
         public bool pollMessage(bool autoReceipt = true)
         {
-            byte[] nodeData = this.whatsNetwork.ReadNextNode();
-            if(nodeData != null)
+            if (this.loginStatus == CONNECTION_STATUS.CONNECTED || this.loginStatus == CONNECTION_STATUS.LOGGEDIN)
             {
-                return this.processInboundData(nodeData, autoReceipt);
+                byte[] nodeData;
+                try
+                {
+                    nodeData = this.whatsNetwork.ReadNextNode();
+                    if (nodeData != null)
+                    {
+                        return this.processInboundData(nodeData, autoReceipt);
+                    }
+                }
+                catch (ConnectionException cex)
+                {
+                    this.Disconnect();
+                }
             }
             return false;
         }

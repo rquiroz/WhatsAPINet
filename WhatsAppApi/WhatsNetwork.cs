@@ -178,15 +178,7 @@ namespace WhatsAppApi
                 }
                 catch (SocketException excpt)
                 {
-                    if (excpt.SocketErrorCode == SocketError.TimedOut)
-                    {
-                        Console.WriteLine("Socket-Timout");
-                        return null;
-                    }
-                    else
-                    {
-                        throw new ConnectionException("Unknown error occured", excpt);
-                    }
+                    throw new ConnectionException(String.Format("Socket exception: {0}", excpt.Message), excpt);
                 }
 
                 //sleep to prevent CPU intensive loop
