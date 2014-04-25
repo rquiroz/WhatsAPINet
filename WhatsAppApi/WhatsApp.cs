@@ -773,6 +773,16 @@ namespace WhatsAppApi
                 }
                 this.fireOnGetGroupParticipants(node.GetAttribute("from"), participants.ToArray());
             }
+            if (node.GetAttribute("type") == "result" && node.GetChild("status") != null)
+            {
+                foreach (ProtocolTreeNode status in node.GetChild("status").GetAllChildren())
+                {
+                    this.fireOnGetStatus(status.GetAttribute("jid"),
+                        "result",
+                        null,
+                        WhatsApp.SYSEncoding.GetString(status.GetData()));
+                }
+            }
         }
 
         protected void handleNotification(ProtocolTreeNode node)
