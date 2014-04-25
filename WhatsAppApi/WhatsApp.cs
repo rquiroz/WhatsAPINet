@@ -1121,13 +1121,8 @@ namespace WhatsAppApi
                         {
                             string content = WhatsApp.SYSEncoding.GetString(textNode.GetData());
                             Console.WriteLine("Error : " + content);
-                            if (content.Equals("Replaced by new connection", StringComparison.OrdinalIgnoreCase))
-                            {
-                                this.Disconnect(new Exception(content));
-                                this.Connect();
-                                this.Login();
-                            }
                         }
+                        this.Disconnect();
                     }
                     if (ProtocolTreeNode.TagEquals(node, "presence"))
                     {
@@ -1647,17 +1642,24 @@ namespace WhatsAppApi
             this.SendNode(node);
         }
 
-        public void SendGetStatus(string jid)
+        public void SendGetStatuses(string[] jids)
         {
-            int index = jid.IndexOf('@');
-            if (index > 0)
+            List<ProtocolTreeNode> targets = new List<ProtocolTreeNode>();
+            foreach (string jid in jids)
             {
-                jid = string.Format("{0}@{1}", jid.Substring(0, index), "s.us");
-                string v = TicketManager.GenerateId();
-                var node = new ProtocolTreeNode("message", new[] { new KeyValue("to", jid), new KeyValue("type", "action"), new KeyValue("id", v) },
-                    new ProtocolTreeNode("action", new[] { new KeyValue("type", "get") }));
-                this.SendNode(node);
+                targets.Add(new ProtocolTreeNode("user", new[] { new KeyValue("jid", GetJID(jid)) }, null, null));
             }
+
+            ProtocolTreeNode node = new ProtocolTreeNode("iq", new[] {
+                new KeyValue("to", "s.whatsapp.net"),
+                new KeyValue("type", "get"),
+                new KeyValue("xmlns", "status"),
+                new KeyValue("id", TicketCounter.MakeId("getstatus"))
+            }, new[] {
+                new ProtocolTreeNode("status", null, targets.ToArray(), null)
+            }, null);
+
+            this.SendNode(node);
         }
 
         public void SendInactive()
