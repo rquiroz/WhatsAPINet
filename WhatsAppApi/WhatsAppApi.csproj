@@ -75,14 +75,11 @@
     <Compile Include="Register\WaToken.cs" />
     <Compile Include="Register\WhatsRegisterV2.cs" />
     <Compile Include="Response\CorruptStreamException.cs" />
-    <Compile Include="Response\MessageRecvResponse.cs" />
     <Compile Include="Response\WhatsEventHandler.cs" />
     <Compile Include="Settings\WhatsConstants.cs" />
     <Compile Include="WhatsApp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WhatsNetwork.cs" />
-    <Compile Include="Response\WhatsParser.cs" />
-    <Compile Include="WhatsSendHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Parser\countries.csv" />
