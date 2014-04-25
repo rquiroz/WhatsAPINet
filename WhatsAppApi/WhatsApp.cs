@@ -68,6 +68,8 @@ namespace WhatsAppApi
             }
         }
 
+        protected KeyStream outputKey;
+
         /// <summary>
         /// A lock for a message
         /// </summary>
@@ -252,12 +254,17 @@ namespace WhatsAppApi
         /// <summary>
         /// Logs us in to the server
         /// </summary>
-        public void Login()
+        public void Login(byte[] nextChallenge = null)
         {
             //reset stuff
             this.reader.Key = null;
             this.WhatsSendHandler.BinWriter.Key = null;
             this._challengeBytes = null;
+
+            if (nextChallenge != null)
+            {
+                this._challengeBytes = nextChallenge;
+            }
 
             string resource = string.Format(@"{0}-{1}-{2}",
                 WhatsConstants.Device,
@@ -272,11 +279,15 @@ namespace WhatsAppApi
 
             this.pollMessage();//stream start
             this.pollMessage();//features
-            this.pollMessage();//challenge
+            this.pollMessage();//challenge or success
 
-            ProtocolTreeNode authResp = this.addAuthResponse();
-            this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(authResp, false));
-            this.pollMessage();
+            if (this.loginStatus != CONNECTION_STATUS.LOGGEDIN)
+            {
+                //oneshot failed
+                ProtocolTreeNode authResp = this.addAuthResponse();
+                this.whatsNetwork.SendData(this.WhatsSendHandler.BinWriter.Write(authResp, false));
+                this.pollMessage();
+            }
 
             this.sendNickname(this.name);
         }
@@ -777,8 +788,40 @@ namespace WhatsAppApi
             {
                 attr.Add(new KeyValue("passive", "true"));
             }
-            var node = new ProtocolTreeNode("auth", attr.ToArray());
+            var node = new ProtocolTreeNode("auth", attr.ToArray(), null, this.getAuthBlob());
             return node;
+        }
+
+        protected byte[] getAuthBlob()
+        {
+            byte[] data = null;
+            if (this._challengeBytes != null)
+            {
+                byte[][] keys = KeyStream.GenerateKeys(this.encryptPassword(), this._challengeBytes);
+
+                this.reader.Key = new KeyStream(keys[2], keys[3]);
+
+                this.outputKey = new KeyStream(keys[0], keys[1]);
+
+                PhoneNumber pn = new PhoneNumber(this.phoneNumber);
+
+                List<byte> b = new List<byte>();
+                b.AddRange(new byte[] { 0, 0, 0, 0 });
+                b.AddRange(WhatsApp.SYSEncoding.GetBytes(this.phoneNumber));
+                b.AddRange(this._challengeBytes);
+                b.AddRange(WhatsApp.SYSEncoding.GetBytes(Helper.Func.GetNowUnixTimestamp().ToString()));
+                b.AddRange(WhatsApp.SYSEncoding.GetBytes(WhatsConstants.UserAgent));
+                b.AddRange(WhatsApp.SYSEncoding.GetBytes(String.Format(" MccMnc/{0}001", pn.MCC)));
+                data = b.ToArray();
+
+                this._challengeBytes = null;
+
+                this.outputKey.EncodeMessage(data, 0, 4, data.Length - 4);
+
+                this.WhatsSendHandler.BinWriter.Key = this.outputKey;
+            }
+
+            return data;
         }
 
         public void sendDeleteAccount()
@@ -878,7 +921,7 @@ namespace WhatsAppApi
                                                            node.GetAttribute("expiration"));
                         if (this.OnLoginSuccess != null)
                         {
-                            this.OnLoginSuccess(node.GetData());
+                            this.OnLoginSuccess(this.phoneNumber, node.GetData());
                         }
                     }
                     else if (ProtocolTreeNode.TagEquals(node, "failure"))
@@ -1336,7 +1379,7 @@ namespace WhatsAppApi
         public event NullDelegate OnConnectSuccess;
         public event ExceptionDelegate OnConnectFailed;
         public event ExceptionDelegate OnDisconnect;
-        public event ByteArrayDelegate OnLoginSuccess;
+        public event LoginSuccessDelegate OnLoginSuccess;
         public event StringDelegate OnLoginFailed;
 
         public event OnGetMessageDelegate OnGetMessage;
@@ -1369,7 +1412,7 @@ namespace WhatsAppApi
         public delegate void OnContactNameDelegate(string from, string contactName);
         public delegate void NullDelegate();
         public delegate void ExceptionDelegate(Exception ex);
-        public delegate void ByteArrayDelegate(byte[] data);
+        public delegate void LoginSuccessDelegate(string phoneNumber, byte[] data);
         public delegate void StringDelegate(string data);
         public delegate void OnErrorDelegate(string id, string from, int code, string text);
         public delegate void OnGetMessageReceivedDelegate(string from, string id);
