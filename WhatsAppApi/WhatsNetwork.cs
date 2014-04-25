@@ -121,7 +121,7 @@ namespace WhatsAppApi
         {
             byte[] nodeHeader = this.ReadData(3);
 
-            if (nodeHeader.Length == 0)
+            if (nodeHeader == null || nodeHeader.Length == 0)
             {
                 //empty response
                 return null;
