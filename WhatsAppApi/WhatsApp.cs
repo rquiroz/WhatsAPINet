@@ -847,14 +847,6 @@ namespace WhatsAppApi
                 ProtocolTreeNode node = this.reader.nextTree(msgdata);
                 if(node != null)
                 {
-                    if (node.tag == "iq"
-                    && node.GetAttribute("type") == "error")
-                    {
-                        if (this.OnError != null)
-                        {
-                            this.OnError(node.GetAttribute("id"), node.GetAttribute("from"), Int32.Parse(node.GetChild("error").GetAttribute("code")), node.GetChild("error").GetAttribute("text"));
-                        }
-                    }
                     if (ProtocolTreeNode.TagEquals(node, "challenge"))
                     {
                         this.processChallenge(node);
@@ -879,7 +871,12 @@ namespace WhatsAppApi
                             this.OnLoginFailed(node.children.FirstOrDefault().tag);
                         }
                     }
-                    else if (ProtocolTreeNode.TagEquals(node, "receipt"))
+                    
+                    
+                    
+                    
+                    
+                    if (ProtocolTreeNode.TagEquals(node, "receipt"))
                     {
                         string from = node.GetAttribute("from");
                         string id = node.GetAttribute("id");
@@ -906,213 +903,20 @@ namespace WhatsAppApi
                         //send ack
                         SendNotificationAck(node, type);
                     }
+
+
                     if (ProtocolTreeNode.TagEquals(node, "message"))
                     {
-                        if (!string.IsNullOrEmpty(node.GetAttribute("notify")))
-                        {
-                            string name = node.GetAttribute("notify");
-                            if (this.OnGetContactName != null)
-                            {
-                                this.OnGetContactName(node.GetAttribute("from"), name);
-                            }
-                        }
-                        if (node.GetAttribute("type") == "error")
-                        {
-                            throw new NotImplementedException(node.NodeString());
-                        }
-                        if (node.GetChild("body") != null)
-                        {
-                            //text message
-                            if (this.OnGetMessage != null)
-                            {
-                                this.OnGetMessage(node, node.GetAttribute("from"), node.GetAttribute("id"), node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()), autoReceipt);
-                            }
-                            if (autoReceipt)
-                            {
-                                this.sendMessageReceived(node);
-                            }
-                        }
-                        if (node.GetChild("media") != null)
-                        {
-                            ProtocolTreeNode media = node.GetChild("media");
-                            //media message
-
-                            //define variables in switch
-                            string file, url, from, id;
-                            int size;
-                            byte[] preview, dat;
-                            id = node.GetAttribute("id");
-                            from = node.GetAttribute("from");
-                            switch (media.GetAttribute("type"))
-                            {
-                                case "image":
-                                    if (this.OnGetMessageImage != null)
-                                    {
-                                        url = media.GetAttribute("url");
-                                        file = media.GetAttribute("file");
-                                        size = Int32.Parse(media.GetAttribute("size"));
-                                        preview = media.GetData();
-                                        this.OnGetMessageImage(from, id, file, size, url, preview);
-                                    }
-                                    break;
-                                case "audio":
-                                    if (this.OnGetMessageAudio != null)
-                                    {
-                                        file = media.GetAttribute("file");
-                                        size = Int32.Parse(media.GetAttribute("size"));
-                                        url = media.GetAttribute("url");
-                                        preview = media.GetData();
-                                        this.OnGetMessageAudio(from, id, file, size, url, preview);
-                                    }
-                                    break;
-                                case "video":
-                                    if (this.OnGetMessageVideo != null)
-                                    {
-                                        file = media.GetAttribute("file");
-                                        size = Int32.Parse(media.GetAttribute("size"));
-                                        url = media.GetAttribute("url");
-                                        preview = media.GetData();
-                                        this.OnGetMessageVideo(from, id, file, size, url, preview);
-                                    }
-                                    break;
-                                case "location":
-                                    if (this.OnGetMessageLocation != null)
-                                    {
-                                        double lon = double.Parse(media.GetAttribute("longitude"), System.Globalization.CultureInfo.InvariantCulture);
-                                        double lat = double.Parse(media.GetAttribute("latitude"), System.Globalization.CultureInfo.InvariantCulture);
-                                        preview = media.GetData();
-                                        name = media.GetAttribute("name");
-                                        url = media.GetAttribute("url");
-                                        this.OnGetMessageLocation(from, id, lon, lat, url, name, preview);
-                                    }
-                                    break;
-                                case "vcard":
-                                    if (this.OnGetMessageVcard != null)
-                                    {
-                                        ProtocolTreeNode vcard = media.GetChild("vcard");
-                                        name = vcard.GetAttribute("name");
-                                        dat = vcard.GetData();
-                                        this.OnGetMessageVcard(from, id, name, dat);
-                                    }
-                                    break;
-                            }
-                            this.sendMessageReceived(node);
-                        }
+                        this.handleMessage(node, autoReceipt);
                     }
+
+
                     if (ProtocolTreeNode.TagEquals(node, "iq"))
                     {
-                        if (node.GetChild("sync") != null)
-                        {
-                            //sync result
-                            ProtocolTreeNode sync = node.GetChild("sync");
-                            ProtocolTreeNode existing = sync.GetChild("in");
-                            ProtocolTreeNode nonexisting = sync.GetChild("out");
-                            //process existing first
-                            Dictionary<string, string> existingUsers = new Dictionary<string, string>();
-                            foreach (ProtocolTreeNode child in existing.GetAllChildren())
-                            {
-                                existingUsers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()), child.GetAttribute("jid"));
-                            }
-                            //now process failed numbers
-                            List<string> failedNumbers = new List<string>();
-                            foreach (ProtocolTreeNode child in nonexisting.GetAllChildren())
-                            {
-                                failedNumbers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()));
-                            }
-                            int index = 0;
-                            Int32.TryParse(sync.GetAttribute("index"), out index);
-                            if (this.OnGetSyncResult != null)
-                            {
-                                this.OnGetSyncResult(index, sync.GetAttribute("sid"), existingUsers, failedNumbers.ToArray());
-                            }
-                        }
-                        if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                            && node.children.FirstOrDefault().tag == "query"
-                            && node.children.FirstOrDefault().GetAttribute("xmlns") == "jabber:iq:last"
-                        )
-                        {
-                            //last seen
-                            DateTime lastSeen = DateTime.Now.AddSeconds(double.Parse(node.children.FirstOrDefault().GetAttribute("seconds")) * -1);
-                            if (this.OnGetLastSeen != null)
-                            {
-                                this.OnGetLastSeen(node.GetAttribute("from"), lastSeen);
-                            }
-                        }
-                        if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                            && (ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "media") || ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "duplicate"))
-                            )
-                        {
-                            //media upload
-                            this.uploadResponse = node;
-                        }
-                        if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                            && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "picture")
-                            )
-                        {
-                            //profile picture
-                            string from = node.GetAttribute("from");
-                            string id = node.GetChild("picture").GetAttribute("id");
-                            byte[] dat = node.GetChild("picture").GetData();
-                            string type = node.GetChild("picture").GetAttribute("type");
-                            if (type == "preview")
-                            {
-                                if (this.OnGetPhotoPreview != null)
-                                {
-                                    this.OnGetPhotoPreview(from, id, dat);
-                                }
-                            }
-                            else
-                            {
-                                if (this.OnGetPhoto != null)
-                                {
-                                    this.OnGetPhoto(from, id, dat);
-                                }
-                            }
-                        }
-                        if (node.GetAttribute("type").Equals("get", StringComparison.OrdinalIgnoreCase)
-                            && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "ping"))
-                        {
-                            this.SendPong(node.GetAttribute("id"));
-                        }
-                        if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                            && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "group"))
-                        {
-                            //group(s) info
-                            List<GroupInfo> groups = new List<GroupInfo>();
-                            foreach (ProtocolTreeNode group in node.children)
-                            {
-                                groups.Add(new GroupInfo(
-                                    group.GetAttribute("id"),
-                                    group.GetAttribute("owner"),
-                                    long.Parse(group.GetAttribute("creation")),
-                                    group.GetAttribute("subject"),
-                                    long.Parse(group.GetAttribute("s_t")),
-                                    group.GetAttribute("s_o")
-                                    ));
-                            }
-                            if (this.OnGetGroups != null)
-                            {
-                                this.OnGetGroups(groups.ToArray());
-                            }
-                        }
-                        if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                            && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "participant"))
-                        {
-                            //group participants
-                            List<string> participants = new List<string>();
-                            foreach (ProtocolTreeNode part in node.GetAllChildren())
-                            {
-                                if (part.tag == "participant" && !string.IsNullOrEmpty(part.GetAttribute("jid")))
-                                {
-                                    participants.Add(part.GetAttribute("jid"));
-                                }
-                            }
-                            if (this.OnGetGroupParticipants != null)
-                            {
-                                this.OnGetGroupParticipants(node.GetAttribute("from"), participants.ToArray());
-                            }
-                        }
+                        this.handleIq(node);
                     }
+
+
 
                     if (ProtocolTreeNode.TagEquals(node, "stream:error"))
                     {
@@ -1124,6 +928,9 @@ namespace WhatsAppApi
                         }
                         this.Disconnect();
                     }
+
+
+
                     if (ProtocolTreeNode.TagEquals(node, "presence"))
                     {
                         //presence node
@@ -1132,6 +939,8 @@ namespace WhatsAppApi
                             this.OnGetPresence(node.GetAttribute("from"), node.GetAttribute("type"));
                         }
                     }
+
+
 
                     if (node.tag == "ib")
                     {
@@ -1150,6 +959,8 @@ namespace WhatsAppApi
                             }
                         }
                     }
+
+
 
                     if (node.tag == "chatstate")
                     {
@@ -1173,6 +984,8 @@ namespace WhatsAppApi
                         }
                     }
 
+
+
                     if (node.tag == "ack")
                     {
                         string cls = node.GetAttribute("class");
@@ -1191,37 +1004,14 @@ namespace WhatsAppApi
                         }
                     }
 
+
+
                     if (node.tag == "notification")
                     {
-                        if(!String.IsNullOrEmpty(node.GetAttribute("notify")))
-                        {
-                            if(this.OnGetContactName != null)
-                            {
-                                this.OnGetContactName(node.GetAttribute("from"), node.GetAttribute("notify"));
-                            }
-                        }
-                        string type = node.GetAttribute("type");
-                        switch(type)
-                        {
-                            case "picture":
-                                ProtocolTreeNode child = node.children.FirstOrDefault();
-                                if (this.OnNotificationPicture != null)
-                                {
-                                    this.OnNotificationPicture(child.tag, child.GetAttribute("jid"), child.GetAttribute("id"));
-                                }
-                                break;
-                            case "status":
-                                ProtocolTreeNode child2 = node.children.FirstOrDefault();
-                                if (this.OnGetStatus != null)
-                                {
-                                    this.OnGetStatus(node.GetAttribute("from"), child2.tag, node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(child2.GetData()));
-                                }
-                                break;
-                            default:
-                                throw new NotImplementedException(node.NodeString());
-                        }
-                        this.SendNotificationAck(node);
+                        this.handleNotification(node);
                     }
+
+
 
                     return true;
                 }
@@ -1231,6 +1021,254 @@ namespace WhatsAppApi
                 throw e;
             }
             return false;
+        }
+
+        protected void handleMessage(ProtocolTreeNode node, bool autoReceipt)
+        {
+            if (!string.IsNullOrEmpty(node.GetAttribute("notify")))
+            {
+                string name = node.GetAttribute("notify");
+                if (this.OnGetContactName != null)
+                {
+                    this.OnGetContactName(node.GetAttribute("from"), name);
+                }
+            }
+            if (node.GetAttribute("type") == "error")
+            {
+                throw new NotImplementedException(node.NodeString());
+            }
+            if (node.GetChild("body") != null)
+            {
+                //text message
+                if (this.OnGetMessage != null)
+                {
+                    this.OnGetMessage(node, node.GetAttribute("from"), node.GetAttribute("id"), node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()), autoReceipt);
+                }
+                if (autoReceipt)
+                {
+                    this.sendMessageReceived(node);
+                }
+            }
+            if (node.GetChild("media") != null)
+            {
+                ProtocolTreeNode media = node.GetChild("media");
+                //media message
+
+                //define variables in switch
+                string file, url, from, id;
+                int size;
+                byte[] preview, dat;
+                id = node.GetAttribute("id");
+                from = node.GetAttribute("from");
+                switch (media.GetAttribute("type"))
+                {
+                    case "image":
+                        if (this.OnGetMessageImage != null)
+                        {
+                            url = media.GetAttribute("url");
+                            file = media.GetAttribute("file");
+                            size = Int32.Parse(media.GetAttribute("size"));
+                            preview = media.GetData();
+                            this.OnGetMessageImage(from, id, file, size, url, preview);
+                        }
+                        break;
+                    case "audio":
+                        if (this.OnGetMessageAudio != null)
+                        {
+                            file = media.GetAttribute("file");
+                            size = Int32.Parse(media.GetAttribute("size"));
+                            url = media.GetAttribute("url");
+                            preview = media.GetData();
+                            this.OnGetMessageAudio(from, id, file, size, url, preview);
+                        }
+                        break;
+                    case "video":
+                        if (this.OnGetMessageVideo != null)
+                        {
+                            file = media.GetAttribute("file");
+                            size = Int32.Parse(media.GetAttribute("size"));
+                            url = media.GetAttribute("url");
+                            preview = media.GetData();
+                            this.OnGetMessageVideo(from, id, file, size, url, preview);
+                        }
+                        break;
+                    case "location":
+                        if (this.OnGetMessageLocation != null)
+                        {
+                            double lon = double.Parse(media.GetAttribute("longitude"), System.Globalization.CultureInfo.InvariantCulture);
+                            double lat = double.Parse(media.GetAttribute("latitude"), System.Globalization.CultureInfo.InvariantCulture);
+                            preview = media.GetData();
+                            name = media.GetAttribute("name");
+                            url = media.GetAttribute("url");
+                            this.OnGetMessageLocation(from, id, lon, lat, url, name, preview);
+                        }
+                        break;
+                    case "vcard":
+                        if (this.OnGetMessageVcard != null)
+                        {
+                            ProtocolTreeNode vcard = media.GetChild("vcard");
+                            name = vcard.GetAttribute("name");
+                            dat = vcard.GetData();
+                            this.OnGetMessageVcard(from, id, name, dat);
+                        }
+                        break;
+                }
+                this.sendMessageReceived(node);
+            }
+        }
+
+        protected void handleIq(ProtocolTreeNode node)
+        {
+            if (node.GetAttribute("type") == "error")
+            {
+                if (this.OnError != null)
+                {
+                    this.OnError(node.GetAttribute("id"), node.GetAttribute("from"), Int32.Parse(node.GetChild("error").GetAttribute("code")), node.GetChild("error").GetAttribute("text"));
+                }
+            }
+            if (node.GetChild("sync") != null)
+            {
+                //sync result
+                ProtocolTreeNode sync = node.GetChild("sync");
+                ProtocolTreeNode existing = sync.GetChild("in");
+                ProtocolTreeNode nonexisting = sync.GetChild("out");
+                //process existing first
+                Dictionary<string, string> existingUsers = new Dictionary<string, string>();
+                foreach (ProtocolTreeNode child in existing.GetAllChildren())
+                {
+                    existingUsers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()), child.GetAttribute("jid"));
+                }
+                //now process failed numbers
+                List<string> failedNumbers = new List<string>();
+                foreach (ProtocolTreeNode child in nonexisting.GetAllChildren())
+                {
+                    failedNumbers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()));
+                }
+                int index = 0;
+                Int32.TryParse(sync.GetAttribute("index"), out index);
+                if (this.OnGetSyncResult != null)
+                {
+                    this.OnGetSyncResult(index, sync.GetAttribute("sid"), existingUsers, failedNumbers.ToArray());
+                }
+            }
+            if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                && node.children.FirstOrDefault().tag == "query"
+                && node.children.FirstOrDefault().GetAttribute("xmlns") == "jabber:iq:last"
+            )
+            {
+                //last seen
+                DateTime lastSeen = DateTime.Now.AddSeconds(double.Parse(node.children.FirstOrDefault().GetAttribute("seconds")) * -1);
+                if (this.OnGetLastSeen != null)
+                {
+                    this.OnGetLastSeen(node.GetAttribute("from"), lastSeen);
+                }
+            }
+            if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                && (ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "media") || ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "duplicate"))
+                )
+            {
+                //media upload
+                this.uploadResponse = node;
+            }
+            if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "picture")
+                )
+            {
+                //profile picture
+                string from = node.GetAttribute("from");
+                string id = node.GetChild("picture").GetAttribute("id");
+                byte[] dat = node.GetChild("picture").GetData();
+                string type = node.GetChild("picture").GetAttribute("type");
+                if (type == "preview")
+                {
+                    if (this.OnGetPhotoPreview != null)
+                    {
+                        this.OnGetPhotoPreview(from, id, dat);
+                    }
+                }
+                else
+                {
+                    if (this.OnGetPhoto != null)
+                    {
+                        this.OnGetPhoto(from, id, dat);
+                    }
+                }
+            }
+            if (node.GetAttribute("type").Equals("get", StringComparison.OrdinalIgnoreCase)
+                && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "ping"))
+            {
+                this.SendPong(node.GetAttribute("id"));
+            }
+            if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "group"))
+            {
+                //group(s) info
+                List<GroupInfo> groups = new List<GroupInfo>();
+                foreach (ProtocolTreeNode group in node.children)
+                {
+                    groups.Add(new GroupInfo(
+                        group.GetAttribute("id"),
+                        group.GetAttribute("owner"),
+                        long.Parse(group.GetAttribute("creation")),
+                        group.GetAttribute("subject"),
+                        long.Parse(group.GetAttribute("s_t")),
+                        group.GetAttribute("s_o")
+                        ));
+                }
+                if (this.OnGetGroups != null)
+                {
+                    this.OnGetGroups(groups.ToArray());
+                }
+            }
+            if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "participant"))
+            {
+                //group participants
+                List<string> participants = new List<string>();
+                foreach (ProtocolTreeNode part in node.GetAllChildren())
+                {
+                    if (part.tag == "participant" && !string.IsNullOrEmpty(part.GetAttribute("jid")))
+                    {
+                        participants.Add(part.GetAttribute("jid"));
+                    }
+                }
+                if (this.OnGetGroupParticipants != null)
+                {
+                    this.OnGetGroupParticipants(node.GetAttribute("from"), participants.ToArray());
+                }
+            }
+        }
+
+        protected void handleNotification(ProtocolTreeNode node)
+        {
+            if (!String.IsNullOrEmpty(node.GetAttribute("notify")))
+            {
+                if (this.OnGetContactName != null)
+                {
+                    this.OnGetContactName(node.GetAttribute("from"), node.GetAttribute("notify"));
+                }
+            }
+            string type = node.GetAttribute("type");
+            switch (type)
+            {
+                case "picture":
+                    ProtocolTreeNode child = node.children.FirstOrDefault();
+                    if (this.OnNotificationPicture != null)
+                    {
+                        this.OnNotificationPicture(child.tag, child.GetAttribute("jid"), child.GetAttribute("id"));
+                    }
+                    break;
+                case "status":
+                    ProtocolTreeNode child2 = node.children.FirstOrDefault();
+                    if (this.OnGetStatus != null)
+                    {
+                        this.OnGetStatus(node.GetAttribute("from"), child2.tag, node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(child2.GetData()));
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException(node.NodeString());
+            }
+            this.SendNotificationAck(node);
         }
 
         private void SendNotificationAck(ProtocolTreeNode node, string type = null)
