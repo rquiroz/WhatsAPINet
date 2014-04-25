@@ -21,7 +21,24 @@ namespace WhatsAppApi.Parser
         }
         public string ISO3166;
         public string ISO639;
-        public string MCC;
+        protected string _mcc;
+        protected string _mnc;
+
+        public string MCC
+        {
+            get
+            {
+                return this._mcc.PadLeft(3, '0');
+            }
+        }
+
+        public string MNC
+        {
+            get
+            {
+                return this._mnc.PadLeft(3, '0');
+            }
+        }
 
         public PhoneNumber(string number)
         {
@@ -46,14 +63,15 @@ namespace WhatsAppApi.Parser
                             }
                             this.CC = values[1];
                             this.Number = number.Substring(this.CC.Length);
-                            this.ISO3166 = values[3].Trim(new char[] { '"' });
-                            this.ISO639 = values[4].Trim(new char[] { '"' });
-                            this.MCC = values[2].Trim(new char[] { '"' });
-                            if (this.MCC.Contains('|'))
+                            this.ISO3166 = values[4].Trim(new char[] { '"' });
+                            this.ISO639 = values[5].Trim(new char[] { '"' });
+                            this._mcc = values[2].Trim(new char[] { '"' });
+                            this._mnc = values[3].Trim(new char[] { '"' });
+                            if (this._mcc.Contains('|'))
                             {
                                 //take first one
-                                string[] parts = this.MCC.Split(new char[] { '|' });
-                                this.MCC = parts[0];
+                                string[] parts = this._mcc.Split(new char[] { '|' });
+                                this._mcc = parts[0];
                             }
                             return;
                         }
