@@ -66,7 +66,7 @@ namespace WhatsAppPort
             if (!this.isTyping)
             {
                 this.isTyping = true;
-                WhatSocket.Instance.WhatsSendHandler.SendComposing(this.user.WhatsUser.GetFullJid());
+                WhatSocket.Instance.SendComposing(this.user.WhatsUser.GetFullJid());
                 this.timerTyping.Start();
             }
         }
@@ -78,7 +78,7 @@ namespace WhatsAppPort
                 this.isTyping = false;
                 return;
             }
-            WhatSocket.Instance.WhatsSendHandler.SendPaused(this.user.WhatsUser.GetFullJid());
+            WhatSocket.Instance.SendPaused(this.user.WhatsUser.GetFullJid());
             this.timerTyping.Stop();
         }
     }
