@@ -53,10 +53,28 @@ namespace WhatsTest
             wa.OnGetSyncResult += wa_OnGetSyncResult;
 
             wa.Connect();
-            wa.Login();
+
+            string datFile = getDatFileName(sender);
+            byte[] nextChallenge = null;
+            if (File.Exists(datFile))
+            {
+                try
+                {
+                    string foo = File.ReadAllText(datFile);
+                    nextChallenge = Convert.FromBase64String(foo);
+                }
+                catch (Exception e) { };
+            }
+
+            wa.Login(nextChallenge);
 
             ProcessChat(wa, target);
             Console.ReadKey();
+        }
+
+        static string getDatFileName(string pn)
+        {
+            return string.Format("{0}.next.dat", pn);
         }
 
         static void wa_OnGetSyncResult(int index, string sid, Dictionary<string, string> existingUsers, string[] failedNumbers)
@@ -193,10 +211,16 @@ namespace WhatsTest
             Console.WriteLine("Login failed. Reason: {0}", data);
         }
 
-        private static void wa_OnLoginSuccess(byte[] data)
+        private static void wa_OnLoginSuccess(string phoneNumber, byte[] data)
         {
             Console.WriteLine("Login success. Next password:");
-            Console.WriteLine(System.Text.Encoding.UTF8.GetString(data));
+            string sdata = Convert.ToBase64String(data);
+            Console.WriteLine(sdata);
+            try
+            {
+                File.WriteAllText(getDatFileName(phoneNumber), sdata);
+            }
+            catch (Exception e) { }
         }
 
 
