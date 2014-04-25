@@ -278,7 +278,7 @@ namespace WhatsAppApi
             {
                 this.whatsNetwork.SendData(data);
             }
-            catch (Exception)
+            catch (ConnectionException)
             {
                 this.Disconnect();
             }
