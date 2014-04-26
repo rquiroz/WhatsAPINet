@@ -495,6 +495,9 @@ namespace WhatsAppApi
                     ProtocolTreeNode child2 = node.children.FirstOrDefault();
                     this.fireOnGetStatus(node.GetAttribute("from"), child2.tag, node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(child2.GetData()));
                     break;
+                case "subject":
+                    //TODO
+                    break;
                 default:
                     throw new NotImplementedException(node.NodeString());
             }
