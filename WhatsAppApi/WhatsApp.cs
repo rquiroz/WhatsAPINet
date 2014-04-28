@@ -537,8 +537,8 @@ namespace WhatsAppApi
         public void SendGetServerProperties()
         {
             string id = TicketCounter.MakeId("get_server_properties_");
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", "s.whatsapp.net") },
-                new ProtocolTreeNode("props", new[] { new KeyValue("xmlns", "w") }));
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("xmlns", "w"), new KeyValue("to", "s.whatsapp.net") },
+                new ProtocolTreeNode("props", null));
             this.SendNode(node);
         }
 
