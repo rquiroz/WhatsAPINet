@@ -498,6 +498,9 @@ namespace WhatsAppApi
                 case "subject":
                     //TODO
                     break;
+                case "contacts":
+                    //TODO
+                    break;
                 default:
                     throw new NotImplementedException(node.NodeString());
             }
