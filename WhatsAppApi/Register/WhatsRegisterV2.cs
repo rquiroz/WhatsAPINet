@@ -7,6 +7,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using WhatsAppApi.Parser;
 using WhatsAppApi.Settings;
 
 namespace WhatsAppApi.Register
@@ -23,37 +24,34 @@ namespace WhatsAppApi.Register
             return WaToken.GenerateToken(number);
         }
 
-        public static bool RequestCode(string countryCode, string phoneNumber, out string password, string method = "sms", string id = null, string language = null, string locale = null, string mcc = "204", string salt = "")
+        public static bool RequestCode(string phoneNumber, out string password, string method = "sms", string id = null)
         {
             string response = string.Empty;
-            return RequestCode(countryCode, phoneNumber, out password, out response, method, id, mcc, salt);
+            return RequestCode(phoneNumber, out password, out response, method, id);
         }
 
-        public static bool RequestCode(string countryCode, string phoneNumber, out string password, out string response, string method = "sms", string id = null, string language = null, string locale = null, string mcc = "204", string salt = "")
+        public static bool RequestCode(string phoneNumber, out string password, out string response, string method = "sms", string id = null)
         {
             string request = string.Empty;
-            return RequestCode(countryCode, phoneNumber, out password, out request, out response, method, id, language, locale, mcc, salt);
+            return RequestCode(phoneNumber, out password, out request, out response, method, id);
         }
 
-        public static bool RequestCode(string countryCode, string phoneNumber, out string password, out string request, out string response, string method = "sms", string id = null, string language = null, string locale = null, string mcc = "204", string salt = "")
+        public static bool RequestCode(string phoneNumber, out string password, out string request, out string response, string method = "sms", string id = null)
         {
             response = null;
             password = null;
             request = null;
             try
             {
-                if (string.IsNullOrEmpty(language) || string.IsNullOrEmpty(locale))
-                {
-                    CultureInfo.CurrentCulture.GetLanguageAndLocale(out language, out locale);
-                }
                 if (string.IsNullOrEmpty(id))
                 {
                     //auto-generate
-                    id = GenerateIdentity(phoneNumber, salt);
+                    id = GenerateIdentity(phoneNumber);
                 }
-                string token = System.Uri.EscapeDataString(WhatsRegisterV2.GetToken(phoneNumber));
-
-                request = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&lg={2}&lc={3}&mcc={7}&mnc=008&method={4}&id={5}&token={6}", countryCode, phoneNumber, language, locale, method, id, token, mcc);
+                PhoneNumber pn = new PhoneNumber(phoneNumber);
+                string token = System.Uri.EscapeDataString(WhatsRegisterV2.GetToken(pn.Number));
+                
+                request = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&method={2}&mcc={3}&mnc={4}&token={5}&id={6}&lg={7}&lc={8}", pn.CC, pn.Number, method, pn.MCC, pn.MNC, token, id, pn.ISO639, pn.ISO3166);
                 response = GetResponse(request);
                 password = response.GetJsonValue("pw");
                 if (!string.IsNullOrEmpty(password))
@@ -69,13 +67,13 @@ namespace WhatsAppApi.Register
             }
         }
 
-        public static string RegisterCode(string countryCode, string phoneNumber, string code, string id = null, string salt = "")
+        public static string RegisterCode(string phoneNumber, string code, string id = null)
         {
             string response = string.Empty;
-            return WhatsRegisterV2.RegisterCode(countryCode, phoneNumber, code, out response, id, salt);
+            return WhatsRegisterV2.RegisterCode(phoneNumber, code, out response, id);
         }
 
-        public static string RegisterCode(string countryCode, string phoneNumber, string code, out string response, string id = null, string salt = "")
+        public static string RegisterCode(string phoneNumber, string code, out string response, string id = null)
         {
             response = string.Empty;
             try
@@ -83,9 +81,11 @@ namespace WhatsAppApi.Register
                 if (string.IsNullOrEmpty(id))
                 {
                     //auto generate
-                    id = GenerateIdentity(phoneNumber, salt);
+                    id = GenerateIdentity(phoneNumber);
                 }
-                string uri = string.Format("https://v.whatsapp.net/v2/register?cc={0}&in={1}&id={2}&code={3}", countryCode, phoneNumber, id, code);
+                PhoneNumber pn = new PhoneNumber(phoneNumber);
+
+                string uri = string.Format("https://v.whatsapp.net/v2/register?cc={0}&in={1}&id={2}&code={3}", pn.CC, pn.Number, id, code);
                 response = GetResponse(uri);
                 if (response.GetJsonValue("status") == "ok")
                 {
@@ -99,22 +99,24 @@ namespace WhatsAppApi.Register
             }
         }
 
-        public static string RequestExist(string countryCode, string phoneNumber, string id = null)
+        public static string RequestExist(string phoneNumber, string id = null)
         {
             string response = string.Empty;
-            return RequestExist(countryCode, phoneNumber, out response, id);
+            return RequestExist(phoneNumber, out response, id);
         }
 
-        public static string RequestExist(string countryCode, string phoneNumber, out string response, string id = null)
+        public static string RequestExist(string phoneNumber, out string response, string id = null)
         {
             response = string.Empty;
             try
             {
                 if (String.IsNullOrEmpty(id))
                 {
-                    id = phoneNumber.Reverse().ToSHAString();
+                    id = GenerateIdentity(phoneNumber);
                 }
-                string uri = string.Format("https://v.whatsapp.net/v2/exist?cc={0}&in={1}&id={2}", countryCode, phoneNumber, id);
+                PhoneNumber pn = new PhoneNumber(phoneNumber);
+
+                string uri = string.Format("https://v.whatsapp.net/v2/exist?cc={0}&in={1}&id={2}", pn.CC, pn.Number, id);
                 response = GetResponse(uri);
                 if (response.GetJsonValue("status") == "ok")
                 {
