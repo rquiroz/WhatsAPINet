@@ -13,6 +13,7 @@ using WhatsAppApi;
 using WhatsAppApi.Account;
 using WhatsAppApi.Helper;
 using WhatsAppApi.Register;
+using WhatsAppApi.Response;
 
 namespace WhatsTest
 {
@@ -51,6 +52,7 @@ namespace WhatsTest
             wa.OnGetPhotoPreview += wa_OnGetPhotoPreview;
             wa.OnGetGroups += wa_OnGetGroups;
             wa.OnGetSyncResult += wa_OnGetSyncResult;
+            wa.OnGetStatus += wa_OnGetStatus;
 
             wa.Connect();
 
@@ -63,13 +65,18 @@ namespace WhatsTest
                     string foo = File.ReadAllText(datFile);
                     nextChallenge = Convert.FromBase64String(foo);
                 }
-                catch (Exception e) { };
+                catch (Exception) { };
             }
 
             wa.Login(nextChallenge);
 
             ProcessChat(wa, target);
             Console.ReadKey();
+        }
+
+        static void wa_OnGetStatus(string from, string type, string name, string status)
+        {
+            Console.WriteLine(String.Format("Got status from {0}: {1}", from, status));
         }
 
         static string getDatFileName(string pn)
@@ -90,10 +97,10 @@ namespace WhatsTest
             }
         }
 
-        static void wa_OnGetGroups(WhatsApp.GroupInfo[] groups)
+        static void wa_OnGetGroups(WaGroupInfo[] groups)
         {
             Console.WriteLine("Got groups:");
-            foreach (WhatsAppApi.WhatsApp.GroupInfo info in groups)
+            foreach (WaGroupInfo info in groups)
             {
                 Console.WriteLine("\t{0} {1}", info.subject, info.id);
             }
@@ -220,7 +227,7 @@ namespace WhatsTest
             {
                 File.WriteAllText(getDatFileName(phoneNumber), sdata);
             }
-            catch (Exception e) { }
+            catch (Exception) { }
         }
 
 
@@ -265,17 +272,17 @@ namespace WhatsTest
                         break;
                     case "/lastseen":
                         Console.WriteLine("[] Request last seen {0}", tmpUser);
-                        wa.RequestLastSeen(tmpUser.GetFullJid());
+                        wa.SendQueryLastOnline(tmpUser.GetFullJid());
                         break;
                     case "/exit":
                         wa = null;
                         thRecv.Abort();
                         return;
                     case "/start":
-                        wa.WhatsSendHandler.SendComposing(tmpUser.GetFullJid());
+                        wa.SendComposing(tmpUser.GetFullJid());
                         break;
                     case "/pause":
-                        wa.WhatsSendHandler.SendPaused(tmpUser.GetFullJid());
+                        wa.SendPaused(tmpUser.GetFullJid());
                         break;
                     default:
                         Console.WriteLine("[] Send message to {0}: {1}", tmpUser, line);
