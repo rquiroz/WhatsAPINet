@@ -47,10 +47,10 @@ namespace WhatsAppApi.Parser
                 using (var reader = new StreamReader(stream))
                 {
                     string csv = reader.ReadToEnd();
-                    string[] lines = csv.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] lines = csv.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (string line in lines)
                     {
-                        string[] values = line.Split(new char[] { ',' });
+                        string[] values = line.Trim(new char[] { '\r' }).Split(new char[] { ',' });
                         //try to match
                         if (number.StartsWith(values[1]))
                         {
