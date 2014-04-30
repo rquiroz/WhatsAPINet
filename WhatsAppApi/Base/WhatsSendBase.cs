@@ -397,7 +397,6 @@ namespace WhatsAppApi
             }
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
                 && node.children.FirstOrDefault().tag == "query"
-                && node.children.FirstOrDefault().GetAttribute("xmlns") == "jabber:iq:last"
             )
             {
                 //last seen
