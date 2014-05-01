@@ -81,7 +81,8 @@ namespace WhatsTest
 
         static string getDatFileName(string pn)
         {
-            return string.Format("{0}.next.dat", pn);
+            string filename = string.Format("{0}.next.dat", pn);
+            return Path.Combine(Directory.GetCurrentDirectory(), filename);
         }
 
         static void wa_OnGetSyncResult(int index, string sid, Dictionary<string, string> existingUsers, string[] failedNumbers)
