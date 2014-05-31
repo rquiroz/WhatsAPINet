@@ -56,13 +56,10 @@ namespace WhatsAppApi
             {
                 case VisibilityCategory.LastSeenTime:
                     return "last";
-                    break;
                 case VisibilityCategory.Status:
                     return "status";
-                    break;
                 case VisibilityCategory.ProfilePhoto:
                     return "photo";
-                    break;
                 default:
                     throw new Exception("Invalid privacy category");
             }
