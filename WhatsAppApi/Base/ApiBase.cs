@@ -56,7 +56,7 @@ namespace WhatsAppApi
                 case VisibilityCategory.Status:
                     return "status";
                 case VisibilityCategory.ProfilePhoto:
-                    return "photo";
+                    return "profile";
                 default:
                     throw new Exception("Invalid privacy category");
             }
@@ -70,7 +70,7 @@ namespace WhatsAppApi
                     return VisibilityCategory.LastSeenTime;
                 case "status":
                     return VisibilityCategory.Status;
-                case "photo":
+                case "profile":
                     return VisibilityCategory.ProfilePhoto;
                 default:
                     throw new Exception(String.Format("Could not parse {0} as privacy category", data));
