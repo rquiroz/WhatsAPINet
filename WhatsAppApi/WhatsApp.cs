@@ -809,6 +809,39 @@ namespace WhatsAppApi
             this.SendNode(node);
         }
 
+        public void SendSetPrivacySetting(VisibilityCategory category, VisibilitySetting setting)
+        {
+            string _name = string.Empty;
+            switch (category)
+            {
+                case VisibilityCategory.LastSeenTime:
+                    _name = "last";
+                    break;
+                case VisibilityCategory.Status:
+                    _name = "status";
+                    break;
+                case VisibilityCategory.ProfilePhoto:
+                    _name = "photo";
+                    break;
+            }
+
+            ProtocolTreeNode node = new ProtocolTreeNode("iq", new[] { 
+                new KeyValue("to", "s.whatsapp.net"),
+                new KeyValue("id", TicketCounter.MakeId("setprivacy")),
+                new KeyValue("type", "set"),
+                new KeyValue("xmlns", "privacy")
+            }, new ProtocolTreeNode[] {
+                new ProtocolTreeNode("privacy", null, new ProtocolTreeNode[] {
+                    new ProtocolTreeNode("category", new [] {
+                    new KeyValue("name", _name),
+                    new KeyValue("value", this.privacySettingToString(setting))
+                    })
+            })
+            });
+
+            this.SendNode(node);
+        }
+
         protected IEnumerable<ProtocolTreeNode> ProcessGroupSettings(IEnumerable<GroupSetting> groups)
         {
             ProtocolTreeNode[] nodeArray = null;

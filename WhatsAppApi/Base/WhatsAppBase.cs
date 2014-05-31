@@ -21,6 +21,35 @@ namespace WhatsAppApi
             LOGGEDIN
         }
 
+        public enum VisibilityCategory
+        {
+            ProfilePhoto,
+            Status,
+            LastSeenTime
+        }
+
+        public enum VisibilitySetting
+        {
+            None,
+            Contacts,
+            Everyone
+        }
+
+        protected string privacySettingToString(VisibilitySetting s)
+        {
+            switch (s)
+            {
+                case VisibilitySetting.None:
+                    return "none";
+                case VisibilitySetting.Contacts:
+                    return "contacts";
+                case VisibilitySetting.Everyone:
+                    return "all";
+                default:
+                    throw new Exception("Invalid visibility setting");
+            }
+        }
+
         protected ProtocolTreeNode uploadResponse;
 
         protected AccountInfo accountinfo;
