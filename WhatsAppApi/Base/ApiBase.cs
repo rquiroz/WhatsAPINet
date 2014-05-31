@@ -131,14 +131,6 @@ namespace WhatsAppApi
             return null;
         }
 
-        protected void DebugPrint(string debugMsg)
-        {
-            if (WhatsApp.DEBUG && debugMsg.Length > 0)
-            {
-                Console.WriteLine(debugMsg);
-            }
-        }
-
         protected string md5(string pass)
         {
             MD5 md5 = MD5.Create();

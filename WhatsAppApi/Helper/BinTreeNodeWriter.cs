@@ -252,7 +252,7 @@ namespace WhatsAppApi.Helper
         {
             if (WhatsApp.DEBUG && debugMsg.Length > 0)
             {
-                Console.WriteLine(debugMsg);
+                Helper.DebugAdapter.Instance.fireOnPrintDebug(debugMsg);
             }
         }
     }

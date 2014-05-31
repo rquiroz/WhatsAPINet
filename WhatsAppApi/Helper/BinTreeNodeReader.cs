@@ -52,7 +52,7 @@ namespace WhatsAppApi.Helper
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(e);
+                            Helper.DebugAdapter.Instance.fireOnPrintDebug(e);
                         }
                         this.buffer.Clear();
                         this.buffer.AddRange(treeData);
@@ -302,7 +302,7 @@ namespace WhatsAppApi.Helper
         {
             if (WhatsApp.DEBUG && debugMsg.Length > 0)
             {
-                Console.WriteLine(debugMsg);
+                Helper.DebugAdapter.Instance.fireOnPrintDebug(debugMsg);
             }
         }
     }

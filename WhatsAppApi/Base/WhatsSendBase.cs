@@ -224,7 +224,7 @@ namespace WhatsAppApi
                         if (textNode != null)
                         {
                             string content = WhatsApp.SYSEncoding.GetString(textNode.GetData());
-                            Console.WriteLine("Error : " + content);
+                            Helper.DebugAdapter.Instance.fireOnPrintDebug("Error : " + content);
                         }
                         this.Disconnect();
                     }
