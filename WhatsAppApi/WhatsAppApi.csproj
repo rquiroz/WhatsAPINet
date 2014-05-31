@@ -53,6 +53,7 @@
     <Compile Include="Helper\AccountInfo.cs" />
     <Compile Include="Helper\BinTreeNodeReader.cs" />
     <Compile Include="Helper\BinTreeNodeWriter.cs" />
+    <Compile Include="Helper\DebugAdapter.cs" />
     <Compile Include="Helper\DisconnectedException.cs" />
     <Compile Include="Helper\Func.cs" />
     <Compile Include="Helper\IncompleteMessageException.cs" />
