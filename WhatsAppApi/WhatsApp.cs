@@ -827,7 +827,7 @@ namespace WhatsAppApi
 
             ProtocolTreeNode node = new ProtocolTreeNode("iq", new[] { 
                 new KeyValue("to", "s.whatsapp.net"),
-                new KeyValue("id", TicketCounter.MakeId("setprivacy")),
+                new KeyValue("id", TicketCounter.MakeId("setprivacy_")),
                 new KeyValue("type", "set"),
                 new KeyValue("xmlns", "privacy")
             }, new ProtocolTreeNode[] {
@@ -839,6 +839,19 @@ namespace WhatsAppApi
             })
             });
 
+            this.SendNode(node);
+        }
+
+        public void SendGetPrivacySettings()
+        {
+            ProtocolTreeNode node = new ProtocolTreeNode("iq", new KeyValue[] {
+                new KeyValue("to", "s.whatsapp.net"),
+                new KeyValue("id", TicketCounter.MakeId("getprivacy_")),
+                new KeyValue("type", "get"),
+                new KeyValue("xmlns", "privacy")
+            }, new ProtocolTreeNode[] {
+                new ProtocolTreeNode("privacy", null)
+            });
             this.SendNode(node);
         }
 
