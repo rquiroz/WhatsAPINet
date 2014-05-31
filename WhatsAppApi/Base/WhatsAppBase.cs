@@ -50,6 +50,54 @@ namespace WhatsAppApi
             }
         }
 
+        protected string privacyCategoryToString(VisibilityCategory c)
+        {
+            switch (c)
+            {
+                case VisibilityCategory.LastSeenTime:
+                    return "last";
+                    break;
+                case VisibilityCategory.Status:
+                    return "status";
+                    break;
+                case VisibilityCategory.ProfilePhoto:
+                    return "photo";
+                    break;
+                default:
+                    throw new Exception("Invalid privacy category");
+            }
+        }
+
+        protected VisibilityCategory parsePrivacyCategory(string data)
+        {
+            switch (data)
+            {
+                case "last":
+                    return VisibilityCategory.LastSeenTime;
+                case "status":
+                    return VisibilityCategory.Status;
+                case "photo":
+                    return VisibilityCategory.ProfilePhoto;
+                default:
+                    throw new Exception(String.Format("Could not parse {0} as privacy category", data));
+            }
+        }
+
+        protected VisibilitySetting parsePrivacySetting(string data)
+        {
+            switch (data)
+            {
+                case "none":
+                    return VisibilitySetting.None;
+                case "contacts":
+                    return VisibilitySetting.Contacts;
+                case "all":
+                    return VisibilitySetting.Everyone;
+                default:
+                    throw new Exception(string.Format("Cound not parse {0} as privacy setting", data));
+            }
+        }
+
         protected ProtocolTreeNode uploadResponse;
 
         protected AccountInfo accountinfo;

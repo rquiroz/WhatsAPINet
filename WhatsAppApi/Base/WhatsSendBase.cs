@@ -476,6 +476,17 @@ namespace WhatsAppApi
                         WhatsApp.SYSEncoding.GetString(status.GetData()));
                 }
             }
+            if (node.GetAttribute("type") == "result" && node.GetChild("privacy") != null)
+            {
+                Dictionary<VisibilityCategory, VisibilitySetting> settings = new Dictionary<VisibilityCategory, VisibilitySetting>();
+                foreach (ProtocolTreeNode child in node.GetChild("privacy").GetAllChildren("category"))
+                {
+                    settings.Add(this.parsePrivacyCategory(
+                        child.GetAttribute("name")), 
+                        this.parsePrivacySetting(child.GetAttribute("value"))
+                    );
+                }
+            }
         }
 
         protected void handleNotification(ProtocolTreeNode node)
