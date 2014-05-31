@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Account\WhatsUser.cs" />
     <Compile Include="Account\WhatsUserManager.cs" />
+    <Compile Include="Base\ApiBase.cs" />
     <Compile Include="Base\WhatsSendBase.cs" />
     <Compile Include="Helper\AccountInfo.cs" />
     <Compile Include="Helper\BinTreeNodeReader.cs" />

@@ -486,6 +486,7 @@ namespace WhatsAppApi
                         this.parsePrivacySetting(child.GetAttribute("value"))
                     );
                 }
+                this.fireOnGetPrivacySettings(settings);
             }
         }
 

@@ -244,6 +244,15 @@ namespace WhatsAppApi
             }
         }
 
+        public event OnGetPrivacySettingsDelegate OnGetPrivacySettings;
+        protected void fireOnGetPrivacySettings(Dictionary<VisibilityCategory, VisibilitySetting> settings)
+        {
+            if (this.OnGetPrivacySettings != null)
+            {
+                this.OnGetPrivacySettings(settings);
+            }
+        }
+
         //event delegates
         public delegate void OnContactNameDelegate(string from, string contactName);
         public delegate void NullDelegate();
@@ -265,6 +274,6 @@ namespace WhatsAppApi
         public delegate void OnGetGroupsDelegate(WaGroupInfo[] groups);
         public delegate void OnGetStatusDelegate(string from, string type, string name, string status);
         public delegate void OnGetSyncResultDelegate(int index, string sid, Dictionary<string, string> existingUsers, string[] failedNumbers);
-
+        public delegate void OnGetPrivacySettingsDelegate(Dictionary<VisibilityCategory, VisibilitySetting> settings);
     }
 }
