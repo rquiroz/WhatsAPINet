@@ -7,7 +7,7 @@ using WhatsAppApi.Response;
 
 namespace WhatsAppApi
 {
-    public class WhatsEventBase
+    public class WhatsEventBase : ApiBase
     {
         //events
         public event ExceptionDelegate OnDisconnect;
