@@ -501,6 +501,9 @@ namespace WhatsAppApi
                 case "contacts":
                     //TODO
                     break;
+                case "participant":
+                    //TODO
+                    break;
                 default:
                     throw new NotImplementedException(node.NodeString());
             }
