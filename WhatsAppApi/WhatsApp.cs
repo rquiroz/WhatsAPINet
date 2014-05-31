@@ -33,6 +33,12 @@ namespace WhatsAppApi
             this.SendMessage(tmpMessage, this.hidden);
         }
 
+        public void MessageVcard(string to, string name, string vcard_data)
+        {
+            var tmpMessage = new FMessage(GetJID(to), true) { data = vcard_data, media_wa_type = FMessage.Type.Contact, media_name = name };
+            this.SendMessage(tmpMessage, this.hidden);
+        }
+
         public void SendSync(string[] numbers, string mode = "full", string context = "registration", int index = 0, bool last = true)
         {
             List<ProtocolTreeNode> users = new List<ProtocolTreeNode>();
