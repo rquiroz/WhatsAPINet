@@ -67,7 +67,15 @@ namespace WhatsAppApi
 
         public void SendMessageImage(string to, byte[] ImageData, ImageType imgtype)
         {
-            to = GetJID(to);
+            FMessage msg = this.getFmessageImage(to, ImageData, imgtype);
+            if (msg != null)
+            {
+                this.SendMessage(msg);
+            }
+        }
+
+        protected FMessage getFmessageImage(string to, byte[] ImageData, ImageType imgtype)
+        {
             string type = string.Empty;
             string extension = string.Empty;
             switch (imgtype)
@@ -100,20 +108,30 @@ namespace WhatsAppApi
             if (response != null && !String.IsNullOrEmpty(response.url))
             {
                 //send message
-                FMessage msg = new FMessage(to, true) { 
-                    media_wa_type = FMessage.Type.Image, 
-                    media_mime_type = response.mimetype, 
-                    media_name = response.url.Split('/').Last(), 
-                    media_size = response.size, 
-                    media_url = response.url, 
-                    binary_data = this.CreateThumbnail(ImageData) 
+                FMessage msg = new FMessage(to, true)
+                {
+                    media_wa_type = FMessage.Type.Image,
+                    media_mime_type = response.mimetype,
+                    media_name = response.url.Split('/').Last(),
+                    media_size = response.size,
+                    media_url = response.url,
+                    binary_data = this.CreateThumbnail(ImageData)
                 };
-                this.SendMessage(msg);
+                return msg;
             }
-
+            return null;
         }
 
         public void SendMessageVideo(string to, byte[] videoData, VideoType vidtype)
+        {
+            FMessage msg = this.getFmessageVideo(to, videoData, vidtype);
+            if (msg != null)
+            {
+                this.SendMessage(msg);
+            }
+        }
+
+        protected FMessage getFmessageVideo(string to, byte[] videoData, VideoType vidtype)
         {
             to = GetJID(to);
             string type = string.Empty;
@@ -156,11 +174,21 @@ namespace WhatsAppApi
                     media_url = response.url, 
                     media_duration_seconds = response.duration 
                 };
+                return msg;
+            }
+            return null;
+        }
+
+        public void SendMessageAudio(string to, byte[] audioData, AudioType audtype)
+        {
+            FMessage msg = this.GetFmessageAudio(to, audioData, audtype);
+            if (msg != null)
+            {
                 this.SendMessage(msg);
             }
         }
 
-        public void SendMessageAudio(string to, byte[] audioData, AudioType audtype)
+        protected FMessage getFmessageAudio(string to, byte[] audioData, AudioType audtype)
         {
             to = GetJID(to);
             string type = string.Empty;
@@ -203,8 +231,9 @@ namespace WhatsAppApi
                     media_url = response.url, 
                     media_duration_seconds = response.duration 
                 };
-                this.SendMessage(msg);
+                return'msg;
             }
+            return null;
         }
 
         protected WaUploadResponse UploadFile(string b64hash, string type, long size, byte[] fileData, string to, string contenttype, string extension)
