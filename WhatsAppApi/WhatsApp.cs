@@ -636,6 +636,54 @@ namespace WhatsAppApi
             this.SendMessageBroadcast(to, new FMessage(string.Empty, true) { data = message, media_wa_type = FMessage.Type.Undefined });
         }
 
+        public void SendMessageBroadcastImage(string[] recipients, byte[] ImageData, ImageType imgtype)
+        {
+            string to;
+            List<string> foo = new List<string>();
+            foreach (string s in recipients)
+            {
+                foo.Add(GetJID(s));
+            }
+            to = string.Join(",", foo.ToArray());
+            FMessage msg = this.getFmessageImage(to, ImageData, imgtype);
+            if (msg != null)
+            {
+                this.SendMessage(msg);
+            }
+        }
+
+        public void SendMessageBroadcastAudio(string[] recipients, byte[] AudioData, AudioType audtype)
+        {
+            string to;
+            List<string> foo = new List<string>();
+            foreach (string s in recipients)
+            {
+                foo.Add(GetJID(s));
+            }
+            to = string.Join(",", foo.ToArray());
+            FMessage msg = this.getFmessageAudio(to, AudioData, audtype);
+            if (msg != null)
+            {
+                this.SendMessage(msg);
+            }
+        }
+
+        public void SendMessageBroadcastVideo(string[] recipients, byte[] VideoData, VideoType vidtype)
+        {
+            string to;
+            List<string> foo = new List<string>();
+            foreach (string s in recipients)
+            {
+                foo.Add(GetJID(s));
+            }
+            to = string.Join(",", foo.ToArray());
+            FMessage msg = this.getFmessageVideo(to, VideoData, vidtype);
+            if (msg != null)
+            {
+                this.SendMessage(msg);
+            }
+        }
+
         public void SendMessageBroadcast(string[] to, FMessage message)
         {
             if (to != null && to.Length > 0 && message != null && !string.IsNullOrEmpty(message.data))
