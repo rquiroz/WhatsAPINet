@@ -633,7 +633,7 @@ namespace WhatsAppApi
                 ProtocolTreeNode broadcastNode = new ProtocolTreeNode("broadcast", null, toNodes);
                 ProtocolTreeNode messageNode = new ProtocolTreeNode("message", new KeyValue[] {
                     new KeyValue("to", "broadcast"),
-                    new KeyValue("type", "chat"),
+                    new KeyValue("type", "text"),
                     new KeyValue("id", message.identifier_key.id)
                 }, new ProtocolTreeNode[] {
                     broadcastNode,
