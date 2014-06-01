@@ -181,7 +181,7 @@ namespace WhatsAppApi
 
         public void SendMessageAudio(string to, byte[] audioData, AudioType audtype)
         {
-            FMessage msg = this.GetFmessageAudio(to, audioData, audtype);
+            FMessage msg = this.getFmessageAudio(to, audioData, audtype);
             if (msg != null)
             {
                 this.SendMessage(msg);
@@ -231,7 +231,7 @@ namespace WhatsAppApi
                     media_url = response.url, 
                     media_duration_seconds = response.duration 
                 };
-                return'msg;
+                return msg;
             }
             return null;
         }
