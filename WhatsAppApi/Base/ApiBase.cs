@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,6 +15,27 @@ namespace WhatsAppApi
             DISCONNECTED,
             CONNECTED,
             LOGGEDIN
+        }
+
+        public enum ImageType
+        {
+            JPEG,
+            GIF,
+            PNG
+        }
+
+        public enum VideoType
+        {
+            MOV,
+            AVI,
+            MP4
+        }
+
+        public enum AudioType
+        {
+            WAV,
+            OGG,
+            MP3
         }
 
         public enum VisibilityCategory
@@ -92,41 +112,42 @@ namespace WhatsAppApi
             }
         }
 
-        protected byte[] CreateThumbnail(string path)
+        protected byte[] CreateThumbnail(byte[] imageData)
         {
-            if (File.Exists(path))
+            Image image;
+            using (System.IO.MemoryStream m = new System.IO.MemoryStream(imageData))
             {
-                Image orig = Image.FromFile(path);
-                if (orig != null)
+                image = Image.FromStream(m);
+            }
+            if (image != null)
+            {
+                int newHeight = 0;
+                int newWidth = 0;
+                float imgWidth = float.Parse(image.Width.ToString());
+                float imgHeight = float.Parse(image.Height.ToString());
+                if (image.Width > image.Height)
                 {
-                    int newHeight = 0;
-                    int newWidth = 0;
-                    float imgWidth = float.Parse(orig.Width.ToString());
-                    float imgHeight = float.Parse(orig.Height.ToString());
-                    if (orig.Width > orig.Height)
-                    {
-                        newHeight = (int)((imgHeight / imgWidth) * 100);
-                        newWidth = 100;
-                    }
-                    else
-                    {
-                        newWidth = (int)((imgWidth / imgHeight) * 100);
-                        newHeight = 100;
-                    }
-
-                    Bitmap newImage = new Bitmap(newWidth, newHeight);
-                    using (Graphics gr = Graphics.FromImage(newImage))
-                    {
-                        gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                        gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        gr.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
-                        gr.DrawImage(orig, new Rectangle(0, 0, newWidth, newHeight));
-                    }
-                    MemoryStream ms = new MemoryStream();
-                    newImage.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
-                    ms.Close();
-                    return ms.ToArray();
+                    newHeight = (int)((imgHeight / imgWidth) * 100);
+                    newWidth = 100;
                 }
+                else
+                {
+                    newWidth = (int)((imgWidth / imgHeight) * 100);
+                    newHeight = 100;
+                }
+
+                Bitmap newImage = new Bitmap(newWidth, newHeight);
+                using (Graphics gr = Graphics.FromImage(newImage))
+                {
+                    gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                    gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    gr.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                    gr.DrawImage(image, new Rectangle(0, 0, newWidth, newHeight));
+                }
+                System.IO.MemoryStream ms = new System.IO.MemoryStream();
+                newImage.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                ms.Close();
+                return ms.ToArray();
             }
             return null;
         }

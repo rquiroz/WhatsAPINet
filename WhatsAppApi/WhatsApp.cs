@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
@@ -66,146 +65,149 @@ namespace WhatsAppApi
             this.SendNode(node);
         }
 
-        public void MessageImage(string to, string filepath)
+        public void MessageImage(string to, byte[] ImageData, ImageType imgtype)
         {
             to = GetJID(to);
-            FileInfo finfo = new FileInfo(filepath);
             string type = string.Empty;
-            switch (finfo.Extension)
+            string extension = string.Empty;
+            switch (imgtype)
             {
-                case ".png":
+                case ImageType.PNG:
                     type = "image/png";
+                    extension = "png";
                     break;
-                case ".gif":
+                case ImageType.GIF:
                     type = "image/gif";
+                    extension = "gif";
                     break;
                 default:
                     type = "image/jpeg";
+                    extension = "jpg";
                     break;
             }
             
             //create hash
             string filehash = string.Empty;
-            using(FileStream fs = File.OpenRead(filepath))
+            using(HashAlgorithm sha = HashAlgorithm.Create("sha256"))
             {
-                using(BufferedStream bs = new BufferedStream(fs))
-                {
-                    using(HashAlgorithm sha = HashAlgorithm.Create("sha256"))
-                    {
-                        byte[] raw = sha.ComputeHash(bs);
-                        filehash = Convert.ToBase64String(raw);
-                    }
-                }
+                byte[] raw = sha.ComputeHash(ImageData);
+                filehash = Convert.ToBase64String(raw);
             }
 
             //request upload
-            WaUploadResponse response = this.UploadFile(filehash, "image", finfo.Length, filepath, to, type);
+            WaUploadResponse response = this.UploadFile(filehash, "image", ImageData.Length, ImageData, to, type, extension);
 
             if (response != null && !String.IsNullOrEmpty(response.url))
             {
                 //send message
-                FMessage msg = new FMessage(to, true) { media_wa_type = FMessage.Type.Image, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url, binary_data = this.CreateThumbnail(filepath) };
+                FMessage msg = new FMessage(to, true) { 
+                    media_wa_type = FMessage.Type.Image, 
+                    media_mime_type = response.mimetype, 
+                    media_name = response.url.Split('/').Last(), 
+                    media_size = response.size, 
+                    media_url = response.url, 
+                    binary_data = this.CreateThumbnail(ImageData) 
+                };
                 this.SendMessage(msg);
             }
 
         }
 
-        public void MessageVideo(string to, string filepath)
+        public void MessageVideo(string to, byte[] videoData, VideoType vidtype)
         {
             to = GetJID(to);
-            FileInfo finfo = new FileInfo(filepath);
             string type = string.Empty;
-            switch (finfo.Extension)
+            string extension = string.Empty;
+            switch (vidtype)
             {
-                case ".mov":
+                case VideoType.MOV:
                     type = "video/quicktime";
+                    extension = "mov";
                     break;
-                case ".avi":
+                case VideoType.AVI:
                     type = "video/x-msvideo";
+                    extension = "avi";
                     break;
                 default:
                     type = "video/mp4";
+                    extension = "mp4";
                     break;
             }
 
             //create hash
             string filehash = string.Empty;
-            using (FileStream fs = File.OpenRead(filepath))
+            using (HashAlgorithm sha = HashAlgorithm.Create("sha256"))
             {
-                using (BufferedStream bs = new BufferedStream(fs))
-                {
-                    using (HashAlgorithm sha = HashAlgorithm.Create("sha256"))
-                    {
-                        byte[] raw = sha.ComputeHash(bs);
-                        filehash = Convert.ToBase64String(raw);
-                    }
-                }
+                byte[] raw = sha.ComputeHash(videoData);
+                filehash = Convert.ToBase64String(raw);
             }
 
             //request upload
-            WaUploadResponse response = this.UploadFile(filehash, "video", finfo.Length, filepath, to, type);
+            WaUploadResponse response = this.UploadFile(filehash, "video", videoData.Length, videoData, to, type, extension);
 
             if (response != null && !String.IsNullOrEmpty(response.url))
             {
                 //send message
-                FMessage msg = new FMessage(to, true) { media_wa_type = FMessage.Type.Video, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url, media_duration_seconds = response.duration };
+                FMessage msg = new FMessage(to, true) { 
+                    media_wa_type = FMessage.Type.Video, 
+                    media_mime_type = response.mimetype, 
+                    media_name = response.url.Split('/').Last(), 
+                    media_size = response.size, 
+                    media_url = response.url, 
+                    media_duration_seconds = response.duration 
+                };
                 this.SendMessage(msg);
             }
         }
 
-        public void MessageAudio(string to, string filepath)
+        public void MessageAudio(string to, byte[] audioData, AudioType audtype)
         {
             to = GetJID(to);
-            FileInfo finfo = new FileInfo(filepath);
             string type = string.Empty;
-            switch (finfo.Extension)
+            string extension = string.Empty;
+            switch (audtype)
             {
-                case ".wav":
+                case AudioType.WAV:
                     type = "audio/wav";
+                    extension = "wav";
                     break;
-                case ".ogg":
+                case AudioType.OGG:
                     type = "audio/ogg";
-                    break;
-                case ".aif":
-                    type = "audio/x-aiff";
-                    break;
-                case ".aac":
-                    type = "audio/aac";
-                    break;
-                case ".m4a":
-                    type = "audio/mp4";
+                    extension = "ogg";
                     break;
                 default:
                     type = "audio/mpeg";
+                    extension = "mp3";
                     break;
             }
 
             //create hash
             string filehash = string.Empty;
-            using (FileStream fs = File.OpenRead(filepath))
+            using (HashAlgorithm sha = HashAlgorithm.Create("sha256"))
             {
-                using (BufferedStream bs = new BufferedStream(fs))
-                {
-                    using (HashAlgorithm sha = HashAlgorithm.Create("sha256"))
-                    {
-                        byte[] raw = sha.ComputeHash(bs);
-                        filehash = Convert.ToBase64String(raw);
-                    }
-                }
+                byte[] raw = sha.ComputeHash(audioData);
+                filehash = Convert.ToBase64String(raw);
             }
 
             //request upload
-            WaUploadResponse response = this.UploadFile(filehash, "audio", finfo.Length, filepath, to, type);
+            WaUploadResponse response = this.UploadFile(filehash, "audio", audioData.Length, audioData, to, type, extension);
 
             if (response != null && !String.IsNullOrEmpty(response.url))
             {
                 //send message
-                FMessage msg = new FMessage(to, true) { media_wa_type = FMessage.Type.Audio, media_mime_type = response.mimetype, media_name = response.url.Split('/').Last(), media_size = response.size, media_url = response.url, media_duration_seconds = response.duration };
+                FMessage msg = new FMessage(to, true) { 
+                    media_wa_type = FMessage.Type.Audio, 
+                    media_mime_type = response.mimetype, 
+                    media_name = response.url.Split('/').Last(), 
+                    media_size = response.size, 
+                    media_url = response.url, 
+                    media_duration_seconds = response.duration 
+                };
                 this.SendMessage(msg);
             }
         }
 
-        protected WaUploadResponse UploadFile(string b64hash, string type, long size, string path, string to, string contenttype)
+        protected WaUploadResponse UploadFile(string b64hash, string type, long size, byte[] fileData, string to, string contenttype, string extension)
         {
             ProtocolTreeNode media = new ProtocolTreeNode("media", new KeyValue[] {
                 new KeyValue("hash", b64hash),
@@ -243,13 +245,13 @@ namespace WhatsAppApi
                     Uri uri = new Uri(uploadUrl);
 
                     string hashname = string.Empty;
-                    byte[] buff = MD5.Create().ComputeHash(System.Text.Encoding.Default.GetBytes(path));
+                    byte[] buff = MD5.Create().ComputeHash(System.Text.Encoding.Default.GetBytes(b64hash));
                     StringBuilder sb = new StringBuilder();
                     foreach (byte b in buff)
                     {
                         sb.Append(b.ToString("X2"));
                     }
-                    hashname = String.Format("{0}.{1}", sb.ToString(), path.Split('.').Last());
+                    hashname = String.Format("{0}.{1}", sb.ToString(), extension);
 
                     string boundary = "zzXXzzYYzzXXzzQQ";
 
@@ -294,7 +296,7 @@ namespace WhatsAppApi
                     List<byte> buf = new List<byte>();
                     buf.AddRange(Encoding.UTF8.GetBytes(post));
                     buf.AddRange(Encoding.UTF8.GetBytes(header));
-                    buf.AddRange(File.ReadAllBytes(path));
+                    buf.AddRange(fileData);
                     buf.AddRange(Encoding.UTF8.GetBytes(footer));
 
                     ssl.Write(buf.ToArray(), 0, buf.ToArray().Length);

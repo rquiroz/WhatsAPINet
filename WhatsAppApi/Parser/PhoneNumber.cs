@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -44,7 +43,7 @@ namespace WhatsAppApi.Parser
         {
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhatsAppApi.Parser.countries.csv"))
             {
-                using (var reader = new StreamReader(stream))
+                using (var reader = new System.IO.StreamReader(stream))
                 {
                     string csv = reader.ReadToEnd();
                     string[] lines = csv.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
