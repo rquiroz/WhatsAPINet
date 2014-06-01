@@ -211,7 +211,7 @@ namespace WhatsTest
 
         static void wa_OnGetMessage(ProtocolTreeNode node, string from, string id, string name, string message, bool receipt_sent)
         {
-            Console.WriteLine("Message from {0} (1): {2}", name, from, message);
+            Console.WriteLine("Message from {0} {1}: {2}", name, from, message);
         }
 
         private static void wa_OnLoginFailed(string data)
