@@ -53,6 +53,8 @@ namespace WhatsTest
             wa.OnGetGroups += wa_OnGetGroups;
             wa.OnGetSyncResult += wa_OnGetSyncResult;
             wa.OnGetStatus += wa_OnGetStatus;
+            wa.OnGetPrivacySettings += wa_OnGetPrivacySettings;
+            WhatsAppApi.Helper.DebugAdapter.Instance.OnPrintDebug += Instance_OnPrintDebug;
 
             wa.Connect();
 
@@ -72,6 +74,16 @@ namespace WhatsTest
 
             ProcessChat(wa, target);
             Console.ReadKey();
+        }
+
+        static void Instance_OnPrintDebug(object value)
+        {
+            Console.WriteLine(value);
+        }
+
+        static void wa_OnGetPrivacySettings(Dictionary<ApiBase.VisibilityCategory, ApiBase.VisibilitySetting> settings)
+        {
+            throw new NotImplementedException();
         }
 
         static void wa_OnGetStatus(string from, string type, string name, string status)
@@ -287,7 +299,7 @@ namespace WhatsTest
                         break;
                     default:
                         Console.WriteLine("[] Send message to {0}: {1}", tmpUser, line);
-                        wa.Message(tmpUser.GetFullJid(), line);
+                        wa.SendMessage(tmpUser.GetFullJid(), line);
                         break;
                 }
            } 
