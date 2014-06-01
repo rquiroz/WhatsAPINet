@@ -164,6 +164,7 @@ namespace WhatsAppApi
 
         public static string GetJID(string target)
         {
+            target = target.TrimStart(new char[] { '+', '0' });
             if (!target.Contains('@'))
             {
                 //check if group message
