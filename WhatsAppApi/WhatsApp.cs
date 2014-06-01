@@ -26,13 +26,13 @@ namespace WhatsAppApi
             this._constructBase(phoneNum, imei, nick, debug, hidden);
         }
 
-        public void Message(string to, string txt)
+        public void SendMessage(string to, string txt)
         {
             var tmpMessage = new FMessage(GetJID(to), true) { data = txt };
             this.SendMessage(tmpMessage, this.hidden);
         }
 
-        public void MessageVcard(string to, string name, string vcard_data)
+        public void SendMessageVcard(string to, string name, string vcard_data)
         {
             var tmpMessage = new FMessage(GetJID(to), true) { data = vcard_data, media_wa_type = FMessage.Type.Contact, media_name = name };
             this.SendMessage(tmpMessage, this.hidden);
@@ -65,7 +65,7 @@ namespace WhatsAppApi
             this.SendNode(node);
         }
 
-        public void MessageImage(string to, byte[] ImageData, ImageType imgtype)
+        public void SendMessageImage(string to, byte[] ImageData, ImageType imgtype)
         {
             to = GetJID(to);
             string type = string.Empty;
@@ -113,7 +113,7 @@ namespace WhatsAppApi
 
         }
 
-        public void MessageVideo(string to, byte[] videoData, VideoType vidtype)
+        public void SendMessageVideo(string to, byte[] videoData, VideoType vidtype)
         {
             to = GetJID(to);
             string type = string.Empty;
@@ -160,7 +160,7 @@ namespace WhatsAppApi
             }
         }
 
-        public void MessageAudio(string to, byte[] audioData, AudioType audtype)
+        public void SendMessageAudio(string to, byte[] audioData, AudioType audtype)
         {
             to = GetJID(to);
             string type = string.Empty;
@@ -635,7 +635,7 @@ namespace WhatsAppApi
                 ProtocolTreeNode broadcastNode = new ProtocolTreeNode("broadcast", null, toNodes);
                 ProtocolTreeNode messageNode = new ProtocolTreeNode("message", new KeyValue[] {
                     new KeyValue("to", "broadcast"),
-                    new KeyValue("type", "text"),
+                    new KeyValue("type", message.media_wa_type == FMessage.Type.Undefined?"text":"media"),
                     new KeyValue("id", message.identifier_key.id)
                 }, new ProtocolTreeNode[] {
                     broadcastNode,
