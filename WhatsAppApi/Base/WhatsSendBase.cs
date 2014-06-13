@@ -381,15 +381,21 @@ namespace WhatsAppApi
                 ProtocolTreeNode nonexisting = sync.GetChild("out");
                 //process existing first
                 Dictionary<string, string> existingUsers = new Dictionary<string, string>();
-                foreach (ProtocolTreeNode child in existing.GetAllChildren())
+                if (existing != null)
                 {
-                    existingUsers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()), child.GetAttribute("jid"));
+                    foreach (ProtocolTreeNode child in existing.GetAllChildren())
+                    {
+                        existingUsers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()), child.GetAttribute("jid"));
+                    }
                 }
                 //now process failed numbers
                 List<string> failedNumbers = new List<string>();
-                foreach (ProtocolTreeNode child in nonexisting.GetAllChildren())
+                if (nonexisting != null)
                 {
-                    failedNumbers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()));
+                    foreach (ProtocolTreeNode child in nonexisting.GetAllChildren())
+                    {
+                        failedNumbers.Add(System.Text.Encoding.UTF8.GetString(child.GetData()));
+                    }
                 }
                 int index = 0;
                 Int32.TryParse(sync.GetAttribute("index"), out index);
