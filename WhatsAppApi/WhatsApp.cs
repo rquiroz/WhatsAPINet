@@ -26,10 +26,11 @@ namespace WhatsAppApi
             this._constructBase(phoneNum, imei, nick, debug, hidden);
         }
 
-        public void SendMessage(string to, string txt)
+        public string SendMessage(string to, string txt)
         {
             var tmpMessage = new FMessage(GetJID(to), true) { data = txt };
             this.SendMessage(tmpMessage, this.hidden);
+            return tmpMessage.identifier_key.ToString();
         }
 
         public void SendMessageVcard(string to, string name, string vcard_data)
