@@ -43,7 +43,10 @@ namespace WhatsAppApi
             List<ProtocolTreeNode> users = new List<ProtocolTreeNode>();
             foreach (string number in numbers)
             {
-                users.Add(new ProtocolTreeNode("user", null, System.Text.Encoding.UTF8.GetBytes(number)));
+                string _number = number;
+                if (!_number.StartsWith("+", StringComparison.InvariantCulture))
+                    _number = string.Format("+{0}", number);
+                users.Add(new ProtocolTreeNode("user", null, System.Text.Encoding.UTF8.GetBytes(_number)));
             }
             ProtocolTreeNode node = new ProtocolTreeNode("iq", new KeyValue[]
             {
