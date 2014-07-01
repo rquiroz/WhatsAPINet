@@ -754,7 +754,7 @@ namespace WhatsAppApi
         {
             string id = TicketCounter.MakeId("last_");
             var child = new ProtocolTreeNode("query", null);
-            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", jid), new KeyValue("xmlns", "jabber:iq:last") }, child);
+            var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "get"), new KeyValue("to", GetJID(jid)), new KeyValue("xmlns", "jabber:iq:last") }, child);
             this.SendNode(node);
         }
 
