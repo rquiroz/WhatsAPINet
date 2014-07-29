@@ -461,18 +461,18 @@ namespace WhatsAppApi
         {
             string id = TicketCounter.MakeId("del_acct_");
             var node = new ProtocolTreeNode("iq",
-                                            new[]
+                                            new KeyValue[]
                                                 {
-                                                    new KeyValue("id", id), new KeyValue("type", "get"),
-                                                    new KeyValue("to", "s.whatsapp.net")
+                                                    new KeyValue("id", id), 
+                                                    new KeyValue("type", "get"),
+                                                    new KeyValue("to", "s.whatsapp.net"),
+                                                    new KeyValue("xmlns", "urn:xmpp:whatsapp:account")
                                                 },
                                             new ProtocolTreeNode[]
                                                 {
                                                     new ProtocolTreeNode("remove",
-                                                                         new[]
-                                                                             {
-                                                                                 new KeyValue("xmlns", "urn:xmpp:whatsapp:account")
-                                                                             })
+                                                                         null
+                                                                         )
                                                 });
             this.SendNode(node);
         }
