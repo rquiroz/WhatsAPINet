@@ -891,7 +891,7 @@ namespace WhatsAppApi
 
         protected void SendVerbParticipants(string gjid, IEnumerable<string> participants, string id, string inner_tag)
         {
-            IEnumerable<ProtocolTreeNode> source = from jid in participants select new ProtocolTreeNode("participant", new[] { new KeyValue("jid", jid) });
+            IEnumerable<ProtocolTreeNode> source = from jid in participants select new ProtocolTreeNode("participant", new[] { new KeyValue("jid", GetJID(jid)) });
             var child = new ProtocolTreeNode(inner_tag, null, source);
             var node = new ProtocolTreeNode("iq", new[] { new KeyValue("id", id), new KeyValue("type", "set"), new KeyValue("xmlns", "w:g"), new KeyValue("to", GetJID(gjid)) }, child);
             this.SendNode(node);
