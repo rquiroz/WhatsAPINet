@@ -449,9 +449,9 @@ namespace WhatsAppApi
                     groups.Add(new WaGroupInfo(
                         group.GetAttribute("id"),
                         group.GetAttribute("owner"),
-                        long.Parse(group.GetAttribute("creation")),
+                        group.GetAttribute("creation"),
                         group.GetAttribute("subject"),
-                        long.Parse(group.GetAttribute("s_t")),
+                        group.GetAttribute("s_t"),
                         group.GetAttribute("s_o")
                         ));
                 }

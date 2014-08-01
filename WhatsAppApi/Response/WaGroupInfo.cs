@@ -14,13 +14,18 @@ namespace WhatsAppApi.Response
         public readonly long subjectChangedTime;
         public readonly string subjectChangedBy;
 
-        internal WaGroupInfo(string id, string owner, long creation, string subject, long subjectChanged, string subjectChangedBy)
+        internal WaGroupInfo(string id)
+        {
+            this.id = id;
+        }
+
+        internal WaGroupInfo(string id, string owner, string creation, string subject, string subjectChanged, string subjectChangedBy)
         {
             this.id = id;
             this.owner = owner;
-            this.creation = creation;
+            long.TryParse(creation, out this.creation);
             this.subject = subject;
-            this.subjectChangedTime = subjectChanged;
+            long.TryParse(subjectChanged, out this.subjectChangedTime);
             this.subjectChangedBy = subjectChangedBy;
         }
     }
