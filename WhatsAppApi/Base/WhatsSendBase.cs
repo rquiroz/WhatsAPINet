@@ -519,7 +519,31 @@ namespace WhatsAppApi
                     //TODO
                     break;
                 case "participant":
-                    //TODO
+                    string gjid = node.GetAttribute("from");
+                    string t = node.GetAttribute("t");
+                    foreach (ProtocolTreeNode child3 in node.GetAllChildren())
+                    {
+                        if (child3.tag == "add")
+                        {
+                            this.fireOnGetParticipantAdded(gjid, 
+                                child3.GetAttribute("jid"), 
+                                GetDateTimeFromTimestamp(t));
+                        }
+                        else if (child3.tag == "remove")
+                        {
+                            this.fireOnGetParticipantRemoved(gjid, 
+                                child3.GetAttribute("jid"), 
+                                child3.GetAttribute("author"), 
+                                GetDateTimeFromTimestamp(t));
+                        }
+                        else if (child3.tag == "modify")
+                        {
+                            this.fireOnGetParticipantRenamed(gjid,
+                                child3.GetAttribute("remove"),
+                                child3.GetAttribute("add"),
+                                GetDateTimeFromTimestamp(t));
+                        }
+                    }
                     break;
                 default:
                     throw new NotImplementedException(node.NodeString());
