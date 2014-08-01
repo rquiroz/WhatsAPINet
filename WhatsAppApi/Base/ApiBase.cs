@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -148,6 +149,80 @@ namespace WhatsAppApi
                 newImage.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
                 ms.Close();
                 return ms.ToArray();
+            }
+            return null;
+        }
+
+        protected byte[] ProcessProfilePicture(byte[] bytes)
+        {
+            Bitmap image;
+            using (System.IO.MemoryStream m = new System.IO.MemoryStream(bytes))
+            {
+                image = new Bitmap(Image.FromStream(m));
+            }
+            if (image != null)
+            {
+                int size = 640;
+                if (size > image.Width)
+                    size = image.Width;
+                if (size > image.Height)
+                    size = image.Height;
+
+                int newHeight = 0;
+                int newWidth = 0;
+                float imgWidth = float.Parse(image.Width.ToString());
+                float imgHeight = float.Parse(image.Height.ToString());
+                if (image.Width < image.Height)
+                {
+                    newHeight = (int)((imgHeight / imgWidth) * size);
+                    newWidth = size;
+                }
+                else
+                {
+                    newWidth = (int)((imgWidth / imgHeight) * size);
+                    newHeight = size;
+                }
+
+                Bitmap newImage = new Bitmap(newWidth, newHeight);
+                using (Graphics gr = Graphics.FromImage(newImage))
+                {
+                    gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                    gr.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    gr.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                    gr.DrawImage(image, new Rectangle(0, 0, newWidth, newHeight));
+                }
+
+                //crop square
+                Bitmap dest = newImage.Clone(new Rectangle(
+                    new Point(0, 0),
+                    new Size(size, size)
+                    ), image.PixelFormat);
+
+                System.IO.MemoryStream ms = new System.IO.MemoryStream();
+
+                System.Drawing.Imaging.Encoder enc = System.Drawing.Imaging.Encoder.Quality;
+                EncoderParameters encParams = new EncoderParameters(1);
+
+                EncoderParameter param = new EncoderParameter(enc, 50L);
+                encParams.Param[0] = param;
+                dest.Save(ms, GetEncoder(ImageFormat.Jpeg), encParams);
+                ms.Close();
+                return ms.ToArray();
+            }
+            return bytes;
+        }
+
+        private static ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
+
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
             }
             return null;
         }
