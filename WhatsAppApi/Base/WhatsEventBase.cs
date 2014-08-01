@@ -253,6 +253,33 @@ namespace WhatsAppApi
             }
         }
 
+        public event OnGetParticipantAddedDelegate OnGetParticipantAdded;
+        protected void fireOnGetParticipantAdded(string gjid, string jid, DateTime time)
+        {
+            if (this.OnGetParticipantAdded != null)
+            {
+                this.OnGetParticipantAdded(gjid, jid, time);
+            }
+        }
+
+        public event OnGetParticipantRemovedDelegate OnGetParticipantRemoved;
+        protected void fireOnGetParticipantRemoved(string gjid, string jid, string author, DateTime time)
+        {
+            if (this.OnGetParticipantRemoved != null)
+            {
+                this.OnGetParticipantRemoved(gjid, jid, author, time);
+            }
+        }
+
+        public event OnGetParticipantRenamedDelegate OnGetParticipantRenamed;
+        protected void fireOnGetParticipantRenamed(string gjid, string oldJid, string newJid, DateTime time)
+        {
+            if (this.OnGetParticipantRenamed != null)
+            {
+                this.OnGetParticipantRenamed(gjid, oldJid, newJid, time);
+            }
+        }
+
         //event delegates
         public delegate void OnContactNameDelegate(string from, string contactName);
         public delegate void NullDelegate();
@@ -275,5 +302,8 @@ namespace WhatsAppApi
         public delegate void OnGetStatusDelegate(string from, string type, string name, string status);
         public delegate void OnGetSyncResultDelegate(int index, string sid, Dictionary<string, string> existingUsers, string[] failedNumbers);
         public delegate void OnGetPrivacySettingsDelegate(Dictionary<VisibilityCategory, VisibilitySetting> settings);
+        public delegate void OnGetParticipantAddedDelegate(string gjid, string jid, DateTime time);
+        public delegate void OnGetParticipantRemovedDelegate(string gjid, string jid, string author, DateTime time);
+        public delegate void OnGetParticipantRenamedDelegate(string gjid, string oldJid, string newJid, DateTime time);
     }
 }
