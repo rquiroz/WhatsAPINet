@@ -53,6 +53,21 @@ namespace WhatsAppApi
             Everyone
         }
 
+        public enum SyncMode
+        {
+            Full,
+            Delta,
+            Query,
+            Chunked
+        }
+
+        public enum SyncContext
+        {
+            Interactive,
+            Background,
+            Registration
+        }
+
         protected string privacySettingToString(VisibilitySetting s)
         {
             switch (s)

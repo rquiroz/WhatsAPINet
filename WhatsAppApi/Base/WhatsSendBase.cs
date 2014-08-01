@@ -558,8 +558,6 @@ namespace WhatsAppApi
                         }
                     }
                     break;
-                default:
-                    throw new NotImplementedException(node.NodeString());
             }
             this.SendNotificationAck(node);
         }

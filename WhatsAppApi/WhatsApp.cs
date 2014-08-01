@@ -39,7 +39,7 @@ namespace WhatsAppApi
             this.SendMessage(tmpMessage, this.hidden);
         }
 
-        public void SendSync(string[] numbers, string mode = "full", string context = "registration", int index = 0, bool last = true)
+        public void SendSync(string[] numbers, SyncMode mode = SyncMode.Delta, SyncContext context = SyncContext.Background, int index = 0, bool last = true)
         {
             List<ProtocolTreeNode> users = new List<ProtocolTreeNode>();
             foreach (string number in numbers)
@@ -57,8 +57,8 @@ namespace WhatsAppApi
                 new KeyValue("xmlns", "urn:xmpp:whatsapp:sync")
             }, new ProtocolTreeNode("sync", new KeyValue[]
                 {
-                    new KeyValue("mode", mode),
-                    new KeyValue("context", context),
+                    new KeyValue("mode", mode.ToString().ToLowerInvariant()),
+                    new KeyValue("context", context.ToString().ToLowerInvariant()),
                     new KeyValue("sid", DateTime.Now.ToFileTimeUtc().ToString()),
                     new KeyValue("index", index.ToString()),
                     new KeyValue("last", last.ToString())
