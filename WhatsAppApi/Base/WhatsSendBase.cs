@@ -597,9 +597,9 @@ namespace WhatsAppApi
             this.SendMessageReceived(tmpMessage, response);
         }
 
-        public void SendAvailableForChat(string nickName, bool isHidden = false)
+        public void SendAvailableForChat(string nickName = null, bool isHidden = false)
         {
-            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", nickName) });
+            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", (!String.IsNullOrEmpty(nickName)?nickName:this.name)) });
             this.SendNode(node);
         }
 
