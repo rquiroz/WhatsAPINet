@@ -568,7 +568,7 @@ namespace WhatsAppApi
             this.SendNode(node);
         }
 
-        public void SendClearDirty(IEnumerable<string> categoryNames)
+        protected void SendClearDirty(IEnumerable<string> categoryNames)
         {
             string id = TicketCounter.MakeId("clean_dirty_");
             List<ProtocolTreeNode> children = new List<ProtocolTreeNode>();
@@ -588,7 +588,7 @@ namespace WhatsAppApi
             this.SendNode(node);
         }
 
-        public void SendClearDirty(string category)
+        protected void SendClearDirty(string category)
         {
             this.SendClearDirty(new string[] { category });
         }
