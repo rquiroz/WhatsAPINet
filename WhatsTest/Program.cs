@@ -54,7 +54,7 @@ namespace WhatsTest
             wa.OnGetSyncResult += wa_OnGetSyncResult;
             wa.OnGetStatus += wa_OnGetStatus;
             wa.OnGetPrivacySettings += wa_OnGetPrivacySettings;
-            WhatsAppApi.Helper.DebugAdapter.Instance.OnPrintDebug += Instance_OnPrintDebug;
+            DebugAdapter.Instance.OnPrintDebug += Instance_OnPrintDebug;
 
             wa.Connect();
 
@@ -131,13 +131,13 @@ namespace WhatsTest
             File.WriteAllBytes(string.Format("{0}.jpg", from), data);
         }
 
-        static void wa_OnGetMessageVcard(string from, string id, string name, byte[] data)
+        static void wa_OnGetMessageVcard(ProtocolTreeNode vcardNode, string from, string id, string name, byte[] data)
         {
             Console.WriteLine("Got vcard \"{0}\" from {1}", name, from);
             File.WriteAllBytes(string.Format("{0}.vcf", name), data);
         }
 
-        static void wa_OnGetMessageLocation(string from, string id, double lon, double lat, string url, string name, byte[] preview)
+        static void wa_OnGetMessageLocation(ProtocolTreeNode locationNode, string from, string id, double lon, double lat, string url, string name, byte[] preview)
         {
             Console.WriteLine("Got location from {0} ({1}, {2})", from, lat, lon);
             if(!string.IsNullOrEmpty(name))
@@ -147,7 +147,7 @@ namespace WhatsTest
             File.WriteAllBytes(string.Format("{0}{1}.jpg", lat, lon), preview);
         }
 
-        static void wa_OnGetMessageVideo(string from, string id, string fileName, int fileSize, string url, byte[] preview)
+        static void wa_OnGetMessageVideo(ProtocolTreeNode mediaNode, string from, string id, string fileName, int fileSize, string url, byte[] preview)
         {
             Console.WriteLine("Got video from {0}", from, fileName);
             OnGetMedia(fileName, url, preview);
@@ -164,13 +164,13 @@ namespace WhatsTest
             }
         }
 
-        static void wa_OnGetMessageAudio(string from, string id, string fileName, int fileSize, string url, byte[] preview)
+        static void wa_OnGetMessageAudio(ProtocolTreeNode mediaNode, string from, string id, string fileName, int fileSize, string url, byte[] preview)
         {
             Console.WriteLine("Got audio from {0}", from, fileName);
             OnGetMedia(fileName, url, preview);
         }
 
-        static void wa_OnGetMessageImage(string from, string id, string fileName, int size, string url, byte[] preview)
+        static void wa_OnGetMessageImage(ProtocolTreeNode mediaNode, string from, string id, string fileName, int size, string url, byte[] preview)
         {
             Console.WriteLine("Got image from {0}", from, fileName);
             OnGetMedia(fileName, url, preview);

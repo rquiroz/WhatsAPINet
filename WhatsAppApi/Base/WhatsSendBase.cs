@@ -332,21 +332,21 @@ namespace WhatsAppApi
                         file = media.GetAttribute("file");
                         size = Int32.Parse(media.GetAttribute("size"));
                         preview = media.GetData();
-                        this.fireOnGetMessageImage(from, id, file, size, url, preview);
+                        this.fireOnGetMessageImage(node, from, id, file, size, url, preview);
                         break;
                     case "audio":
                         file = media.GetAttribute("file");
                         size = Int32.Parse(media.GetAttribute("size"));
                         url = media.GetAttribute("url");
                         preview = media.GetData();
-                        this.fireOnGetMessageAudio(from, id, file, size, url, preview);
+                        this.fireOnGetMessageAudio(node, from, id, file, size, url, preview);
                         break;
                     case "video":
                         file = media.GetAttribute("file");
                         size = Int32.Parse(media.GetAttribute("size"));
                         url = media.GetAttribute("url");
                         preview = media.GetData();
-                        this.fireOnGetMessageVideo(from, id, file, size, url, preview);
+                        this.fireOnGetMessageVideo(node, from, id, file, size, url, preview);
                         break;
                     case "location":
                         double lon = double.Parse(media.GetAttribute("longitude"), System.Globalization.CultureInfo.InvariantCulture);
@@ -354,13 +354,13 @@ namespace WhatsAppApi
                         preview = media.GetData();
                         name = media.GetAttribute("name");
                         url = media.GetAttribute("url");
-                        this.fireOnGetMessageLocation(from, id, lon, lat, url, name, preview);
+                        this.fireOnGetMessageLocation(node, from, id, lon, lat, url, name, preview);
                         break;
                     case "vcard":
                         ProtocolTreeNode vcard = media.GetChild("vcard");
                         name = vcard.GetAttribute("name");
                         dat = vcard.GetData();
-                        this.fireOnGetMessageVcard(from, id, name, dat);
+                        this.fireOnGetMessageVcard(node, from, id, name, dat);
                         break;
                 }
                 this.sendMessageReceived(node);
