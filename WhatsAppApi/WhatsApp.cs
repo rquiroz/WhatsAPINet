@@ -773,7 +773,7 @@ namespace WhatsAppApi
             this.SendNode(node);
         }
 
-        public void SendSetPhoto(string jid, byte[] bytes, byte[] thumbnailBytes)
+        public void SendSetPhoto(string jid, byte[] bytes, byte[] thumbnailBytes = null)
         {
             string id = TicketCounter.MakeId("set_photo_");
 
