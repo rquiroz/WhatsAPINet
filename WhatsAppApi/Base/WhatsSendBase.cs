@@ -402,7 +402,7 @@ namespace WhatsAppApi
                 this.fireOnGetSyncResult(index, sync.GetAttribute("sid"), existingUsers, failedNumbers.ToArray());
             }
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                && node.children.FirstOrDefault().tag == "query"
+                && node.GetChild("query") != null
             )
             {
                 //last seen
@@ -410,14 +410,14 @@ namespace WhatsAppApi
                 this.fireOnGetLastSeen(node.GetAttribute("from"), lastSeen);
             }
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                && (ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "media") || ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "duplicate"))
+                && (node.GetChild("media") != null || node.GetChild("duplicate") != null)
                 )
             {
                 //media upload
                 this.uploadResponse = node;
             }
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "picture")
+                && node.GetChild("picture") != null
                 )
             {
                 //profile picture
@@ -435,12 +435,12 @@ namespace WhatsAppApi
                 }
             }
             if (node.GetAttribute("type").Equals("get", StringComparison.OrdinalIgnoreCase)
-                && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "ping"))
+                && node.GetChild("ping") != null)
             {
                 this.SendPong(node.GetAttribute("id"));
             }
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "group"))
+                && node.GetChild("group") != null)
             {
                 //group(s) info
                 List<WaGroupInfo> groups = new List<WaGroupInfo>();
@@ -458,7 +458,7 @@ namespace WhatsAppApi
                 this.fireOnGetGroups(groups.ToArray());
             }
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
-                && ProtocolTreeNode.TagEquals(node.children.FirstOrDefault(), "participant"))
+                && node.GetChild("participant") != null)
             {
                 //group participants
                 List<string> participants = new List<string>();
