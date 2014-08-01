@@ -111,7 +111,7 @@ namespace WhatsAppApi
             return tmpReturn;
         }
 
-        public void AddMessage(ProtocolTreeNode node)
+        protected void AddMessage(ProtocolTreeNode node)
         {
             lock (messageLock)
             {

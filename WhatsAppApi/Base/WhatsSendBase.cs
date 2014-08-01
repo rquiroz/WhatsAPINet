@@ -591,7 +591,7 @@ namespace WhatsAppApi
             this.SendNode(sendNode);
         }
 
-        public void sendMessageReceived(ProtocolTreeNode msg, string response = "received")
+        protected void sendMessageReceived(ProtocolTreeNode msg, string response = "received")
         {
             FMessage tmpMessage = new FMessage(new FMessage.FMessageIdentifierKey(msg.GetAttribute("from"), true, msg.GetAttribute("id")));
             this.SendMessageReceived(tmpMessage, response);
