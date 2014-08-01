@@ -797,10 +797,19 @@ namespace WhatsAppApi
 
         public void SendStatusUpdate(string status)
         {
-            string id = TicketManager.GenerateId();
-            FMessage message = new FMessage(new FMessage.FMessageIdentifierKey("s.us", true, id));
-            var messageNode = GetMessageNode(message, new ProtocolTreeNode("body", null, WhatsApp.SYSEncoding.GetBytes(status)));
-            this.SendNode(messageNode);
+            string id = TicketCounter.MakeId("sendstatus_");
+
+            ProtocolTreeNode node = new ProtocolTreeNode("iq", new KeyValue[] {
+                new KeyValue("to", "s.whatsapp.net"),
+                new KeyValue("type", "set"),
+                new KeyValue("id", id),
+                new KeyValue("xmlns", "status")
+            },
+            new [] {
+                new ProtocolTreeNode("status", null, System.Text.Encoding.UTF8.GetBytes(status))
+            });
+
+            this.SendNode(node);
         }
 
         public void SendSubjectReceived(string to, string id)
