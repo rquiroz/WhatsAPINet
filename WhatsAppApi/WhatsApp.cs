@@ -776,7 +776,21 @@ namespace WhatsAppApi
         public void SendSetPhoto(string jid, byte[] bytes, byte[] thumbnailBytes)
         {
             string id = TicketCounter.MakeId("set_photo_");
+
+            bytes = this.ProcessProfilePicture(bytes);
+
             var list = new List<ProtocolTreeNode> { new ProtocolTreeNode("picture", null, null, bytes) };
+
+            if (thumbnailBytes == null)
+            {
+                //auto generate
+                thumbnailBytes = this.CreateThumbnail(bytes);
+            }
+
+            //debug
+            System.IO.File.WriteAllBytes("pic.jpg", bytes);
+            System.IO.File.WriteAllBytes("picthumb.jpg", thumbnailBytes);
+
             if (thumbnailBytes != null)
             {
                 list.Add(new ProtocolTreeNode("picture", new[] { new KeyValue("type", "preview") }, null, thumbnailBytes));
