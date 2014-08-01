@@ -71,8 +71,6 @@ namespace WhatsAppApi
             this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             this.socket.Connect(this.whatsHost, this.whatsPort);
             this.socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, this.recvTimeout);
-            this.socket.ReceiveBufferSize = Int32.MaxValue;
-            //this.socket.SendBufferSize = Int32.MaxValue;
 
             if (!this.socket.Connected)
                 throw new ConnectionException("Cannot connect");
