@@ -280,6 +280,15 @@ namespace WhatsAppApi
             }
         }
 
+        public event OnGetGroupSubjectDelegate OnGetGroupSubject;
+        protected void fireOnGetGroupSubject(string gjid, string jid, string username, string subject, DateTime time)
+        {
+            if (this.OnGetGroupSubject != null)
+            {
+                this.OnGetGroupSubject(gjid, jid, username, subject, time);
+            }
+        }
+
         //event delegates
         public delegate void OnContactNameDelegate(string from, string contactName);
         public delegate void NullDelegate();
@@ -305,5 +314,6 @@ namespace WhatsAppApi
         public delegate void OnGetParticipantAddedDelegate(string gjid, string jid, DateTime time);
         public delegate void OnGetParticipantRemovedDelegate(string gjid, string jid, string author, DateTime time);
         public delegate void OnGetParticipantRenamedDelegate(string gjid, string oldJid, string newJid, DateTime time);
+        public delegate void OnGetGroupSubjectDelegate(string gjid, string jid, string username, string subject, DateTime time);
     }
 }

@@ -506,14 +506,27 @@ namespace WhatsAppApi
             {
                 case "picture":
                     ProtocolTreeNode child = node.children.FirstOrDefault();
-                    this.fireOnNotificationPicture(child.tag, child.GetAttribute("jid"), child.GetAttribute("id"));
+                    this.fireOnNotificationPicture(child.tag, 
+                        child.GetAttribute("jid"), 
+                        child.GetAttribute("id"));
                     break;
                 case "status":
                     ProtocolTreeNode child2 = node.children.FirstOrDefault();
-                    this.fireOnGetStatus(node.GetAttribute("from"), child2.tag, node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(child2.GetData()));
+                    this.fireOnGetStatus(node.GetAttribute("from"), 
+                        child2.tag, 
+                        node.GetAttribute("notify"), 
+                        System.Text.Encoding.UTF8.GetString(child2.GetData()));
                     break;
                 case "subject":
-                    //TODO
+                    //fire username notify
+                    this.fireOnGetContactName(node.GetAttribute("participant"),
+                        node.GetAttribute("notify"));
+                    //fire subject notify
+                    this.fireOnGetGroupSubject(node.GetAttribute("from"),
+                        node.GetAttribute("participant"),
+                        node.GetAttribute("notify"),
+                        System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()),
+                        GetDateTimeFromTimestamp(node.GetAttribute("t")));
                     break;
                 case "contacts":
                     //TODO
