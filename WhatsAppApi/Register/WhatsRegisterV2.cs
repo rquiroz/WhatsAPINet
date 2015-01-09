@@ -49,8 +49,8 @@ namespace WhatsAppApi.Register
                 }
                 PhoneNumber pn = new PhoneNumber(phoneNumber);
                 string token = System.Uri.EscapeDataString(WhatsRegisterV2.GetToken(pn.Number));
-                
-                request = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&method={2}&mcc={3}&mnc={4}&token={5}&id={6}&lg={7}&lc={8}", pn.CC, pn.Number, method, pn.MCC, pn.MNC, token, id, pn.ISO639, pn.ISO3166);
+
+                request = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&method={2}&sim_mcc={3}&sim_mnc={4}&token={5}&id={6}&lg={7}&lc={8}", pn.CC, pn.Number, method, pn.MCC, pn.MNC, token, id, pn.ISO639, pn.ISO3166);
                 response = GetResponse(request);
                 password = response.GetJsonValue("pw");
                 if (!string.IsNullOrEmpty(password))
@@ -59,7 +59,7 @@ namespace WhatsAppApi.Register
                 }
                 return (response.GetJsonValue("status") == "sent");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 response = e.Message;
                 return false;
@@ -178,8 +178,8 @@ namespace WhatsAppApi.Register
                 )
                 {
                     //encode 
-                    sb.Append('%'); 
-                    sb.AppendFormat("{0:x2}", (byte)c); 
+                    sb.Append('%');
+                    sb.AppendFormat("{0:x2}", (byte)c);
                 }
                 else
                 {
@@ -203,7 +203,7 @@ namespace WhatsAppApi.Register
         {
             return new string(s.ToArray()).ToMD5String();
         }
- 
+
         private static string ToMD5String(this string s)
         {
             return string.Join(string.Empty, MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(s)).Select(item => item.ToString("x2")).ToArray());
