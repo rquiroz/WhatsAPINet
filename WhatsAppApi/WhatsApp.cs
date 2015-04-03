@@ -8,6 +8,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Web.Script.Serialization;
 using WhatsAppApi.Helper;
 using WhatsAppApi.Parser;
@@ -257,10 +258,12 @@ namespace WhatsAppApi
             this.uploadResponse = null;
             this.SendNode(node);
             int i = 0;
-            while (this.uploadResponse == null && i <= 10)
+            
+            while (this.uploadResponse == null && i <= 20)
             {
+                Thread.Sleep(100);
                 i++;
-                this.pollMessage();
+                //this.pollMessage();
             }
             if (this.uploadResponse != null && this.uploadResponse.GetChild("duplicate") != null)
             {
