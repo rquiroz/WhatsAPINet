@@ -22,9 +22,9 @@ namespace WhatsAppApi
     /// </summary>
     public class WhatsApp : WhatsSendBase
     {
-        public WhatsApp(string phoneNum, string imei, string nick, bool debug = false, bool hidden = false)
+        public WhatsApp(string phoneNum, string password, string nick, bool debug = false, bool hidden = false)
         {
-            this._constructBase(phoneNum, imei, nick, debug, hidden);
+            this._constructBase(phoneNum, password, nick, debug, hidden);
         }
 
         public string SendMessage(string to, string txt)
