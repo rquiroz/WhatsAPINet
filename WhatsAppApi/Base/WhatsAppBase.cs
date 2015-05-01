@@ -54,11 +54,11 @@ namespace WhatsAppApi
 
         protected BinTreeNodeWriter BinWriter;
 
-        protected void _constructBase(string phoneNum, string imei, string nick, bool debug, bool hidden)
+        protected void _constructBase(string phoneNum, string password, string nick, bool debug, bool hidden)
         {
             this.messageQueue = new List<ProtocolTreeNode>();
             this.phoneNumber = phoneNum;
-            this.password = imei;
+            this.password = password;
             this.name = nick;
             this.hidden = hidden;
             WhatsApp.DEBUG = debug;
