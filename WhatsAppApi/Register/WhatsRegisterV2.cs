@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -47,10 +48,10 @@ namespace WhatsAppApi.Register
                     //auto-generate
                     id = GenerateIdentity(phoneNumber);
                 }
-                PhoneNumber pn = new PhoneNumber(phoneNumber);
-                string token = System.Uri.EscapeDataString(WhatsRegisterV2.GetToken(pn.Number));
+                PhoneNumber number = new PhoneNumber(phoneNumber);
+                string token = System.Uri.EscapeDataString(WhatsRegisterV2.GetToken(number.Number));
 
-                request = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&to={0}{1}&method={2}&sim_mcc={3}&sim_mnc={4}&token={5}&id={6}&lg={7}&lc={8}", pn.CC, pn.Number, method, pn.MCC, pn.MNC, token, id, pn.ISO639, pn.ISO3166);
+                request = string.Format("https://v.whatsapp.net/v2/code?cc={0}&in={1}&method={2}&sim_mcc={3}&sim_mnc={4}&token={5}&id={6}&lg={7}&lc={8}", number.CC, number.Number, method, number.MCC, number.MNC, token, id, number.ISO639, number.ISO3166);
                 response = GetResponse(request);
                 password = response.GetJsonValue("pw");
                 if (!string.IsNullOrEmpty(password))

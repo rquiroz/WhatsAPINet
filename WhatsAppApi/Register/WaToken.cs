@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,28 +14,13 @@ namespace WhatsAppApi.Register
 
         public static string GenerateToken(string number)
         {
-            List<byte> key = new List<byte>(Convert.FromBase64String("/UIGKU1FVQa+ATM2A0za7G2KI9S/CwPYjgAbc67v7ep42eO/WeTLx1lb1cHwxpsEgF4+PmYpLd2YpGUdX/A2JQitsHzDwgcdBpUf7psX1BU="));
-
-            List<byte> data = new List<byte>(Convert.FromBase64String(WaToken.WaSignature));
-            data.AddRange(Convert.FromBase64String(WaToken.WaClassesMd5));
-            data.AddRange(System.Text.Encoding.ASCII.GetBytes(number));
-
-            List<byte> opad = GetFilledList(0x5C, 64);
-            List<byte> ipad = GetFilledList(0x36, 64);
-            for (int i = 0; i < opad.Count; i++)
-            {
-                opad[i] = (byte)(opad[i] ^ key[i]);
-                ipad[i] = (byte)(ipad[i] ^ key[i]);
-            }
-
-            SHA1 hasher = SHA1.Create();
-
-            ipad.AddRange(data);
-            data = new List<byte>(hasher.ComputeHash(ipad.ToArray()));
-            opad.AddRange(data);
-            data = new List<byte>(hasher.ComputeHash(opad.ToArray()));
-
-            return Convert.ToBase64String(data.ToArray());
+            string key = "PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk";
+            string releaseTime = "1425519315543";
+            MD5 hasher = MD5.Create();
+            string unhashedToken = key + releaseTime + number;
+            Debug.WriteLine(unhashedToken);
+            byte[] token = hasher.ComputeHash(Encoding.UTF8.GetBytes(unhashedToken));
+            return BitConverter.ToString(token).Replace("-", "").ToLowerInvariant();
         }
 
         private static List<byte> GetFilledList(byte item, int length)
