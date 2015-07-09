@@ -716,9 +716,13 @@ namespace WhatsAppApi
                     toNodes.Add(new ProtocolTreeNode("to", new KeyValue[] { new KeyValue("jid", WhatsAppApi.WhatsApp.GetJID(target)) }));
                 }
 
+                TimeSpan span = DateTime.Now.Subtract(new DateTime(1970,1,1,0,0,0));
+
+                //message.identifier_key
+
                 ProtocolTreeNode broadcastNode = new ProtocolTreeNode("broadcast", null, toNodes);
                 ProtocolTreeNode messageNode = new ProtocolTreeNode("message", new KeyValue[] {
-                    new KeyValue("to", "broadcast"),
+                    new KeyValue("to", span.TotalSeconds + "@broadcast"),
                     new KeyValue("type", message.media_wa_type == FMessage.Type.Undefined?"text":"media"),
                     new KeyValue("id", message.identifier_key.id)
                 }, new ProtocolTreeNode[] {
@@ -728,6 +732,43 @@ namespace WhatsAppApi
                 });
                 this.SendNode(messageNode);
             }
+        }
+
+        public void SendGetBroadcastLists()
+        {
+            string id = TicketCounter.MakeId("get_lists_");
+            var listNode = new ProtocolTreeNode("lists", null);
+            var node = new ProtocolTreeNode("iq", new[]
+            {
+                new KeyValue("to", "s.whatsapp.net"),
+                new KeyValue("id", id),
+                new KeyValue("xmlns", "w:b"),
+                new KeyValue("type", "get")
+            }, new[] { listNode });
+
+            SendNode(node);
+        }
+
+        public void sendDeleteBroadcastLists(IEnumerable<string> listIds)
+        {
+            if (listIds == null) return;
+
+            string id = TicketCounter.MakeId(string.Empty);
+            var listNodes = new List<ProtocolTreeNode>();
+            foreach (var listId in listIds)
+            {
+                listNodes.Add(new ProtocolTreeNode("list", new List<KeyValue> { new KeyValue("id", listId) }, null, null));
+            }
+            var deleteNode = new ProtocolTreeNode("delete", null, listNodes, null);
+            var node = new ProtocolTreeNode("iq", new[]
+            {
+                new KeyValue("to", "s.whatsapp.net"),
+                new KeyValue("id", id),
+                new KeyValue("xmlns", "w:b"),
+                new KeyValue("type", "set")
+            }, new[] { deleteNode });
+
+            SendNode(node);
         }
 
         public void SendNop()

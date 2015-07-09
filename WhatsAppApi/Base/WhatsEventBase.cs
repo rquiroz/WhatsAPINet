@@ -289,6 +289,16 @@ namespace WhatsAppApi
             }
         }
 
+        public event OnGetBroadcastListsDelegate OnGetBroadcastLists;
+
+        protected void fireOnGetBroadcastLists(IEnumerable<string> listIds)
+        {
+            if (OnGetBroadcastLists != null)
+            {
+                OnGetBroadcastLists(listIds);
+            }
+        }
+
         //event delegates
         public delegate void OnContactNameDelegate(string from, string contactName);
         public delegate void NullDelegate();
@@ -315,5 +325,6 @@ namespace WhatsAppApi
         public delegate void OnGetParticipantRemovedDelegate(string gjid, string jid, string author, DateTime time);
         public delegate void OnGetParticipantRenamedDelegate(string gjid, string oldJid, string newJid, DateTime time);
         public delegate void OnGetGroupSubjectDelegate(string gjid, string jid, string username, string subject, DateTime time);
+        public delegate void OnGetBroadcastListsDelegate(IEnumerable<string> listIds);
     }
 }

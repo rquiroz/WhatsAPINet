@@ -401,26 +401,29 @@ namespace WhatsAppApi
                 Int32.TryParse(sync.GetAttribute("index"), out index);
                 this.fireOnGetSyncResult(index, sync.GetAttribute("sid"), existingUsers, failedNumbers.ToArray());
             }
+
+            // last seen
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
                 && node.GetChild("query") != null
             )
-            {
-                //last seen
+            {                
                 DateTime lastSeen = DateTime.Now.AddSeconds(double.Parse(node.children.FirstOrDefault().GetAttribute("seconds")) * -1);
                 this.fireOnGetLastSeen(node.GetAttribute("from"), lastSeen);
             }
+
+            // media upload
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
                 && (node.GetChild("media") != null || node.GetChild("duplicate") != null)
                 )
             {
-                //media upload
                 this.uploadResponse = node;
             }
+
+            // profile picture
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
                 && node.GetChild("picture") != null
                 )
             {
-                //profile picture
                 string from = node.GetAttribute("from");
                 string id = node.GetChild("picture").GetAttribute("id");
                 byte[] dat = node.GetChild("picture").GetData();
@@ -434,15 +437,18 @@ namespace WhatsAppApi
                     this.fireOnGetPhoto(from, id, dat);
                 }
             }
+
+            // ping
             if (node.GetAttribute("type").Equals("get", StringComparison.OrdinalIgnoreCase)
                 && node.GetChild("ping") != null)
             {
                 this.SendPong(node.GetAttribute("id"));
             }
+
+            // group(s) info
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
                 && node.GetChild("group") != null)
             {
-                //group(s) info
                 List<WaGroupInfo> groups = new List<WaGroupInfo>();
                 foreach (ProtocolTreeNode group in node.children)
                 {
@@ -457,10 +463,11 @@ namespace WhatsAppApi
                 }
                 this.fireOnGetGroups(groups.ToArray());
             }
+
+            // group participants
             if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
                 && node.GetChild("participant") != null)
             {
-                //group participants
                 List<string> participants = new List<string>();
                 foreach (ProtocolTreeNode part in node.GetAllChildren())
                 {
@@ -471,6 +478,8 @@ namespace WhatsAppApi
                 }
                 this.fireOnGetGroupParticipants(node.GetAttribute("from"), participants.ToArray());
             }
+
+            // status
             if (node.GetAttribute("type") == "result" && node.GetChild("status") != null)
             {
                 foreach (ProtocolTreeNode status in node.GetChild("status").GetAllChildren())
@@ -481,6 +490,8 @@ namespace WhatsAppApi
                         WhatsApp.SYSEncoding.GetString(status.GetData()));
                 }
             }
+
+            // privacy
             if (node.GetAttribute("type") == "result" && node.GetChild("privacy") != null)
             {
                 Dictionary<VisibilityCategory, VisibilitySetting> settings = new Dictionary<VisibilityCategory, VisibilitySetting>();
@@ -492,6 +503,19 @@ namespace WhatsAppApi
                     );
                 }
                 this.fireOnGetPrivacySettings(settings);
+            }
+
+            // broadcast lists
+            if (node.GetAttribute("type").Equals("result", StringComparison.OrdinalIgnoreCase)
+                && node.GetChild("list") != null
+            )
+            {
+                var lists = new List<string>();
+                foreach (var list in node.GetAllChildren("list"))
+                {
+                    lists.Add(list.GetAttribute("id"));
+                }
+                fireOnGetBroadcastLists(lists);
             }
         }
 
