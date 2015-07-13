@@ -716,13 +716,9 @@ namespace WhatsAppApi
                     toNodes.Add(new ProtocolTreeNode("to", new KeyValue[] { new KeyValue("jid", WhatsAppApi.WhatsApp.GetJID(target)) }));
                 }
 
-                TimeSpan span = DateTime.Now.Subtract(new DateTime(1970,1,1,0,0,0));
-
-                //message.identifier_key
-
                 ProtocolTreeNode broadcastNode = new ProtocolTreeNode("broadcast", null, toNodes);
                 ProtocolTreeNode messageNode = new ProtocolTreeNode("message", new KeyValue[] {
-                    new KeyValue("to", span.TotalSeconds + "@broadcast"),
+                    new KeyValue("to", message.identifier_key.remote_jid),
                     new KeyValue("type", message.media_wa_type == FMessage.Type.Undefined?"text":"media"),
                     new KeyValue("id", message.identifier_key.id)
                 }, new ProtocolTreeNode[] {

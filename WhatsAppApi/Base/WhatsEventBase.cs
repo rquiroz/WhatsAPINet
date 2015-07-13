@@ -128,20 +128,20 @@ namespace WhatsAppApi
         }
 
         public event OnGetMessageReceivedDelegate OnGetMessageReceivedServer;
-        protected void fireOnGetMessageReceivedServer(string from, string id)
+        protected void fireOnGetMessageReceivedServer(string from, string participant, string id)
         {
             if (this.OnGetMessageReceivedServer != null)
             {
-                this.OnGetMessageReceivedServer(from, id);
+                this.OnGetMessageReceivedServer(from, participant, id);
             }
         }
 
         public event OnGetMessageReceivedDelegate OnGetMessageReceivedClient;
-        protected void fireOnGetMessageReceivedClient(string from, string id)
+        protected void fireOnGetMessageReceivedClient(string from, string participant, string id)
         {
             if (this.OnGetMessageReceivedClient != null)
             {
-                this.OnGetMessageReceivedClient(from, id);
+                this.OnGetMessageReceivedClient(from, participant, id);
             }
         }
 
@@ -306,7 +306,7 @@ namespace WhatsAppApi
         public delegate void LoginSuccessDelegate(string phoneNumber, byte[] data);
         public delegate void StringDelegate(string data);
         public delegate void OnErrorDelegate(string id, string from, int code, string text);
-        public delegate void OnGetMessageReceivedDelegate(string from, string id);
+        public delegate void OnGetMessageReceivedDelegate(string from, string participant, string id);
         public delegate void OnNotificationPictureDelegate(string type, string jid, string id);
         public delegate void OnGetMessageDelegate(ProtocolTreeNode messageNode, string from, string id, string name, string message, bool receipt_sent);
         public delegate void OnGetPresenceDelegate(string from, string type);

@@ -185,13 +185,14 @@ namespace WhatsAppApi
                     if (ProtocolTreeNode.TagEquals(node, "receipt"))
                     {
                         string from = node.GetAttribute("from");
+                        string participant = node.GetAttribute("participant");
                         string id = node.GetAttribute("id");
                         string type = node.GetAttribute("type") ?? "delivery";
                         switch (type)
                         {
                             case "delivery":
                                 //delivered to target
-                                this.fireOnGetMessageReceivedClient(from, id);
+                                this.fireOnGetMessageReceivedClient(from, participant, id);
                                 break;
                             case "read":
                                 //read by target
@@ -275,7 +276,7 @@ namespace WhatsAppApi
                         if (cls == "message")
                         {
                             //server receipt
-                            this.fireOnGetMessageReceivedServer(node.GetAttribute("from"), node.GetAttribute("id"));
+                            this.fireOnGetMessageReceivedServer(node.GetAttribute("from"), node.GetAttribute("participant"), node.GetAttribute("id"));
                         }
                     }
 
