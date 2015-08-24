@@ -15,7 +15,7 @@ namespace WhatsAppApi.Register
         public static string GenerateToken(string number)
         {
             string key = "PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk";
-            string releaseTime = "1425519315543";
+            string releaseTime = "1439921717185";
             MD5 hasher = MD5.Create();
             string unhashedToken = key + releaseTime + number;
             Debug.WriteLine(unhashedToken);
