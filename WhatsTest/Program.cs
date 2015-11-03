@@ -191,12 +191,12 @@ namespace WhatsTest
             Console.WriteLine("{0} last seen on {1}", from, lastSeen.ToString());
         }
 
-        static void wa_OnGetMessageReceivedServer(string from, string id)
+        static void wa_OnGetMessageReceivedServer(string from, string participant, string id)
         {
             Console.WriteLine("Message {0} to {1} received by server", id, from);
         }
 
-        static void wa_OnGetMessageReceivedClient(string from, string id)
+        static void wa_OnGetMessageReceivedClient(string from, string participant, string id)
         {
             Console.WriteLine("Message {0} to {1} received by client", id, from);
         }

@@ -39,7 +39,7 @@ namespace WhatsAppPort
                 return;
 
             var jidSplit = mess.identifier_key.remote_jid.Split('@');
-            WhatsUser tmpWhatsUser = new WhatsUser(jidSplit[0], jidSplit[1], mess.identifier_key.serverNickname);
+            WhatsUser tmpWhatsUser = new WhatsUser(jidSplit[0], jidSplit[1], mess.identifier_key.serverName);
             User tmpUser = new User(jidSplit[0], jidSplit[1]);
             tmpUser.SetUser(tmpWhatsUser);
 

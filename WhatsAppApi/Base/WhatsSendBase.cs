@@ -192,10 +192,10 @@ namespace WhatsAppApi
                         {
                             case "delivery":
                                 //delivered to target
-                                this.fireOnGetMessageReceivedClient(from, participant, id);
+                                FireOnGetMessageReceivedClient(from, participant, id);
                                 break;
                             case "read":
-                                //read by target
+                                FireOnGetMessageReadClient(from, participant, id);
                                 //todo
                                 break;
                             case "played":
@@ -276,7 +276,7 @@ namespace WhatsAppApi
                         if (cls == "message")
                         {
                             //server receipt
-                            this.fireOnGetMessageReceivedServer(node.GetAttribute("from"), node.GetAttribute("participant"), node.GetAttribute("id"));
+                            FireOnGetMessageReceivedServer(node.GetAttribute("from"), node.GetAttribute("participant"), node.GetAttribute("id"));
                         }
                     }
 
