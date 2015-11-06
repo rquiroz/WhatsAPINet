@@ -522,7 +522,7 @@ namespace WhatsAppApi.Parser
             public bool from_me;
             public string id;
             public string remote_jid;
-            public string serverName;
+            public string serverNickname;
 
             public FMessageIdentifierKey(string remote_jid, bool from_me, string id)
             {

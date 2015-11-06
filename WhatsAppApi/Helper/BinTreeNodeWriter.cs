@@ -19,7 +19,7 @@ namespace WhatsAppApi.Helper
         {
             var attributes = new List<KeyValue>();
             this.buffer = new List<byte>();
-            
+
             attributes.Add(new KeyValue("to", domain));
             attributes.Add(new KeyValue("resource", resource));
             this.writeListStart(attributes.Count * 2 + 1);
@@ -31,7 +31,7 @@ namespace WhatsAppApi.Helper
             this.buffer.Add((byte)'W');
             this.buffer.Add((byte)'A');
             this.buffer.Add(0x1);
-            this.buffer.Add(0x4);
+            this.buffer.Add(0x5);
             this.buffer.AddRange(ret);
             ret = buffer.ToArray();
             this.buffer = new List<byte>();
@@ -46,7 +46,7 @@ namespace WhatsAppApi.Helper
             }
             else
             {
-                this.DebugPrint(node.NodeString("SENT: "));
+                this.DebugPrint(node.NodeString("tx "));
                 this.writeInternal(node);
             }
             return this.flushBuffer(encrypt);

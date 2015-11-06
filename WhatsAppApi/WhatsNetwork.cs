@@ -46,7 +46,6 @@ namespace WhatsAppApi
         public WhatsNetwork(string whatsHost, int port, int timeout = 2000)
         {
             this.recvTimeout = timeout;
-            this.whatsHost = whatsHost;
             this.whatsPort = port;
             this.incomplete_message = new List<byte>();
         }
@@ -58,18 +57,18 @@ namespace WhatsAppApi
         public WhatsNetwork(int timeout = 2000)
         {
             this.recvTimeout = timeout;
-            this.whatsHost = Settings.WhatsConstants.WhatsAppHost;
             this.whatsPort = Settings.WhatsConstants.WhatsPort;
             this.incomplete_message = new List<byte>();
         }
-        
+
         /// <summary>
         /// Connect to the whatsapp server
         /// </summary>
         public void Connect()
         {
             this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            this.socket.Connect(this.whatsHost, this.whatsPort);
+            Random random = new Random();
+            this.socket.Connect("e" + random.Next(1, 17) + ".whatsapp.net", this.whatsPort);
             this.socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, this.recvTimeout);
 
             if (!this.socket.Connected)
@@ -88,7 +87,7 @@ namespace WhatsAppApi
         }
 
         /// <summary>
-        /// Read 1024 bytes 
+        /// Read 1024 bytes
         /// </summary>
         /// <returns></returns>
         public byte[] ReadData(int length = 1024)
@@ -129,7 +128,8 @@ namespace WhatsAppApi
                 throw new Exception("Failed to read node header");
             }
             int nodeLength = 0;
-            nodeLength = (int)nodeHeader[1] << 8;
+            nodeLength = ((int)nodeHeader[0] & 0x0F) << 16;
+            nodeLength |= (int)nodeHeader[1] << 8;
             nodeLength |= (int)nodeHeader[2] << 0;
 
             //buffered read
@@ -152,7 +152,7 @@ namespace WhatsAppApi
             buff.AddRange(nodeData.ToArray());
             return buff.ToArray();
         }
-       
+
         /// <summary>
         /// Read in a message with a specific length
         /// </summary>
@@ -183,7 +183,7 @@ namespace WhatsAppApi
                 {
                     System.Threading.Thread.Sleep(100);
                 }
-            } 
+            }
             while (receiveLength <= 0);
 
             byte[] tmpRet = new byte[receiveLength];

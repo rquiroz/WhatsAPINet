@@ -46,6 +46,8 @@ namespace WhatsAppApi
                 this.pollMessage();
             }
 
+            Int32 unixTimestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            TicketCounter.setLoginTime(unixTimestamp.ToString());
             this.SendAvailableForChat(this.name, this.hidden);
         }
 
@@ -77,7 +79,11 @@ namespace WhatsAppApi
 
         protected ProtocolTreeNode addFeatures()
         {
-            return new ProtocolTreeNode("stream:features", null);
+            ProtocolTreeNode readReceipts = new ProtocolTreeNode("readreceipts", null, null, null);
+            ProtocolTreeNode groups_v2 = new ProtocolTreeNode("groups_v2", null, null, null);
+            ProtocolTreeNode privacy = new ProtocolTreeNode("privacy", null, null, null);
+            ProtocolTreeNode presencev2 = new ProtocolTreeNode("presence", null, null, null);
+            return new ProtocolTreeNode("stream:features", null, new ProtocolTreeNode[] { readReceipts, groups_v2, privacy, presencev2 }, null);
         }
 
         protected ProtocolTreeNode addAuth()
@@ -111,8 +117,6 @@ namespace WhatsAppApi
                 b.AddRange(WhatsApp.SYSEncoding.GetBytes(this.phoneNumber));
                 b.AddRange(this._challengeBytes);
                 b.AddRange(WhatsApp.SYSEncoding.GetBytes(Helper.Func.GetNowUnixTimestamp().ToString()));
-                b.AddRange(WhatsApp.SYSEncoding.GetBytes(WhatsConstants.UserAgent));
-                b.AddRange(WhatsApp.SYSEncoding.GetBytes(String.Format(" MccMnc/{0}001", pn.MCC)));
                 data = b.ToArray();
 
                 this._challengeBytes = null;
@@ -142,9 +146,7 @@ namespace WhatsAppApi
 
                 byte[] data = b.ToArray();
                 this.BinWriter.Key.EncodeMessage(data, 0, 4, data.Length - 4);
-                var node = new ProtocolTreeNode("response",
-                    new KeyValue[] { new KeyValue("xmlns", "urn:ietf:params:xml:ns:xmpp-sasl") },
-                    data);
+                var node = new ProtocolTreeNode("response", null, null, data);
 
                 return node;
             }
@@ -158,141 +160,140 @@ namespace WhatsAppApi
 
         protected bool processInboundData(byte[] msgdata, bool autoReceipt = true)
         {
-            try
+            ProtocolTreeNode node = this.reader.nextTree(msgdata);
+            if (node == null)
+                return false;
+
+            if (ProtocolTreeNode.TagEquals(node, "challenge"))
             {
-                ProtocolTreeNode node = this.reader.nextTree(msgdata);
-                if (node != null)
+                this.processChallenge(node);
+            }
+            else if (ProtocolTreeNode.TagEquals(node, "success"))
+            {
+                this.loginStatus = CONNECTION_STATUS.LOGGEDIN;
+                this.accountinfo = new AccountInfo(node.GetAttribute("status"),
+                                                    node.GetAttribute("kind"),
+                                                    node.GetAttribute("creation"),
+                                                    node.GetAttribute("expiration"));
+                this.fireOnLoginSuccess(this.phoneNumber, node.GetData());
+            }
+            else if (ProtocolTreeNode.TagEquals(node, "failure"))
+            {
+                this.loginStatus = CONNECTION_STATUS.UNAUTHORIZED;
+                this.fireOnLoginFailed(node.children.FirstOrDefault().tag);
+            }
+
+            if (ProtocolTreeNode.TagEquals(node, "receipt"))
+            {
+                string from = node.GetAttribute("from");
+                string participant = node.GetAttribute("participant");
+                string id = node.GetAttribute("id");
+                string type = node.GetAttribute("type") ?? "delivery";
+                switch (type)
                 {
-                    if (ProtocolTreeNode.TagEquals(node, "challenge"))
-                    {
-                        this.processChallenge(node);
-                    }
-                    else if (ProtocolTreeNode.TagEquals(node, "success"))
-                    {
-                        this.loginStatus = CONNECTION_STATUS.LOGGEDIN;
-                        this.accountinfo = new AccountInfo(node.GetAttribute("status"),
-                                                           node.GetAttribute("kind"),
-                                                           node.GetAttribute("creation"),
-                                                           node.GetAttribute("expiration"));
-                        this.fireOnLoginSuccess(this.phoneNumber, node.GetData());
-                    }
-                    else if (ProtocolTreeNode.TagEquals(node, "failure"))
-                    {
-                        this.loginStatus = CONNECTION_STATUS.UNAUTHORIZED;
-                        this.fireOnLoginFailed(node.children.FirstOrDefault().tag);
-                    }
+                    case "delivery":
+                        //delivered to target
+                        FireOnGetMessageReceivedClient(from, participant, id);
+                        break;
+                    case "read":
+                        FireOnGetMessageReadClient(from, participant, id);
+                        //todo
+                        break;
+                    case "played":
+                        //played by target
+                        //todo
+                        break;
+                }
 
-                    if (ProtocolTreeNode.TagEquals(node, "receipt"))
+                var list = node.GetChild("list");
+                if (list != null)
+                    foreach (var receipt in list.GetAllChildren())
                     {
-                        string from = node.GetAttribute("from");
-                        string participant = node.GetAttribute("participant");
-                        string id = node.GetAttribute("id");
-                        string type = node.GetAttribute("type") ?? "delivery";
-                        switch (type)
-                        {
-                            case "delivery":
-                                //delivered to target
-                                FireOnGetMessageReceivedClient(from, participant, id);
-                                break;
-                            case "read":
-                                FireOnGetMessageReadClient(from, participant, id);
-                                //todo
-                                break;
-                            case "played":
-                                //played by target
-                                //todo
-                                break;
-                        }
-
-                        //send ack
-                        SendNotificationAck(node, type);
+                        FireOnGetMessageReceivedClient(from, participant, receipt.GetAttribute("id"));
                     }
 
-                    if (ProtocolTreeNode.TagEquals(node, "message"))
+                //send ack
+                SendNotificationAck(node, type);
+            }
+
+            if (ProtocolTreeNode.TagEquals(node, "message"))
+            {
+                this.handleMessage(node, autoReceipt);
+            }
+
+
+            if (ProtocolTreeNode.TagEquals(node, "iq"))
+            {
+                this.handleIq(node);
+            }
+
+            if (ProtocolTreeNode.TagEquals(node, "stream:error"))
+            {
+                var textNode = node.GetChild("text");
+                if (textNode != null)
+                {
+                    string content = WhatsApp.SYSEncoding.GetString(textNode.GetData());
+                    Helper.DebugAdapter.Instance.fireOnPrintDebug("Error : " + content);
+                }
+                this.Disconnect();
+            }
+
+            if (ProtocolTreeNode.TagEquals(node, "presence"))
+            {
+                //presence node
+                this.fireOnGetPresence(node.GetAttribute("from"), node.GetAttribute("type"));
+            }
+
+            if (node.tag == "ib")
+            {
+                foreach (ProtocolTreeNode child in node.children)
+                {
+                    switch (child.tag)
                     {
-                        this.handleMessage(node, autoReceipt);
+                        case "dirty":
+                            this.SendClearDirty(child.GetAttribute("type"));
+                            break;
+                        case "offline":
+                            //this.SendQrSync(null);
+                            break;
+                        default:
+                            throw new NotImplementedException(node.NodeString());
                     }
-
-
-                    if (ProtocolTreeNode.TagEquals(node, "iq"))
-                    {
-                        this.handleIq(node);
-                    }
-
-                    if (ProtocolTreeNode.TagEquals(node, "stream:error"))
-                    {
-                        var textNode = node.GetChild("text");
-                        if (textNode != null)
-                        {
-                            string content = WhatsApp.SYSEncoding.GetString(textNode.GetData());
-                            Helper.DebugAdapter.Instance.fireOnPrintDebug("Error : " + content);
-                        }
-                        this.Disconnect();
-                    }
-
-                    if (ProtocolTreeNode.TagEquals(node, "presence"))
-                    {
-                        //presence node
-                        this.fireOnGetPresence(node.GetAttribute("from"), node.GetAttribute("type"));
-                    }
-
-                    if (node.tag == "ib")
-                    {
-                        foreach (ProtocolTreeNode child in node.children)
-                        {
-                            switch (child.tag)
-                            {
-                                case "dirty":
-                                    this.SendClearDirty(child.GetAttribute("type"));
-                                    break;
-                                case "offline":
-                                    //this.SendQrSync(null);
-                                    break;
-                                default:
-                                    throw new NotImplementedException(node.NodeString());
-                            }
-                        }
-                    }
-
-                    if (node.tag == "chatstate")
-                    {
-                        string state = node.children.FirstOrDefault().tag;
-                        switch (state)
-                        {
-                            case "composing":
-                                this.fireOnGetTyping(node.GetAttribute("from"));
-                                break;
-                            case "paused":
-                                this.fireOnGetPaused(node.GetAttribute("from"));
-                                break;
-                            default:
-                                throw new NotImplementedException(node.NodeString());
-                        }
-                    }
-
-                    if (node.tag == "ack")
-                    {
-                        string cls = node.GetAttribute("class");
-                        if (cls == "message")
-                        {
-                            //server receipt
-                            FireOnGetMessageReceivedServer(node.GetAttribute("from"), node.GetAttribute("participant"), node.GetAttribute("id"));
-                        }
-                    }
-
-                    if (node.tag == "notification")
-                    {
-                        this.handleNotification(node);
-                    }
-
-                    return true;
                 }
             }
-            catch (Exception e)
+
+            if (node.tag == "chatstate")
             {
-                throw e;
+                string state = node.children.FirstOrDefault().tag;
+                switch (state)
+                {
+                    case "composing":
+                        this.fireOnGetTyping(node.GetAttribute("from"));
+                        break;
+                    case "paused":
+                        this.fireOnGetPaused(node.GetAttribute("from"));
+                        break;
+                    default:
+                        throw new NotImplementedException(node.NodeString());
+                }
             }
-            return false;
+
+            if (node.tag == "ack")
+            {
+                string cls = node.GetAttribute("class");
+                if (cls == "message")
+                {
+                    //server receipt
+                    FireOnGetMessageReceivedServer(node.GetAttribute("from"), node.GetAttribute("participant"), node.GetAttribute("id"));
+                }
+            }
+
+            if (node.tag == "notification")
+            {
+                this.handleNotification(node);
+            }
+
+            return true;
         }
 
         protected void handleMessage(ProtocolTreeNode node, bool autoReceipt)
@@ -306,13 +307,20 @@ namespace WhatsAppApi
             {
                 throw new NotImplementedException(node.NodeString());
             }
-            if (node.GetChild("body") != null)
+            if (node.GetChild("body") != null || node.GetChild("enc") != null)
             {
-                //text message
-                this.fireOnGetMessage(node, node.GetAttribute("from"), node.GetAttribute("id"), node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(node.GetChild("body").GetData()), autoReceipt);
-                if (autoReceipt)
+                // text message
+                // encrypted messages have no body node. Instead, the encrypted cipher text is provided within the enc node
+                var contentNode = node.GetChild("body") ?? node.GetChild("enc");
+                if (contentNode != null)
                 {
-                    this.sendMessageReceived(node);
+                    this.fireOnGetMessage(node, node.GetAttribute("from"), node.GetAttribute("id"),
+                                        node.GetAttribute("notify"), System.Text.Encoding.UTF8.GetString(contentNode.GetData()),
+                                        autoReceipt);
+                    if (autoReceipt)
+                    {
+                        this.sendMessageReceived(node);
+                    }
                 }
             }
             if (node.GetChild("media") != null)
@@ -593,10 +601,7 @@ namespace WhatsAppApi
             string to = node.GetAttribute("to");
             string participant = node.GetAttribute("participant");
             string id = node.GetAttribute("id");
-            if (type == null)
-            {
-                type = node.GetAttribute("type");
-            }
+
             List<KeyValue> attributes = new List<KeyValue>();
             if (!string.IsNullOrEmpty(to))
             {
@@ -606,31 +611,36 @@ namespace WhatsAppApi
             {
                 attributes.Add(new KeyValue("participant", participant));
             }
+
+            if (!string.IsNullOrEmpty(type))
+            {
+                attributes.Add(new KeyValue("type", type));
+            }
             attributes.AddRange(new[] {
                 new KeyValue("to", from),
                 new KeyValue("class", node.tag),
-                new KeyValue("id", id),
-                new KeyValue("type", type)
-            });
+                new KeyValue("id", id)
+             });
+
             ProtocolTreeNode sendNode = new ProtocolTreeNode("ack", attributes.ToArray());
             this.SendNode(sendNode);
         }
 
-        protected void sendMessageReceived(ProtocolTreeNode msg, string response = "received")
+        protected void sendMessageReceived(ProtocolTreeNode msg, string type = "read")
         {
             FMessage tmpMessage = new FMessage(new FMessage.FMessageIdentifierKey(msg.GetAttribute("from"), true, msg.GetAttribute("id")));
-            this.SendMessageReceived(tmpMessage, response);
+            this.SendMessageReceived(tmpMessage, type);
         }
 
         public void SendAvailableForChat(string nickName = null, bool isHidden = false)
         {
-            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", (!String.IsNullOrEmpty(nickName)?nickName:this.name)) });
+            var node = new ProtocolTreeNode("presence", new[] { new KeyValue("name", (!String.IsNullOrEmpty(nickName) ? nickName : this.name)) });
             this.SendNode(node);
         }
 
         protected void SendClearDirty(IEnumerable<string> categoryNames)
         {
-            string id = TicketCounter.MakeId("clean_dirty_");
+            string id = TicketCounter.MakeId();
             List<ProtocolTreeNode> children = new List<ProtocolTreeNode>();
             foreach (string category in categoryNames)
             {
@@ -658,12 +668,22 @@ namespace WhatsAppApi
             this.SendReceiptAck(to, id, "delivered");
         }
 
-        protected void SendMessageReceived(FMessage message, string response)
+        protected void SendMessageReceived(FMessage message, string type = "read")
         {
-            ProtocolTreeNode node = new ProtocolTreeNode("receipt", new[] {
-                new KeyValue("to", message.identifier_key.remote_jid),
-                new KeyValue("id", message.identifier_key.id)
-            });
+
+            KeyValue toAttrib = new KeyValue("to", message.identifier_key.remote_jid);
+            KeyValue idAttrib = new KeyValue("id", message.identifier_key.id);
+
+            var attribs = new List<KeyValue>();
+            attribs.Add(toAttrib);
+            attribs.Add(idAttrib);
+            if (type.Equals("read"))
+            {
+                KeyValue typeAttrib = new KeyValue("type", type);
+                attribs.Add(typeAttrib);
+            }
+
+            ProtocolTreeNode node = new ProtocolTreeNode("receipt", attribs.ToArray());
 
             this.SendNode(node);
         }
@@ -683,7 +703,7 @@ namespace WhatsAppApi
 
         private void SendReceiptAck(string to, string id, string receiptType)
         {
-            var tmpChild = new ProtocolTreeNode("ack", new[] { new KeyValue("xmlns", "urn:xmpp:receipts"), new KeyValue("type", receiptType) });
+            var tmpChild = new ProtocolTreeNode("ack", new[] { new KeyValue("xmlns", "urn:xmpp:receipts") });
             var resultNode = new ProtocolTreeNode("message", new[]
                                                              {
                                                                  new KeyValue("to", to),

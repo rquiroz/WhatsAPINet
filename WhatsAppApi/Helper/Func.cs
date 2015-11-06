@@ -22,7 +22,7 @@ namespace WhatsAppApi.Helper
 
         public static string _hex(int val)
         {
-            return (val.ToString("X").Length%2 == 0) ? val.ToString("X") : ("0" + val.ToString("X"));
+            return (val.ToString("X").Length % 2 == 0) ? val.ToString("X") : ("0" + val.ToString("X"));
         }
 
         public static string random_uuid()
@@ -41,7 +41,7 @@ namespace WhatsAppApi.Helper
         {
             string hex = "0x";
             for (int i = 0; i < str.Length; i++)
-                hex += ((int) str[i]).ToString("x");
+                hex += ((int)str[i]).ToString("x");
             return hex;
         }
 

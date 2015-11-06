@@ -91,7 +91,7 @@ namespace WhatsAppApi.Response
                 var tmpSyncInvoke = tmpSingleCast.Target as ISynchronizeInvoke;
                 if (tmpSyncInvoke != null && tmpSyncInvoke.InvokeRequired)
                 {
-                    tmpSyncInvoke.BeginInvoke(tmpSingleCast, new object[] {mess});
+                    tmpSyncInvoke.BeginInvoke(tmpSingleCast, new object[] { mess });
                     continue;
                 }
                 h.BeginInvoke(mess, null, null);

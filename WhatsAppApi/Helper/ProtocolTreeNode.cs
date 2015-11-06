@@ -62,7 +62,7 @@ namespace WhatsAppApi.Helper
                     ret += string.Format("--{0} byte--", this.data.Length);
                 }
             }
-            
+
             if (this.children != null && this.children.Count() > 0)
             {
                 foreach (var item in this.children)

@@ -14,11 +14,6 @@ namespace WhatsAppApi.Settings
         #region ServerConstants
 
         /// <summary>
-        /// The whatsapp digest
-        /// </summary>
-        public const string WhatsAppDigest = "xmpp/s.whatsapp.net";
-
-        /// <summary>
         /// The whatsapp host
         /// </summary>
         public const string WhatsAppHost = "c3.whatsapp.net";
@@ -42,9 +37,7 @@ namespace WhatsAppApi.Settings
         /// <summary>
         /// The whatsapp version the client complies to
         /// </summary>
-        //public const string WhatsAppVer = "2.12.88";
-        //public const string WhatsAppVer = "2.12.96";
-        public const string WhatsAppVer = "2.13.9";
+        public const string WhatsAppVer = "2.12.96";
 
         /// <summary>
         /// The port that needs to be connected to
@@ -54,15 +47,12 @@ namespace WhatsAppApi.Settings
         /// <summary>
         /// iPhone device
         /// </summary>
-        //public const string Device = "Android";
         public const string Device = "S40";
 
         /// <summary>
         /// The useragent used for http requests
         /// </summary>
-        //public const string UserAgent = "WhatsApp/2.12.88 S40Version/14.26 Device/Nokia302";
-        //public const string UserAgent = "WhatsApp/2.12.96 S40Version/14.26 Device/Nokia302";
-        public const string UserAgent = "WhatsApp/2.13.9 S40Version/14.26 Device/Nokia302";
+        public const string UserAgent = "WhatsApp/2.12.96 S40Version/14.26 Device/Nokia302";
 
         #endregion
 
@@ -73,7 +63,7 @@ namespace WhatsAppApi.Settings
         public static NumberStyles WhatsAppNumberStyle = (NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign);
 
         /// <summary>
-        /// Unix epoch DateTime 
+        /// Unix epoch DateTime
         /// </summary>
         public static DateTime UnixEpoch = new DateTime(0x7b2, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         #endregion
