@@ -12,6 +12,8 @@ namespace WhatsAppApi
 {
     public class WhatsAppBase : WhatsEventBase
     {
+        public long m_LastSentInfo = 0;
+
         protected ProtocolTreeNode uploadResponse;
 
         protected AccountInfo accountinfo;
@@ -140,6 +142,7 @@ namespace WhatsAppApi
 
         protected void SendNode(ProtocolTreeNode node)
         {
+            m_LastSentInfo = DateTime.UtcNow.ToFileTime();
             this.SendData(this.BinWriter.Write(node));
         }
     }

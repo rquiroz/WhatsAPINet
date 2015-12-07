@@ -66,10 +66,17 @@ namespace WhatsAppApi
         /// </summary>
         public void Connect()
         {
-            this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            Random random = new Random();
-            this.socket.Connect("e" + random.Next(1, 17) + ".whatsapp.net", this.whatsPort);
-            this.socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, this.recvTimeout);
+            try
+            { 
+                this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Random random = new Random();
+                this.socket.Connect("e" + random.Next(1, 17) + ".whatsapp.net", this.whatsPort);
+                this.socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, this.recvTimeout);
+            }
+            catch(Exception ex)
+            {
+                throw new ConnectionException("Cannot connect " + ex.ToString() );
+            }
 
             if (!this.socket.Connected)
                 throw new ConnectionException("Cannot connect");

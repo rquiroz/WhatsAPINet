@@ -137,7 +137,7 @@ namespace WhatsTest
             File.WriteAllBytes(string.Format("{0}.vcf", name), data);
         }
 
-        static void wa_OnGetMessageLocation(ProtocolTreeNode locationNode, string from, string id, double lon, double lat, string url, string name, byte[] preview)
+        static void wa_OnGetMessageLocation(ProtocolTreeNode locationNode, string from, string id, double lon, double lat, string url, string name, byte[] preview, string username)
         {
             Console.WriteLine("Got location from {0} ({1}, {2})", from, lat, lon);
             if(!string.IsNullOrEmpty(name))
@@ -147,7 +147,7 @@ namespace WhatsTest
             File.WriteAllBytes(string.Format("{0}{1}.jpg", lat, lon), preview);
         }
 
-        static void wa_OnGetMessageVideo(ProtocolTreeNode mediaNode, string from, string id, string fileName, int fileSize, string url, byte[] preview)
+        static void wa_OnGetMessageVideo(ProtocolTreeNode mediaNode, string from, string id, string fileName, int fileSize, string url, byte[] preview, string username)
         {
             Console.WriteLine("Got video from {0}", from, fileName);
             OnGetMedia(fileName, url, preview);
@@ -164,13 +164,13 @@ namespace WhatsTest
             }
         }
 
-        static void wa_OnGetMessageAudio(ProtocolTreeNode mediaNode, string from, string id, string fileName, int fileSize, string url, byte[] preview)
+        static void wa_OnGetMessageAudio(ProtocolTreeNode mediaNode, string from, string id, string fileName, int fileSize, string url, byte[] preview, string username)
         {
             Console.WriteLine("Got audio from {0}", from, fileName);
             OnGetMedia(fileName, url, preview);
         }
 
-        static void wa_OnGetMessageImage(ProtocolTreeNode mediaNode, string from, string id, string fileName, int size, string url, byte[] preview)
+        static void wa_OnGetMessageImage(ProtocolTreeNode mediaNode, string from, string id, string fileName, int size, string url, byte[] preview, string username)
         {
             Console.WriteLine("Got image from {0}", from, fileName);
             OnGetMedia(fileName, url, preview);

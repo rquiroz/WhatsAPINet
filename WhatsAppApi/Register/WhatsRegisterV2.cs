@@ -48,7 +48,7 @@ namespace WhatsAppApi.Register
                     id = GenerateIdentity(phoneNumber);
                 }
                 PhoneNumber pn = new PhoneNumber(phoneNumber);
-                string token = System.Uri.EscapeDataString(WhatsRegisterV2.GetToken(pn.Number));
+                string token = Uri.EscapeDataString(WhatsRegisterV2.GetToken(pn.Number));
 
                 request = String.Format("https://v.whatsapp.net/v2/code?method={0}&in={1}&cc={2}&id={3}&lg={4}&lc={5}&token={6}&sim_mcc=000&sim_mnc=000", method, pn.Number, pn.CC, id, pn.ISO639, pn.ISO3166, token, pn.MCC, pn.MNC);
                 response = GetResponse(request);
